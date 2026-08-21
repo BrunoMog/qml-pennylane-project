@@ -1,18 +1,26 @@
 package vqc
 
-import (
-	"slices"
+import "slices"
+
+type GateType string
+
+const (
+	HGate    GateType = "h"
+	XGate    GateType = "x"
+	YGate    GateType = "y"
+	RXGate   GateType = "rx"
+	RYGate   GateType = "ry"
+	RZGate   GateType = "rz"
+	CNOTGate GateType = "cnot"
 )
 
 type QuantumGates struct {
-	gate_type     string
+	gate_type     GateType
 	qubit         Qubit
 	control_qubit []Qubit
 }
 
-var permited_gates = []string{"h", "x", "y", "rx", "ry", "rz", "cnot"}
-
-func NewQuantumGate(gate_type string, qubit Qubit, control_qubit []Qubit) (*QuantumGates, error) {
+func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (*QuantumGates, error) {
 	err := validateGate(gate_type, qubit, control_qubit)
 	if err != nil {
 		return nil, err
@@ -25,7 +33,7 @@ func NewQuantumGate(gate_type string, qubit Qubit, control_qubit []Qubit) (*Quan
 	}, nil
 }
 
-func validateGate(gate_type string, qubit Qubit, control_qubit []Qubit) error {
+func validateGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) error {
 	if !isPermitedGate(gate_type) {
 		return &InvalidGateError{gate_type}
 	}
@@ -46,7 +54,23 @@ func validateGate(gate_type string, qubit Qubit, control_qubit []Qubit) error {
 	return nil
 }
 
-func isPermitedGate(gate_type string) bool {
-	result := slices.Contains(permited_gates, gate_type)
-	return result
+func isPermitedGate(gate_type GateType) bool {
+	switch gate_type {
+	case HGate, XGate, YGate, RXGate, RYGate, RZGate, CNOTGate:
+		return true
+	default:
+		return false
+	}
+}
+
+func (q QuantumGates) Equal(other QuantumGates) bool {
+	if q.gate_type != other.gate_type || q.qubit != other.qubit {
+		return false
+	}
+
+	if !slices.Equal(q.control_qubit, other.control_qubit) {
+		return false
+	}
+
+	return true
 }

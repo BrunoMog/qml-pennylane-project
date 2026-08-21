@@ -3,7 +3,7 @@ package vqc
 import "fmt"
 
 type InvalidGateError struct {
-	gate_type string
+	gate_type GateType
 }
 
 func (e *InvalidGateError) Error() string {
@@ -35,7 +35,7 @@ func (e *DuplicateQubitError) Error() string {
 }
 
 type InvalidEmbeddingError struct {
-	embedding_type string
+	embedding_type EmbeddingType
 }
 
 func (e *InvalidEmbeddingError) Error() string {
@@ -51,7 +51,7 @@ func (e *ZeroQubitEmbeddingError) Error() string {
 }
 
 type InvalidRotationError struct {
-	rotation string
+	rotation EmbeddingRotation
 }
 
 func (e *InvalidRotationError) Error() string {
@@ -59,7 +59,7 @@ func (e *InvalidRotationError) Error() string {
 }
 
 type InvalidIndexError struct {
-	index int
+	index LayerIndex
 }
 
 func (e *InvalidIndexError) Error() string {
@@ -67,7 +67,7 @@ func (e *InvalidIndexError) Error() string {
 }
 
 type InvalidMeasurementError struct {
-	measurement_type string
+	measurement_type MeasurementType
 }
 
 func (e *InvalidMeasurementError) Error() string {
@@ -88,4 +88,12 @@ type ZeroQubitVQCError struct {
 
 func (e *ZeroQubitVQCError) Error() string {
 	return fmt.Sprintf("VQC must have at least one qubit, got: %d", e.num_qubits)
+}
+
+type InvalidMeasurementRotationError struct {
+	measurement_rotation MeasurementRotation
+}
+
+func (e *InvalidMeasurementRotationError) Error() string {
+	return fmt.Sprintf("Invalid measurement rotation: %s", e.measurement_rotation)
 }
