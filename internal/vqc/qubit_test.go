@@ -29,7 +29,7 @@ func TestDuplicateQubits(t *testing.T) {
 func TestNewQubit(t *testing.T) {
 	testCases := []struct {
 		name      string
-		index     int
+		index     uint
 		numQubits uint
 		expectErr bool
 	}{

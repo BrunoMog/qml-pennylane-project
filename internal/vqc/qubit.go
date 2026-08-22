@@ -1,6 +1,6 @@
 package vqc
 
-type Qubit int
+type Qubit uint
 
 func hasDuplicateQubits(qubits []Qubit) (Qubit, bool) {
 	seen := make(map[Qubit]struct{}, len(qubits))
@@ -15,16 +15,16 @@ func hasDuplicateQubits(qubits []Qubit) (Qubit, bool) {
 	return 0, false
 }
 
-func NewQubit(index int, num_qubits uint) (Qubit, error) {
-	err := validateQubit(Qubit(index), num_qubits)
+func NewQubit(index uint, num_qubits uint) (Qubit, error) {
+	err := validateQubit(index, num_qubits)
 	if err != nil {
 		return 0, err
 	}
 	return Qubit(index), nil
 }
 
-func validateQubit(qubit Qubit, num_qubits uint) error {
-	if qubit < 0 || int(qubit) >= int(num_qubits) {
+func validateQubit(qubit uint, num_qubits uint) error {
+	if qubit >= num_qubits {
 		return &InvalidQubitError{qubit}
 	}
 	return nil

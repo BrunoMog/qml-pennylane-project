@@ -11,7 +11,7 @@ func (e *InvalidGateError) Error() string {
 }
 
 type InvalidQubitError struct {
-	qubit Qubit
+	qubit uint
 }
 
 func (e *InvalidQubitError) Error() string {
@@ -96,4 +96,20 @@ type InvalidMeasurementRotationError struct {
 
 func (e *InvalidMeasurementRotationError) Error() string {
 	return fmt.Sprintf("Invalid measurement rotation: %s", e.measurement_rotation)
+}
+
+type InvalidNameError struct {
+	name string
+}
+
+func (e *InvalidNameError) Error() string {
+	return fmt.Sprintf("Invalid name: %s", e.name)
+}
+
+type InvalidDescriptionError struct {
+	description string
+}
+
+func (e *InvalidDescriptionError) Error() string {
+	return fmt.Sprintf("Invalid description: %s", e.description)
 }
