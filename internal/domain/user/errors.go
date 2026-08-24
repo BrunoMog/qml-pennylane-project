@@ -27,3 +27,11 @@ type InvalidNameError struct {
 func (e *InvalidNameError) Error() string {
 	return fmt.Sprintf("invalid name: %s", e.name)
 }
+
+type InvalidEmailError struct {
+	email string
+}
+
+func (e *InvalidEmailError) Error() string {
+	return fmt.Sprintf("invalid email: %s", e.email)
+}

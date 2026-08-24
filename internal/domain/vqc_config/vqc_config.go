@@ -1,37 +1,34 @@
-package vqc
+package vqc_config
 
 import (
-	"pennylane_project_backend/internal/user"
+	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/domain/vqc"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type VQCConfig struct {
+	userID      uuid.UUID
+	vqcID       uuid.UUID
 	name        string
 	description string
-	vqc         *VQC
-	user        *user.User
+	vqc         *vqc.VQC
 	createdAt   time.Time
 	updatedAt   time.Time
 }
 
-func NewVQCConfig(name string, description string, vqc *VQC, user *user.User) (*VQCConfig, error) {
+func NewVQCConfig(name string, description string, vqc *vqc.VQC, user *user.User) error {
 	err := validateName(name)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	err = validateDescription(description)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &VQCConfig{
-		name:        name,
-		description: description,
-		vqc:         vqc,
-		user:        user,
-		createdAt:   time.Now(),
-		updatedAt:   time.Now(),
-	}, nil
+	return nil
 }
 
 func validateName(name string) error {
