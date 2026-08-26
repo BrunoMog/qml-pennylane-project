@@ -10,7 +10,7 @@ type UserOutput struct {
 	ID    uuid.UUID `json:"id"`
 	Name  string    `json:"name"`
 	Email string    `json:"email"`
-	Role  string    `json:"role"`
+	Role  user.Role `json:"role"`
 }
 
 func (s *UserService) CreateUser(name string, email string) (*UserOutput, error) {
@@ -33,7 +33,7 @@ func (s *UserService) CreateUser(name string, email string) (*UserOutput, error)
 		ID:    user.GetID(),
 		Name:  user.GetName(),
 		Email: user.GetEmail(),
-		Role:  string(user.GetRole()),
+		Role:  user.GetRole(),
 	}
 
 	return output, nil
