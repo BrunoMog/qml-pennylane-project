@@ -71,3 +71,15 @@ func isPermitedMeasurementRotation(measurement_rotation MeasurementRotation) boo
 		return false
 	}
 }
+
+func (m Measurement) GetQubits() []Qubit {
+	return m.qubits
+}
+
+func (m Measurement) GetMeasurementType() MeasurementType {
+	return m.measurement_type
+}
+
+func (m Measurement) GetMeasurementRotation() MeasurementRotation {
+	return m.measurement_rotation
+}

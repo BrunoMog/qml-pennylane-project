@@ -87,3 +87,23 @@ func isPermitedRotation(rotation EmbeddingRotation) bool {
 		return false
 	}
 }
+
+func (e Embedding) GetType() EmbeddingType {
+	return e.embedding_type
+}
+
+func (e Embedding) GetQubits() []Qubit {
+	return e.qubits
+}
+
+func (e Embedding) GetRotation() EmbeddingRotation {
+	return e.rotation
+}
+
+func (e Embedding) GetNormalize() bool {
+	return e.normalize
+}
+
+func (e Embedding) GetPadWith() float64 {
+	return e.padwith
+}

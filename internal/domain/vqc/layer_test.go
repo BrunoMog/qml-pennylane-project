@@ -6,86 +6,86 @@ import (
 
 type ModifyGate struct {
 	index LayerIndex
-	gate  QuantumGates
+	gate  QuantumGate
 }
 
 func TestLayer(t *testing.T) {
 	testCases := []struct {
 		name              string
-		gatesToCreate     []QuantumGates
+		gatesToCreate     []QuantumGate
 		gatesToRemove     []LayerIndex
 		gatesToUpdate     ModifyGate
 		gatesToAddAtIndex ModifyGate
-		expectedGates     []QuantumGates
+		expectedGates     []QuantumGate
 		expectErr         bool
 	}{
-		{"Adding gates to layer", []QuantumGates{
+		{"Adding gates to layer", []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, nil, ModifyGate{}, ModifyGate{}, []QuantumGates{
+		}, nil, ModifyGate{}, ModifyGate{}, []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
 		}, false,
 		},
-		{"Removing gates from layer", []QuantumGates{
+		{"Removing gates from layer", []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, []LayerIndex{1}, ModifyGate{}, ModifyGate{}, []QuantumGates{
+		}, []LayerIndex{1}, ModifyGate{}, ModifyGate{}, []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
 		}, false,
 		},
-		{"Updating gates in layer", []QuantumGates{
+		{"Updating gates in layer", []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, nil, ModifyGate{index: 1, gate: QuantumGates{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}}, ModifyGate{},
-			[]QuantumGates{
+		}, nil, ModifyGate{index: 1, gate: QuantumGate{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}}, ModifyGate{},
+			[]QuantumGate{
 				{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 				{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}},
 				{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
 			}, false,
 		},
-		{"Adding gate at specific index in layer", []QuantumGates{
+		{"Adding gate at specific index in layer", []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, nil, ModifyGate{}, ModifyGate{index: 1, gate: QuantumGates{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}},
-			[]QuantumGates{
+		}, nil, ModifyGate{}, ModifyGate{index: 1, gate: QuantumGate{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}},
+			[]QuantumGate{
 				{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 				{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}},
 				{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 				{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
 			}, false,
 		},
-		{"Invalid gate index for removal", []QuantumGates{
+		{"Invalid gate index for removal", []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, []LayerIndex{5}, ModifyGate{}, ModifyGate{}, []QuantumGates{
-			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
-			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
-			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, true,
-		},
-		{"Invalid gate index for update", []QuantumGates{
-			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
-			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
-			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, nil, ModifyGate{index: 5, gate: QuantumGates{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}}, ModifyGate{}, []QuantumGates{
+		}, []LayerIndex{5}, ModifyGate{}, ModifyGate{}, []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
 		}, true,
 		},
-		{"Invalid gate index for addition", []QuantumGates{
+		{"Invalid gate index for update", []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
-		}, nil, ModifyGate{}, ModifyGate{index: 5, gate: QuantumGates{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}}, []QuantumGates{
+		}, nil, ModifyGate{index: 5, gate: QuantumGate{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}}, ModifyGate{}, []QuantumGate{
+			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
+			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
+			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
+		}, true,
+		},
+		{"Invalid gate index for addition", []QuantumGate{
+			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
+			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
+			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
+		}, nil, ModifyGate{}, ModifyGate{index: 5, gate: QuantumGate{gate_type: CNOTGate, qubit: Qubit(2), control_qubit: []Qubit{Qubit(3)}}}, []QuantumGate{
 			{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(0), control_qubit: []Qubit{}},
 			{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
@@ -113,7 +113,7 @@ func TestLayer(t *testing.T) {
 				}
 			}
 
-			if !tc.gatesToUpdate.gate.Equal(QuantumGates{}) {
+			if !tc.gatesToUpdate.gate.Equal(QuantumGate{}) {
 				err := layer.UpdateGateAtIndex(tc.gatesToUpdate.gate, tc.gatesToUpdate.index)
 				if err != nil && !tc.expectErr {
 					t.Fatalf("Failed to update gate at index %d: %v", tc.gatesToUpdate.index, err)
@@ -123,7 +123,7 @@ func TestLayer(t *testing.T) {
 				}
 			}
 
-			if !tc.gatesToAddAtIndex.gate.Equal(QuantumGates{}) {
+			if !tc.gatesToAddAtIndex.gate.Equal(QuantumGate{}) {
 				err := layer.AddGateAtIndex(tc.gatesToAddAtIndex.gate, tc.gatesToAddAtIndex.index)
 				if err != nil && !tc.expectErr {
 					t.Fatalf("Failed to add gate at index %d: %v", tc.gatesToAddAtIndex.index, err)
@@ -133,14 +133,14 @@ func TestLayer(t *testing.T) {
 				}
 			}
 
-			if !slicesQuantumGatesEqual(layer.gates, tc.expectedGates) {
+			if !slicesQuantumGateEqual(layer.gates, tc.expectedGates) {
 				t.Errorf("Expected gates: %v, but got: %v", tc.expectedGates, layer.gates)
 			}
 		})
 	}
 }
 
-func slicesQuantumGatesEqual(a, b []QuantumGates) bool {
+func slicesQuantumGateEqual(a, b []QuantumGate) bool {
 	if len(a) != len(b) {
 		return false
 	}

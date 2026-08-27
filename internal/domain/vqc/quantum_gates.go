@@ -14,19 +14,19 @@ const (
 	CNOTGate GateType = "cnot"
 )
 
-type QuantumGates struct {
+type QuantumGate struct {
 	gate_type     GateType
 	qubit         Qubit
 	control_qubit []Qubit
 }
 
-func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (*QuantumGates, error) {
+func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (*QuantumGate, error) {
 	err := validateGate(gate_type, qubit, control_qubit)
 	if err != nil {
 		return nil, err
 	}
 
-	return &QuantumGates{
+	return &QuantumGate{
 		gate_type:     gate_type,
 		qubit:         qubit,
 		control_qubit: control_qubit,
@@ -63,7 +63,7 @@ func isPermitedGate(gate_type GateType) bool {
 	}
 }
 
-func (q QuantumGates) Equal(other QuantumGates) bool {
+func (q QuantumGate) Equal(other QuantumGate) bool {
 	if q.gate_type != other.gate_type || q.qubit != other.qubit {
 		return false
 	}
@@ -73,4 +73,13 @@ func (q QuantumGates) Equal(other QuantumGates) bool {
 	}
 
 	return true
+}
+
+func (q QuantumGate) HasParameters() bool {
+	switch q.gate_type {
+	case RXGate, RYGate, RZGate:
+		return true
+	default:
+		return false
+	}
 }

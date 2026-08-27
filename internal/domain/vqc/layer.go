@@ -3,7 +3,7 @@ package vqc
 import "slices"
 
 type Layer struct {
-	gates []QuantumGates
+	gates []QuantumGate
 }
 
 type LayerIndex uint
@@ -17,11 +17,11 @@ func (l *Layer) validateIndex(index LayerIndex) error {
 
 func NewLayer() *Layer {
 	return &Layer{
-		gates: []QuantumGates{},
+		gates: []QuantumGate{},
 	}
 }
 
-func (l *Layer) AddGate(gate QuantumGates) error {
+func (l *Layer) AddGate(gate QuantumGate) error {
 	l.gates = append(l.gates, gate)
 	return nil
 }
@@ -35,7 +35,7 @@ func (l *Layer) RemoveGateAtIndex(index LayerIndex) error {
 	return nil
 }
 
-func (l *Layer) AddGateAtIndex(gate QuantumGates, index LayerIndex) error {
+func (l *Layer) AddGateAtIndex(gate QuantumGate, index LayerIndex) error {
 	if err := l.validateIndex(index); err != nil {
 		return err
 	}
@@ -44,11 +44,33 @@ func (l *Layer) AddGateAtIndex(gate QuantumGates, index LayerIndex) error {
 	return nil
 }
 
-func (l *Layer) UpdateGateAtIndex(gate QuantumGates, index LayerIndex) error {
+func (l *Layer) UpdateGateAtIndex(gate QuantumGate, index LayerIndex) error {
 	if err := l.validateIndex(index); err != nil {
 		return err
 	}
 
 	l.gates[index] = gate
 	return nil
+}
+
+func (l Layer) GetGates() []QuantumGate {
+	return l.gates
+}
+
+func (l Layer) GetGateAtIndex(index LayerIndex) (QuantumGate, error) {
+	if err := l.validateIndex(index); err != nil {
+		return QuantumGate{}, err
+	}
+
+	return l.gates[index], nil
+}
+
+func (l Layer) GetNumParameterizedGates() uint {
+	count := uint(0)
+	for _, gate := range l.gates {
+		if gate.HasParameters() {
+			count++
+		}
+	}
+	return count
 }
