@@ -9,11 +9,11 @@ const (
 	RoleGuest Role = "guest"
 )
 
-func (r Role) IsValidRole() error {
+func (r Role) IsValidRole() bool {
 	switch r {
 	case RoleOwner, RoleAdmin, RoleUser, RoleGuest:
-		return nil
+		return true
 	default:
-		return &InvalidRoleError{r}
+		return false
 	}
 }

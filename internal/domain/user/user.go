@@ -49,8 +49,12 @@ func validateEmail(email string) error {
 	return nil
 }
 
-func (u *User) SetRole(newRole Role) {
+func (u *User) SetRole(newRole Role) error {
+	if !newRole.IsValidRole() {
+		return &InvalidRoleError{newRole}
+	}
 	u.role = newRole
+	return nil
 }
 
 func (u *User) SetName(newName string) error {

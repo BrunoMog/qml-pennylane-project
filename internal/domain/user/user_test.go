@@ -31,22 +31,22 @@ func TestValidateEmail(t *testing.T) {
 
 func TestIsValidRole(t *testing.T) {
 	tests := []struct {
-		name      string
-		input     Role
-		expectErr bool
+		name     string
+		input    Role
+		expected bool
 	}{
-		{"valid role owner", RoleOwner, false},
-		{"valid role admin", RoleAdmin, false},
-		{"valid role user", RoleUser, false},
-		{"valid role guest", RoleGuest, false},
-		{"invalid role", "invalid_role", true},
+		{"valid role owner", RoleOwner, true},
+		{"valid role admin", RoleAdmin, true},
+		{"valid role user", RoleUser, true},
+		{"valid role guest", RoleGuest, true},
+		{"invalid role", "invalid_role", false},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.input.IsValidRole()
-			if (err != nil) != tt.expectErr {
-				t.Errorf("IsValidRole() error = %v, expectErr %v", err, tt.expectErr)
+			result := tt.input.IsValidRole()
+			if result != tt.expected {
+				t.Errorf("IsValidRole() = %v, expected %v", result, tt.expected)
 			}
 		})
 	}
