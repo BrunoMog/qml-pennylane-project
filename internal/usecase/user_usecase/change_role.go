@@ -13,12 +13,6 @@ type ChangeUserRoleInput struct {
 }
 
 func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
-	role := input.Role
-	err := role.IsValidRole()
-	if err != nil {
-		return err
-	}
-
 	caller, err := s.repository.FindByID(input.CallerID)
 	if err != nil {
 		return err
@@ -36,8 +30,11 @@ func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 	if err != nil {
 		return err
 	}
+	err = target.SetRole(input.Role)
+	if err != nil {
+		return err
+	}
 
-	target.SetRole(role)
 	err = s.repository.Save(target)
 	if err != nil {
 		return err
