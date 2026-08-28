@@ -58,6 +58,24 @@ func (e *InvalidRotationError) Error() string {
 	return fmt.Sprintf("Invalid rotation type: %s", e.rotation)
 }
 
+type InvalidGetRotationError struct{}
+
+func (e *InvalidGetRotationError) Error() string {
+	return "GetRotation can only be called on AngleEmbedding"
+}
+
+type InvalidGetNormalizeError struct{}
+
+func (e *InvalidGetNormalizeError) Error() string {
+	return "GetNormalize can only be called on AmplitudeEmbedding"
+}
+
+type InvalidGetPadWithError struct{}
+
+func (e *InvalidGetPadWithError) Error() string {
+	return "GetPadWith can only be called on AmplitudeEmbedding"
+}
+
 type InvalidIndexError struct {
 	index LayerIndex
 }

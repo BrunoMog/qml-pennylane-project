@@ -83,3 +83,15 @@ func (q QuantumGate) HasParameters() bool {
 		return false
 	}
 }
+
+func (q QuantumGate) GetGateType() GateType {
+	return q.gate_type
+}
+
+func (q QuantumGate) GetQubit() Qubit {
+	return q.qubit
+}
+
+func (q QuantumGate) GetControlQubits() []Qubit {
+	return slices.Clone(q.control_qubit)
+}

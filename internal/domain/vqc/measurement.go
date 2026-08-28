@@ -1,5 +1,9 @@
 package vqc
 
+import (
+	"slices"
+)
+
 type MeasurementType string
 
 const (
@@ -16,25 +20,25 @@ const (
 )
 
 type Measurement struct {
-	qubits               []Qubit
-	measurement_rotation MeasurementRotation
-	measurement_type     MeasurementType
+	qubits              []Qubit
+	measurementRotation MeasurementRotation
+	measurementType     MeasurementType
 }
 
-func NewMeasurement(qubits []Qubit, measurement_type MeasurementType, measurement_rotation MeasurementRotation) (*Measurement, error) {
-	err := validateMeasurement(qubits, measurement_type, measurement_rotation)
+func NewMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) (*Measurement, error) {
+	err := validateMeasurement(qubits, measurementType, measurementRotation)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Measurement{
-		qubits:               qubits,
-		measurement_rotation: measurement_rotation,
-		measurement_type:     measurement_type,
+		qubits:              qubits,
+		measurementRotation: measurementRotation,
+		measurementType:     measurementType,
 	}, nil
 }
 
-func validateMeasurement(qubits []Qubit, measurement_type MeasurementType, measurement_rotation MeasurementRotation) error {
+func validateMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) error {
 	if len(qubits) == 0 {
 		return &ZeroQubitMeasurementError{qubits}
 	}
@@ -43,19 +47,19 @@ func validateMeasurement(qubits []Qubit, measurement_type MeasurementType, measu
 		return &DuplicateQubitError{duplicatedQubit}
 	}
 
-	if !isPermitedMeasurement(measurement_type) {
-		return &InvalidMeasurementError{measurement_type}
+	if !isPermitedMeasurement(measurementType) {
+		return &InvalidMeasurementError{measurementType}
 	}
 
-	if !isPermitedMeasurementRotation(measurement_rotation) {
-		return &InvalidMeasurementRotationError{measurement_rotation}
+	if !isPermitedMeasurementRotation(measurementRotation) {
+		return &InvalidMeasurementRotationError{measurementRotation}
 	}
 
 	return nil
 }
 
-func isPermitedMeasurement(measurement_type MeasurementType) bool {
-	switch measurement_type {
+func isPermitedMeasurement(measurementType MeasurementType) bool {
+	switch measurementType {
 	case ExpectationMeasurement, ProbabilityMeasurement:
 		return true
 	default:
@@ -63,8 +67,8 @@ func isPermitedMeasurement(measurement_type MeasurementType) bool {
 	}
 }
 
-func isPermitedMeasurementRotation(measurement_rotation MeasurementRotation) bool {
-	switch measurement_rotation {
+func isPermitedMeasurementRotation(measurementRotation MeasurementRotation) bool {
+	switch measurementRotation {
 	case XMeasurementRotation, YMeasurementRotation, ZMeasurementRotation:
 		return true
 	default:
@@ -73,13 +77,13 @@ func isPermitedMeasurementRotation(measurement_rotation MeasurementRotation) boo
 }
 
 func (m Measurement) GetQubits() []Qubit {
-	return m.qubits
+	return slices.Clone(m.qubits)
 }
 
 func (m Measurement) GetMeasurementType() MeasurementType {
-	return m.measurement_type
+	return m.measurementType
 }
 
 func (m Measurement) GetMeasurementRotation() MeasurementRotation {
-	return m.measurement_rotation
+	return m.measurementRotation
 }
