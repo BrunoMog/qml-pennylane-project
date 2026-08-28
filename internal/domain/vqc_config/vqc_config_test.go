@@ -1,0 +1,69 @@
+package vqc_config
+
+import (
+	"pennylane_project_backend/internal/domain/vqc"
+	"testing"
+
+	"github.com/google/uuid"
+)
+
+func TestNewVQCConfig(t *testing.T) {
+	tests := []struct {
+		name        string
+		userID      uuid.UUID
+		nameInput   string
+		description string
+		vqc         *vqc.VQC
+		expectErr   bool
+	}{
+		{
+			name:        "valid VQCConfig",
+			userID:      uuid.New(),
+			nameInput:   "Test Config",
+			description: "This is a test VQC configuration.",
+			vqc:         &vqc.VQC{},
+			expectErr:   false,
+		},
+		{
+			name:        "empty name",
+			userID:      uuid.New(),
+			nameInput:   "",
+			description: "This is a test VQC configuration.",
+			vqc:         &vqc.VQC{},
+			expectErr:   true,
+		},
+		{
+			name:        "name toooooo long",
+			userID:      uuid.New(),
+			nameInput:   "This name is way too long for the validation rules.",
+			description: "This is a test VQC configuration.",
+			vqc:         &vqc.VQC{},
+			expectErr:   true,
+		},
+		{
+			name:        "description too long",
+			userID:      uuid.New(),
+			nameInput:   "Test Config",
+			description: "This description is way too long for the validation rules. It exceeds the maximum allowed length of 100 characters.",
+			vqc:         &vqc.VQC{},
+			expectErr:   true,
+		},
+		{
+			name:        "nil VQC",
+			userID:      uuid.New(),
+			nameInput:   "Test Config",
+			description: "This is a test VQC configuration.",
+			vqc:         nil,
+			expectErr:   true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := NewVQCConfig(tt.userID, tt.nameInput, tt.description, tt.vqc)
+			if (err != nil) != tt.expectErr {
+				t.Errorf("NewVQCConfig() error = %v, expectErr %v", err, tt.expectErr)
+			}
+		})
+	}
+}

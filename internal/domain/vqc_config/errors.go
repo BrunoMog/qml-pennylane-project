@@ -17,3 +17,9 @@ type InvalidDescriptionError struct {
 func (e *InvalidDescriptionError) Error() string {
 	return fmt.Sprintf("Invalid description: %s", e.description)
 }
+
+type VQCConfigMissingVQCError struct{}
+
+func (e *VQCConfigMissingVQCError) Error() string {
+	return "VQCConfig is missing VQC"
+}

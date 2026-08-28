@@ -26,6 +26,10 @@ func NewVQCConfig(userID uuid.UUID, name string, description string, vqc *vqc.VQ
 	if err != nil {
 		return nil, err
 	}
+	err = validateVQC(vqc)
+	if err != nil {
+		return nil, err
+	}
 
 	return &VQCConfig{
 		userID:      userID,
@@ -55,7 +59,14 @@ func validateDescription(description string) error {
 	return nil
 }
 
-func (vqcConfig *VQCConfig) UpdateName(name string) error {
+func validateVQC(vqc *vqc.VQC) error {
+	if vqc == nil {
+		return &VQCConfigMissingVQCError{}
+	}
+	return nil
+}
+
+func (vqcConfig *VQCConfig) SetName(name string) error {
 	err := validateName(name)
 	if err != nil {
 		return err
@@ -65,7 +76,7 @@ func (vqcConfig *VQCConfig) UpdateName(name string) error {
 	return nil
 }
 
-func (vqcConfig *VQCConfig) UpdateDescription(description string) error {
+func (vqcConfig *VQCConfig) SetDescription(description string) error {
 	err := validateDescription(description)
 	if err != nil {
 		return err
@@ -75,9 +86,14 @@ func (vqcConfig *VQCConfig) UpdateDescription(description string) error {
 	return nil
 }
 
-func (vqcConfig *VQCConfig) UpdateVQC(vqc *vqc.VQC) {
+func (vqcConfig *VQCConfig) SetVQC(vqc *vqc.VQC) error {
+	err := validateVQC(vqc)
+	if err != nil {
+		return err
+	}
 	vqcConfig.vqc = vqc
 	vqcConfig.updatedAt = time.Now()
+	return nil
 }
 
 func (vqcConfig VQCConfig) GetName() string {
@@ -88,7 +104,7 @@ func (vqcConfig VQCConfig) GetDescription() string {
 	return vqcConfig.description
 }
 
-func (vqcConfig VQCConfig) GetUserID() uuid.UUID {
+func (vqcConfig VQCConfig) GetOwnerID() uuid.UUID {
 	return vqcConfig.userID
 }
 
