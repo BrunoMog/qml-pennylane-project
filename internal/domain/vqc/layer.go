@@ -21,9 +21,8 @@ func NewLayer() *Layer {
 	}
 }
 
-func (l *Layer) AddGate(gate QuantumGate) error {
+func (l *Layer) AddGate(gate QuantumGate) {
 	l.gates = append(l.gates, gate)
-	return nil
 }
 
 func (l *Layer) RemoveGateAtIndex(index LayerIndex) error {
@@ -54,7 +53,7 @@ func (l *Layer) UpdateGateAtIndex(gate QuantumGate, index LayerIndex) error {
 }
 
 func (l Layer) GetGates() []QuantumGate {
-	return l.gates
+	return slices.Clone(l.gates)
 }
 
 func (l Layer) GetGateAtIndex(index LayerIndex) (QuantumGate, error) {

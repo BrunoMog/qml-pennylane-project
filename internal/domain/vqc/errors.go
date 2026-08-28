@@ -90,6 +90,18 @@ func (e *ZeroQubitVQCError) Error() string {
 	return fmt.Sprintf("VQC must have at least one qubit, got: %d", e.num_qubits)
 }
 
+type NilEmbeddingError struct{}
+
+func (e *NilEmbeddingError) Error() string {
+	return "Embedding cannot be nil"
+}
+
+type NilMeasurementError struct{}
+
+func (e *NilMeasurementError) Error() string {
+	return "Measurement cannot be nil"
+}
+
 type InvalidMeasurementRotationError struct {
 	measurement_rotation MeasurementRotation
 }

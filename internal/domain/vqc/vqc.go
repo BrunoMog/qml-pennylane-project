@@ -11,8 +11,8 @@ type VQC struct {
 }
 
 func NewVQC(num_qubits uint, embedding *Embedding, pre_layer Layer, layer Layer, post_layer Layer, measurement *Measurement, num_layers uint) (*VQC, error) {
-	if num_qubits == 0 {
-		return nil, &ZeroQubitVQCError{num_qubits}
+	if err := validateVQCFileds(num_qubits, embedding, measurement); err != nil {
+		return nil, err
 	}
 
 	return &VQC{
@@ -24,6 +24,19 @@ func NewVQC(num_qubits uint, embedding *Embedding, pre_layer Layer, layer Layer,
 		measurement: measurement,
 		num_layers:  num_layers,
 	}, nil
+}
+
+func validateVQCFileds(num_qubits uint, embedding *Embedding, measurement *Measurement) error {
+	if num_qubits == 0 {
+		return &ZeroQubitVQCError{num_qubits}
+	}
+	if embedding == nil {
+		return &NilEmbeddingError{}
+	}
+	if measurement == nil {
+		return &NilMeasurementError{}
+	}
+	return nil
 }
 
 func (v VQC) GetNumQubits() uint {

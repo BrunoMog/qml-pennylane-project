@@ -97,10 +97,7 @@ func TestLayer(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			layer := NewLayer()
 			for _, gate := range tc.gatesToCreate {
-				err := layer.AddGate(gate)
-				if err != nil {
-					t.Fatalf("Failed to add gate: %v", err)
-				}
+				layer.AddGate(gate)
 			}
 
 			for _, index := range tc.gatesToRemove {
