@@ -17,3 +17,10 @@ type UnauthorizedError struct {
 func (e *UnauthorizedError) Error() string {
 	return fmt.Sprintf("unauthorized: user %s is not authorized to perform this action", e.name)
 }
+
+type UserNotFoundError struct {
+}
+
+func (e *UserNotFoundError) Error() string {
+	return "user not found"
+}

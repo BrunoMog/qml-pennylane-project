@@ -14,7 +14,10 @@ type UserOutput struct {
 }
 
 func (s *UserService) CreateUser(name string, email string) (*UserOutput, error) {
-	exists := s.repository.ExistsByEmail(email)
+	exists, err := s.repository.ExistsByEmail(email)
+	if err != nil {
+		return nil, err
+	}
 	if exists {
 		return nil, &EmailAlreadyExistsError{email}
 	}
