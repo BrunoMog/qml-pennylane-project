@@ -82,13 +82,27 @@ func TestUserSetters(t *testing.T) {
 		t.Fatal("Failed to create user")
 	}
 
-	user.SetName("Jane Doe")
+	err := user.SetName("Jane Doe")
+	if err != nil {
+		t.Errorf("Error setting name: %v", err)
+	}
 	if user.name != "Jane Doe" {
 		t.Errorf("Expected name 'Jane Doe', got '%s'", user.name)
 	}
 
-	user.SetEmail("jane.doe@example.com")
+	err = user.SetEmail("jane.doe@example.com")
+	if err != nil {
+		t.Errorf("Error setting email: %v", err)
+	}
 	if user.email != "jane.doe@example.com" {
 		t.Errorf("Expected email 'jane.doe@example.com', got '%s'", user.email)
+	}
+
+	err = user.SetRole(RoleAdmin)
+	if err != nil {
+		t.Errorf("Error setting role: %v", err)
+	}
+	if user.role != RoleAdmin {
+		t.Errorf("Expected role 'admin', got '%s'", user.role)
 	}
 }
