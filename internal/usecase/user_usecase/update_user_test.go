@@ -11,7 +11,8 @@ func TestUpdateUser(t *testing.T) {
 	tests := []struct {
 		name          string
 		usersToSeed   []testkit.UserSeed
-		userCallerRef uint8
+		callerUserRef uint8
+		targetUserRef uint8
 		newName       *string
 		newEmail      *string
 		expectErr     bool
@@ -22,7 +23,8 @@ func TestUpdateUser(t *testing.T) {
 				{Ref: 1, Name: "John Doe", Email: "john.doe@example.com"},
 				{Ref: 2, Name: "Jane Smith", Email: "jane.smith@example.com"},
 			},
-			userCallerRef: 1,
+			callerUserRef: 1,
+			targetUserRef: 1,
 			newName:       strPtr("Jane Doe"),
 			newEmail:      strPtr("jane.doe@example.com"),
 			expectErr:     false,
@@ -32,7 +34,8 @@ func TestUpdateUser(t *testing.T) {
 			usersToSeed: []testkit.UserSeed{
 				{Ref: 1, Name: "John Doe", Email: "john.doe@example.com"},
 			},
-			userCallerRef: 2,
+			callerUserRef: 1,
+			targetUserRef: 2,
 			newName:       strPtr("Jane Doe"),
 			newEmail:      strPtr("jane.doe@example.com"),
 			expectErr:     true,
@@ -42,7 +45,8 @@ func TestUpdateUser(t *testing.T) {
 			usersToSeed: []testkit.UserSeed{
 				{Ref: 1, Name: "John Doe", Email: "john.doe@example.com"},
 			},
-			userCallerRef: 1,
+			callerUserRef: 1,
+			targetUserRef: 1,
 			newName:       strPtr("Jane Doe"),
 			newEmail:      nil,
 			expectErr:     false,
@@ -52,10 +56,23 @@ func TestUpdateUser(t *testing.T) {
 			usersToSeed: []testkit.UserSeed{
 				{Ref: 1, Name: "John Doe", Email: "john.doe@example.com"},
 			},
-			userCallerRef: 1,
+			callerUserRef: 1,
+			targetUserRef: 1,
 			newName:       nil,
 			newEmail:      strPtr("jane.doe@example.com"),
 			expectErr:     false,
+		},
+		{
+			name: "unauthorized user trying to update another user",
+			usersToSeed: []testkit.UserSeed{
+				{Ref: 1, Name: "John Doe", Email: "john.doe@example.com"},
+				{Ref: 2, Name: "Jane Smith", Email: "jane.smith@example.com"},
+			},
+			callerUserRef: 1,
+			targetUserRef: 2,
+			newName:       strPtr("Jane Doe"),
+			newEmail:      strPtr("jane.doe@example.com"),
+			expectErr:     true,
 		},
 	}
 	for _, tt := range tests {
@@ -68,7 +85,7 @@ func TestUpdateUser(t *testing.T) {
 				t.Fatalf("Failed to seed users: %v", err)
 			}
 
-			callerUser, ok := seedResult.ByRef[tt.userCallerRef]
+			callerUser, ok := seedResult.ByRef[tt.callerUserRef]
 
 			var callerID uuid.UUID
 			if !ok || callerUser == nil {
@@ -77,10 +94,20 @@ func TestUpdateUser(t *testing.T) {
 				callerID = callerUser.GetID()
 			}
 
+			targetUser, ok := seedResult.ByRef[tt.targetUserRef]
+
+			var targetID uuid.UUID
+			if !ok || targetUser == nil {
+				targetID = uuid.New()
+			} else {
+				targetID = targetUser.GetID()
+			}
+
 			inpput := UpdateUserInput{
-				UserID: callerID,
-				Name:   tt.newName,
-				Email:  tt.newEmail,
+				CallerID: callerID,
+				TargetID: targetID,
+				Name:     tt.newName,
+				Email:    tt.newEmail,
 			}
 
 			err = service.UpdateUser(inpput)

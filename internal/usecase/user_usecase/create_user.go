@@ -19,21 +19,21 @@ func (s *UserService) CreateUser(name string, email string) (*UserOutput, error)
 		return nil, &EmailAlreadyExistsError{email}
 	}
 
-	user, err := user.NewUser(name, email)
+	newUser, err := user.NewUser(name, email)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.repository.Save(user)
+	err = s.repository.Save(newUser)
 	if err != nil {
 		return nil, err
 	}
 
 	output := &UserOutput{
-		ID:    user.GetID(),
-		Name:  user.GetName(),
-		Email: user.GetEmail(),
-		Role:  user.GetRole(),
+		ID:    newUser.GetID(),
+		Name:  newUser.GetName(),
+		Email: newUser.GetEmail(),
+		Role:  newUser.GetRole(),
 	}
 
 	return output, nil

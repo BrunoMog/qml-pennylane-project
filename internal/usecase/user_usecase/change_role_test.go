@@ -83,6 +83,17 @@ func TestChangeUserRole(t *testing.T) {
 			newRole:    user.Role("invalid_role"),
 			expectErr:  true,
 		},
+		{
+			name: "admin trying to change role of user to owner",
+			usersToSeed: []testkit.UserSeed{
+				{Ref: 1, Name: "John Doe", Email: "john.doe@example.com", Role: user.RoleAdmin},
+				{Ref: 2, Name: "Jane Smith", Email: "jane.smith@example.com", Role: user.RoleUser},
+			},
+			userCaller: 1,
+			userTarget: 2,
+			newRole:    user.RoleOwner,
+			expectErr:  true,
+		},
 	}
 
 	for _, tt := range tests {

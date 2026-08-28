@@ -17,19 +17,15 @@ func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 	if err != nil {
 		return err
 	}
-	err = validateCallerRole(caller)
-	if err != nil {
-		return err
-	}
-
 	target, err := s.repository.FindByID(input.TargetID)
 	if err != nil {
 		return err
 	}
-	err = validateTargetRole(target)
-	if err != nil {
-		return err
+
+	if !canAssignRole(caller.GetRole(), target.GetRole(), input.Role) {
+		return &UnauthorizedError{caller.GetName()}
 	}
+
 	err = target.SetRole(input.Role)
 	if err != nil {
 		return err
@@ -43,16 +39,19 @@ func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 	return nil
 }
 
-func validateCallerRole(caller *user.User) error {
-	if caller.GetRole() != user.RoleAdmin && caller.GetRole() != user.RoleOwner {
-		return &UnauthorizedError{caller.GetName()}
+func canAssignRole(callerRole, targetRole, newRole user.Role) bool {
+	switch callerRole {
+	case user.RoleOwner:
+		if newRole == user.RoleOwner {
+			return false
+		}
+		return true
+	case user.RoleAdmin:
+		if targetRole == user.RoleOwner || newRole == user.RoleOwner {
+			return false
+		}
+		return true
+	default:
+		return false
 	}
-	return nil
-}
-
-func validateTargetRole(target *user.User) error {
-	if target.GetRole() == user.RoleOwner {
-		return &UnauthorizedError{target.GetName()}
-	}
-	return nil
 }
