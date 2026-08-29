@@ -108,7 +108,7 @@ func (vqcConfig VQCConfig) GetOwnerID() uuid.UUID {
 	return vqcConfig.userID
 }
 
-func (vqcConfig VQCConfig) GetVQCID() uuid.UUID {
+func (vqcConfig VQCConfig) GetVQCConfigID() uuid.UUID {
 	return vqcConfig.vqcID
 }
 

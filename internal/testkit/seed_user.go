@@ -11,20 +11,20 @@ type UserSeed struct {
 	Role  user.Role
 }
 
-type SeedResult struct {
+type UserSeedResult struct {
 	ByRef map[uint8]*user.User
 }
 
-func SeedUsers(repo *MockUserRepository, seeds []UserSeed) (SeedResult, error) {
-	res := SeedResult{ByRef: map[uint8]*user.User{}}
+func SeedUsers(repo *MockUserRepository, seeds []UserSeed) (UserSeedResult, error) {
+	res := UserSeedResult{ByRef: map[uint8]*user.User{}}
 	for _, s := range seeds {
 		u, err := user.NewUser(s.Name, s.Email)
 		if err != nil {
-			return SeedResult{}, err
+			return UserSeedResult{}, err
 		}
 		u.SetRole(s.Role)
 		if err := repo.Save(u); err != nil {
-			return SeedResult{}, err
+			return UserSeedResult{}, err
 		}
 		res.ByRef[s.Ref] = u
 	}

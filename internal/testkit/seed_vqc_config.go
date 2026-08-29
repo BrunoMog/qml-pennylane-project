@@ -1,0 +1,42 @@
+package testkit
+
+import (
+	"pennylane_project_backend/internal/domain/vqc"
+	"pennylane_project_backend/internal/domain/vqc_config"
+
+	"github.com/google/uuid"
+)
+
+type VQCConfigSeed struct {
+	Ref         uint8
+	CallerRef   uint8
+	Name        string
+	Description string
+	VQC         *vqc.VQC
+}
+
+type VQCConfigResult struct {
+	ByRef map[uint8]*vqc_config.VQCConfig
+}
+
+func SeedVQCConfigs(vqcConfigRepository *MockVQCConfigRepository, userSeedResult UserSeedResult, seeds []VQCConfigSeed) (VQCConfigResult, error) {
+	res := VQCConfigResult{ByRef: map[uint8]*vqc_config.VQCConfig{}}
+	for _, s := range seeds {
+		var callerID uuid.UUID
+		caller, ok := userSeedResult.ByRef[s.CallerRef]
+		if !ok {
+			callerID = uuid.New()
+		} else {
+			callerID = caller.GetID()
+		}
+		newConfig, err := vqc_config.NewVQCConfig(callerID, s.Name, s.Description, s.VQC)
+		if err != nil {
+			return VQCConfigResult{}, err
+		}
+		if err := vqcConfigRepository.Save(newConfig); err != nil {
+			return VQCConfigResult{}, err
+		}
+		res.ByRef[s.Ref] = newConfig
+	}
+	return res, nil
+}
