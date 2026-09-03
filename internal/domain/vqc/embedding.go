@@ -1,20 +1,21 @@
 package vqc
 
-import "slices"
+import (
+	"slices"
+)
 
-type Embedding struct {
-	embeddingType EmbeddingType
-	qubits        []Qubit
-	rotation      EmbeddingRotation
-	normalize     bool
-	padwith       float64
+type Embedding interface {
+	GetType() EmbeddingType
+	GetQubits() []Qubit
+
+	isEmbedding()
 }
 
 type EmbeddingType string
 
 const (
-	AngleEmbedding     EmbeddingType = "angle"
-	AmplitudeEmbedding EmbeddingType = "amplitude"
+	EmbeddingTypeAngle     EmbeddingType = "angle"
+	EmbeddingTypeAmplitude EmbeddingType = "amplitude"
 )
 
 type EmbeddingRotation string
@@ -25,64 +26,8 @@ const (
 	ZRotation EmbeddingRotation = "z"
 )
 
-func NewAngleEmbedding(qubits []Qubit, rotation EmbeddingRotation) (*Embedding, error) {
-	err := validateEmbedding(AngleEmbedding, qubits, rotation)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Embedding{
-		embeddingType: AngleEmbedding,
-		qubits:        qubits,
-		rotation:      rotation,
-	}, nil
-}
-
-func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padwith float64) (*Embedding, error) {
-	err := validateEmbedding(AmplitudeEmbedding, qubits, "")
-	if err != nil {
-		return nil, err
-	}
-
-	return &Embedding{
-		embeddingType: AmplitudeEmbedding,
-		qubits:        qubits,
-		normalize:     normalize,
-		padwith:       padwith,
-	}, nil
-}
-
-func validateEmbedding(embeddingType EmbeddingType, qubits []Qubit, rotation EmbeddingRotation) error {
-	if !isPermitedEmbedding(embeddingType) {
-		return &InvalidEmbeddingError{embeddingType}
-	}
-
-	if len(qubits) == 0 {
-		return &ZeroQubitEmbeddingError{qubits}
-	}
-
-	if duplicatedQubit, duplicated := hasDuplicateQubits(qubits); duplicated {
-		return &DuplicateQubitError{duplicatedQubit}
-	}
-
-	if !isPermitedRotation(rotation) && embeddingType == AngleEmbedding {
-		return &InvalidRotationError{rotation}
-	}
-
-	return nil
-}
-
-func isPermitedEmbedding(embeddingType EmbeddingType) bool {
-	switch embeddingType {
-	case AngleEmbedding, AmplitudeEmbedding:
-		return true
-	default:
-		return false
-	}
-}
-
-func isPermitedRotation(rotation EmbeddingRotation) bool {
-	switch rotation {
+func (e EmbeddingRotation) IsValid() bool {
+	switch e {
 	case XRotation, YRotation, ZRotation:
 		return true
 	default:
@@ -90,31 +35,74 @@ func isPermitedRotation(rotation EmbeddingRotation) bool {
 	}
 }
 
-func (e Embedding) GetType() EmbeddingType {
-	return e.embeddingType
+type AngleEmbedding struct {
+	qubits   []Qubit
+	rotation EmbeddingRotation
 }
 
-func (e Embedding) GetQubits() []Qubit {
-	return slices.Clone(e.qubits)
-}
-
-func (e Embedding) GetRotation() (EmbeddingRotation, error) {
-	if e.GetType() != AngleEmbedding {
-		return "", &InvalidGetRotationError{}
+func NewAngleEmbedding(qubits []Qubit, rotation EmbeddingRotation) (AngleEmbedding, error) {
+	if !rotation.IsValid() {
+		return AngleEmbedding{}, &InvalidRotationError{rotation}
 	}
-	return e.rotation, nil
+	if err := validateEmbeddingQubits(qubits); err != nil {
+		return AngleEmbedding{}, err
+	}
+
+	return AngleEmbedding{qubits: qubits, rotation: rotation}, nil
 }
 
-func (e Embedding) GetNormalize() (bool, error) {
-	if e.GetType() != AmplitudeEmbedding {
-		return false, &InvalidGetNormalizeError{}
+func validateEmbeddingQubits(qubits []Qubit) error {
+	if len(qubits) == 0 {
+		return &ZeroQubitEmbeddingError{qubit: qubits}
 	}
-	return e.normalize, nil
+	if qubit, ok := hasDuplicateQubits(qubits); ok {
+		return &DuplicateQubitError{qubit: qubit}
+	}
+	return nil
 }
 
-func (e Embedding) GetPadWith() (float64, error) {
-	if e.GetType() != AmplitudeEmbedding {
-		return 0, &InvalidGetPadWithError{}
-	}
-	return e.padwith, nil
+func (a AngleEmbedding) GetType() EmbeddingType {
+	return EmbeddingTypeAngle
 }
+
+func (a AngleEmbedding) GetQubits() []Qubit {
+	return slices.Clone(a.qubits)
+}
+
+func (a AngleEmbedding) GetRotation() EmbeddingRotation {
+	return a.rotation
+}
+
+func (a AngleEmbedding) isEmbedding() {}
+
+type AmplitudeEmbedding struct {
+	qubits    []Qubit
+	normalize bool
+	padWidth  float64
+}
+
+func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padWidth float64) (AmplitudeEmbedding, error) {
+	if err := validateEmbeddingQubits(qubits); err != nil {
+		return AmplitudeEmbedding{}, err
+	}
+
+	return AmplitudeEmbedding{qubits: qubits, normalize: normalize, padWidth: padWidth}, nil
+}
+
+func (a AmplitudeEmbedding) GetType() EmbeddingType {
+	return EmbeddingTypeAmplitude
+}
+
+func (a AmplitudeEmbedding) GetQubits() []Qubit {
+	return slices.Clone(a.qubits)
+}
+
+func (a AmplitudeEmbedding) GetNormalize() bool {
+	return a.normalize
+}
+
+func (a AmplitudeEmbedding) GetPadWidth() float64 {
+	return a.padWidth
+}
+
+func (a AmplitudeEmbedding) isEmbedding() {}
