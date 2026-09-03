@@ -1,11 +1,11 @@
 package vqc
 
 type EmbeddingBuilderInput struct {
-	Type      string  // "angle" or "amplitude"
-	Qubits    []int   // Qubit indices for embedding
-	Rotation  string  // Rotation type (for angle embedding)
-	Normalize bool    // Normalize (for amplitude embedding)
-	PadWidth  float64 // Pad width (for amplitude embedding)
+	Type      string
+	Rotation  string
+	Qubits    []int
+	PadWidth  float64
+	Normalize bool
 }
 
 type MeasurementBuilderInput struct {
@@ -15,26 +15,26 @@ type MeasurementBuilderInput struct {
 }
 
 type GateBuilderInput struct {
-	GateType      string // Type of gate (e.g., "RX", "CNOT")
-	Qubit         int    // Target qubit index
-	ControlQubits []int  // Control qubits (for controlled gates)
+	GateType      string
+	ControlQubits []int
+	Qubit         int
 }
 
 type VQCBuilderInput struct {
+	Measurement MeasurementBuilderInput
+	Embedding   EmbeddingBuilderInput
 	NumQubits   int
 	NumLayers   int
-	Embedding   EmbeddingBuilderInput
-	Measurement MeasurementBuilderInput
 }
 
 type VQCBuilder struct {
-	numQubits   uint
-	numLayers   uint
 	embedding   Embedding
+	measurement Measurement
 	preLayer    Layer
 	layer       Layer
 	postLayer   Layer
-	measurement Measurement
+	numQubits   uint
+	numLayers   uint
 }
 
 func NewVQCBuilder(input VQCBuilderInput) (*VQCBuilder, error) {

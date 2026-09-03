@@ -16,8 +16,8 @@ const (
 
 type QuantumGate struct {
 	gate_type     GateType
-	qubit         Qubit
 	control_qubit []Qubit
+	qubit         Qubit
 }
 
 func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (*QuantumGate, error) {

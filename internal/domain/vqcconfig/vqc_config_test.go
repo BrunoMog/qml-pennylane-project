@@ -9,11 +9,11 @@ import (
 
 func TestNewVQCConfig(t *testing.T) {
 	tests := []struct {
+		vqc         *vqc.VQC
 		name        string
-		userID      uuid.UUID
 		nameInput   string
 		description string
-		vqc         *vqc.VQC
+		userID      uuid.UUID
 		expectErr   bool
 	}{
 		{

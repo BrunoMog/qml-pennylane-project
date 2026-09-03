@@ -36,8 +36,8 @@ func (e EmbeddingRotation) IsValid() bool {
 }
 
 type AngleEmbedding struct {
-	qubits   []Qubit
 	rotation EmbeddingRotation
+	qubits   []Qubit
 }
 
 func NewAngleEmbedding(qubits []Qubit, rotation EmbeddingRotation) (AngleEmbedding, error) {

@@ -9,12 +9,12 @@ import (
 
 func TestUpdateUser(t *testing.T) {
 	tests := []struct {
+		newName       *string
+		newEmail      *string
 		name          string
 		usersToSeed   []testkit.UserSeed
 		callerUserRef uint8
 		targetUserRef uint8
-		newName       *string
-		newEmail      *string
 		expectErr     bool
 	}{
 		{

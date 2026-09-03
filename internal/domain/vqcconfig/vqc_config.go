@@ -13,13 +13,13 @@ const (
 )
 
 type VQCConfig struct {
-	userID      uuid.UUID
-	vqcID       uuid.UUID
-	name        string
-	description string
-	vqc         *vqc.VQC
 	createdAt   time.Time
 	updatedAt   time.Time
+	vqc         *vqc.VQC
+	name        string
+	description string
+	userID      uuid.UUID
+	vqcID       uuid.UUID
 }
 
 func NewVQCConfig(userID uuid.UUID, name string, description string, vqc *vqc.VQC) (*VQCConfig, error) {

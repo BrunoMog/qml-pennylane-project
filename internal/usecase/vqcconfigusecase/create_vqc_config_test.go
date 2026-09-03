@@ -11,11 +11,11 @@ import (
 
 func TestCreateVQCConfig(t *testing.T) {
 	tests := []struct {
+		vqcConfigToCreate testkit.VQCConfigSeed
 		name              string
 		userToSeed        []testkit.UserSeed
-		callerRef         uint8
 		vqcConfigToSeed   []testkit.VQCConfigSeed
-		vqcConfigToCreate testkit.VQCConfigSeed
+		callerRef         uint8
 		expectError       bool
 	}{
 		{

@@ -5,10 +5,10 @@ import (
 )
 
 type UserSeed struct {
-	Ref   uint8
 	Name  string
 	Email string
 	Role  user.Role
+	Ref   uint8
 }
 
 type UserSeedResult struct {

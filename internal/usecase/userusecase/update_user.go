@@ -7,10 +7,10 @@ import (
 )
 
 type UpdateUserInput struct {
-	CallerID uuid.UUID
-	TargetID uuid.UUID
 	Name     *string
 	Email    *string
+	CallerID uuid.UUID
+	TargetID uuid.UUID
 }
 
 func (s *UserService) UpdateUser(input UpdateUserInput) error {

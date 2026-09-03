@@ -11,10 +11,10 @@ import (
 func TestChangeUserRole(t *testing.T) {
 	tests := []struct {
 		name        string
+		newRole     user.Role
 		usersToSeed []testkit.UserSeed
 		userCaller  uint8
 		userTarget  uint8
-		newRole     user.Role
 		expectErr   bool
 	}{
 		{

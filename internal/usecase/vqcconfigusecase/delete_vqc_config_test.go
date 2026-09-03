@@ -13,8 +13,8 @@ func TestDeleteVQCConfig(t *testing.T) {
 	tests := []struct {
 		name             string
 		usersToSeed      []testkit.UserSeed
-		callerRef        uint8
 		vqcConfigsToSeed []testkit.VQCConfigSeed
+		callerRef        uint8
 		vqcConfigRef     uint8
 		expectError      bool
 	}{

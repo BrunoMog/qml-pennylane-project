@@ -9,17 +9,17 @@ import (
 )
 
 type GetVQCConfigInput struct {
-	CallerID      uuid.UUID
 	VQCConfigID   *uuid.UUID
 	VQCConfigName *string
+	CallerID      uuid.UUID
 }
 
 type GetVQCConfigOutput struct {
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 	Name        string
 	Description string
 	VQC         vqc.VQC
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
 }
 
 func (s *VQCConfigService) GetVQCConfig(input GetVQCConfigInput) (*GetVQCConfigOutput, error) {

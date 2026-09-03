@@ -7,15 +7,15 @@ import (
 func TestNewMeasurement(t *testing.T) {
 	testCases := []struct {
 		name                 string
-		qubits               []Qubit
 		measurement_type     MeasurementType
 		measurement_rotation MeasurementRotation
+		qubits               []Qubit
 		expectErr            bool
 	}{
-		{"Valid measurement", []Qubit{0, 1}, ExpectationMeasurement, XMeasurementRotation, false},
-		{"Invalid measurement type", []Qubit{0, 1}, MeasurementType("invalid_measurement"), XMeasurementRotation, true},
-		{"Duplicate qubit index", []Qubit{0, 1, 1}, ExpectationMeasurement, XMeasurementRotation, true},
-		{"Invalid measurement rotation", []Qubit{0, 1}, ExpectationMeasurement, MeasurementRotation("invalid_rotation"), true},
+		{name: "Valid measurement", qubits: []Qubit{0, 1}, measurement_type: ExpectationMeasurement, measurement_rotation: XMeasurementRotation, expectErr: false},
+		{name: "Invalid measurement type", qubits: []Qubit{0, 1}, measurement_type: MeasurementType("invalid_measurement"), measurement_rotation: XMeasurementRotation, expectErr: true},
+		{name: "Duplicate qubit index", qubits: []Qubit{0, 1, 1}, measurement_type: ExpectationMeasurement, measurement_rotation: XMeasurementRotation, expectErr: true},
+		{name: "Invalid measurement rotation", qubits: []Qubit{0, 1}, measurement_type: ExpectationMeasurement, measurement_rotation: MeasurementRotation("invalid_rotation"), expectErr: true},
 	}
 
 	for _, tc := range testCases {

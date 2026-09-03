@@ -7,9 +7,9 @@ import (
 )
 
 type ChangeUserRoleInput struct {
+	Role     user.Role
 	CallerID uuid.UUID
 	TargetID uuid.UUID
-	Role     user.Role
 }
 
 func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {

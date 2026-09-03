@@ -5,10 +5,10 @@ import (
 )
 
 type User struct {
-	id    uuid.UUID
 	email string
 	name  string
 	role  Role
+	id    uuid.UUID
 }
 
 func NewUser(name string, email string) (*User, error) {

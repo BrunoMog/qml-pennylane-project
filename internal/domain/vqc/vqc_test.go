@@ -6,13 +6,13 @@ import (
 
 func TestNewVQC(t *testing.T) {
 	tests := []struct {
-		name        string
-		num_qubits  uint
 		embedding   Embedding
+		measurement Measurement
+		name        string
 		pre_layer   Layer
 		layer       Layer
 		post_layer  Layer
-		measurement Measurement
+		num_qubits  uint
 		num_layers  uint
 		expectErr   bool
 	}{

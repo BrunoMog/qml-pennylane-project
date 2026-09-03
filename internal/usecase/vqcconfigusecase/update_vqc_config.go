@@ -8,11 +8,11 @@ import (
 )
 
 type UpdateVQCConfigInput struct {
-	CallerID    uuid.UUID
-	VQCConfigID uuid.UUID
 	Name        *string
 	Description *string
 	VQC         *vqc.VQC
+	CallerID    uuid.UUID
+	VQCConfigID uuid.UUID
 }
 
 func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {

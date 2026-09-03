@@ -307,8 +307,8 @@ func TestVQCBuilderWithPostLayer(t *testing.T) {
 
 func TestVQCBuilderBuild(t *testing.T) {
 	testCases := []struct {
-		name            string
 		builderSetupFn  func() (*VQCBuilder, error)
+		name            string
 		expectErr       bool
 		shouldReturnVQC bool
 	}{
@@ -445,11 +445,11 @@ func TestVQCBuilderFluentInterface(t *testing.T) {
 
 func TestVQCBuilderErrorPropagation(t *testing.T) {
 	testCases := []struct {
-		name        string
 		setupFn     func() (*VQCBuilder, error)
 		layerFn     func(*VQCBuilder) (*VQCBuilder, error)
-		expectErr   bool
+		name        string
 		description string
+		expectErr   bool
 	}{
 		{
 			name: "Invalid gate in pre layer propagates error",
@@ -567,9 +567,9 @@ func TestVQCBuilderMultipleCallSequences(t *testing.T) {
 func TestVQCBuilderEdgeCases(t *testing.T) {
 	testCases := []struct {
 		name      string
+		embedding EmbeddingBuilderInput
 		numQubits int
 		numLayers int
-		embedding EmbeddingBuilderInput
 		expectErr bool
 	}{
 		{

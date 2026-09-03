@@ -15,7 +15,7 @@ func TestNewQuantumGate(t *testing.T) {
 	}
 
 	if gate.gate_type != gate_type || gate.qubit != qubit || len(gate.control_qubit) != len(control_qubit) {
-		t.Errorf("NewQuantumGate returned unexpected values: got %v, want %v", gate, &QuantumGate{gate_type, qubit, control_qubit})
+		t.Errorf("NewQuantumGate returned unexpected values: got %v, want %v", gate, &QuantumGate{gate_type, control_qubit, qubit})
 	}
 }
 
@@ -60,10 +60,10 @@ func TestEqual(t *testing.T) {
 		gate2    QuantumGate
 		expected bool
 	}{
-		{"Equal gates", QuantumGate{HGate, 0, []Qubit{}}, QuantumGate{HGate, 0, []Qubit{}}, true},
-		{"Different gate types", QuantumGate{HGate, 0, []Qubit{}}, QuantumGate{XGate, 0, []Qubit{}}, false},
-		{"Different qubits", QuantumGate{HGate, 0, []Qubit{}}, QuantumGate{HGate, 1, []Qubit{}}, false},
-		{"Different control qubits", QuantumGate{CNOTGate, 0, []Qubit{1}}, QuantumGate{CNOTGate, 0, []Qubit{2}}, false},
+		{"Equal gates", QuantumGate{HGate, []Qubit{}, 0}, QuantumGate{HGate, []Qubit{}, 0}, true},
+		{"Different gate types", QuantumGate{HGate, []Qubit{}, 0}, QuantumGate{XGate, []Qubit{}, 0}, false},
+		{"Different qubits", QuantumGate{HGate, []Qubit{}, 0}, QuantumGate{HGate, []Qubit{}, 1}, false},
+		{"Different control qubits", QuantumGate{CNOTGate, []Qubit{1}, 0}, QuantumGate{CNOTGate, []Qubit{2}, 0}, false},
 	}
 
 	for _, tc := range testCases {

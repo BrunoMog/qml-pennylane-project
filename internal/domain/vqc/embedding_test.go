@@ -7,13 +7,13 @@ import (
 func TestNewAngleEmbedding(t *testing.T) {
 	testCases := []struct {
 		name      string
-		qubits    []Qubit
 		rotation  EmbeddingRotation
+		qubits    []Qubit
 		expectErr bool
 	}{
-		{"Valid angle embedding", []Qubit{0, 1}, XRotation, false},
-		{"Invalid rotation", []Qubit{0, 1}, EmbeddingRotation("invalid_rotation"), true},
-		{"Duplicate qubit index", []Qubit{0, 1, 1}, XRotation, true},
+		{name: "Valid angle embedding", qubits: []Qubit{0, 1}, rotation: XRotation, expectErr: false},
+		{name: "Invalid rotation", qubits: []Qubit{0, 1}, rotation: EmbeddingRotation("invalid_rotation"), expectErr: true},
+		{name: "Duplicate qubit index", qubits: []Qubit{0, 1, 1}, rotation: XRotation, expectErr: true},
 	}
 
 	for _, tc := range testCases {
@@ -30,12 +30,12 @@ func TestNewAmplitudeEmbedding(t *testing.T) {
 	testCases := []struct {
 		name      string
 		qubits    []Qubit
-		normalize bool
 		padwith   float64
+		normalize bool
 		expectErr bool
 	}{
-		{"Valid amplitude embedding", []Qubit{0, 1}, true, 0.0, false},
-		{"Duplicate qubit index", []Qubit{0, 1, 1}, true, 0.0, true},
+		{name: "Valid amplitude embedding", qubits: []Qubit{0, 1}, normalize: true, padwith: 0.0, expectErr: false},
+		{name: "Duplicate qubit index", qubits: []Qubit{0, 1, 1}, padwith: 0.0, normalize: true, expectErr: true},
 	}
 
 	for _, tc := range testCases {

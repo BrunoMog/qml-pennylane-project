@@ -2,10 +2,10 @@ package vqc
 
 type VQC struct {
 	embedding   Embedding
+	measurement Measurement
 	pre_layer   Layer
 	layer       Layer
 	post_layer  Layer
-	measurement Measurement
 	num_qubits  uint
 	num_layers  uint
 }

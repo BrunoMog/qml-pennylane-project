@@ -20,9 +20,9 @@ const (
 )
 
 type Measurement struct {
-	qubits              []Qubit
 	measurementRotation MeasurementRotation
 	measurementType     MeasurementType
+	qubits              []Qubit
 }
 
 func NewMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) (Measurement, error) {

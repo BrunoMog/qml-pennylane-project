@@ -8,11 +8,11 @@ import (
 )
 
 type VQCConfigSeed struct {
-	Ref         uint8
-	CallerRef   uint8
+	VQC         *vqc.VQC
 	Name        string
 	Description string
-	VQC         *vqc.VQC
+	Ref         uint8
+	CallerRef   uint8
 }
 
 type VQCConfigResult struct {

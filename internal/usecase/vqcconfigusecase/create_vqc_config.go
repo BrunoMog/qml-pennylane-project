@@ -9,17 +9,17 @@ import (
 )
 
 type CreateVQCConfigInput struct {
-	CallerID    uuid.UUID
 	Name        *string
 	Description *string
 	VQC         *vqc.VQC
+	CallerID    uuid.UUID
 }
 
 type CreateVQCConfigOutput struct {
+	CreatedAt   time.Time
 	Name        string
 	Description string
 	VQCId       uuid.UUID
-	CreatedAt   time.Time
 }
 
 func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateVQCConfigOutput, error) {
