@@ -1,18 +1,18 @@
 package vqc
 
 type VQC struct {
-	embedding   *Embedding
+	embedding   Embedding
 	pre_layer   Layer
 	layer       Layer
 	post_layer  Layer
-	measurement *Measurement
+	measurement Measurement
 	num_qubits  uint
 	num_layers  uint
 }
 
-func NewVQC(num_qubits uint, embedding *Embedding, pre_layer Layer, layer Layer, post_layer Layer, measurement *Measurement, num_layers uint) (*VQC, error) {
-	if err := validateVQCFileds(num_qubits, embedding, measurement); err != nil {
-		return nil, err
+func NewVQC(num_qubits uint, embedding Embedding, pre_layer Layer, layer Layer, post_layer Layer, measurement Measurement, num_layers uint) (*VQC, error) {
+	if num_qubits == 0 {
+		return nil, &ZeroQubitVQCError{num_qubits: num_qubits}
 	}
 
 	return &VQC{
@@ -26,19 +26,6 @@ func NewVQC(num_qubits uint, embedding *Embedding, pre_layer Layer, layer Layer,
 	}, nil
 }
 
-func validateVQCFileds(num_qubits uint, embedding *Embedding, measurement *Measurement) error {
-	if num_qubits == 0 {
-		return &ZeroQubitVQCError{num_qubits}
-	}
-	if embedding == nil {
-		return &NilEmbeddingError{}
-	}
-	if measurement == nil {
-		return &NilMeasurementError{}
-	}
-	return nil
-}
-
 func (v VQC) GetNumQubits() uint {
 	return v.num_qubits
 }
@@ -47,7 +34,7 @@ func (v VQC) GetNumLayers() uint {
 	return v.num_layers
 }
 
-func (v VQC) GetEmbedding() *Embedding {
+func (v VQC) GetEmbedding() Embedding {
 	return v.embedding
 }
 
@@ -63,7 +50,7 @@ func (v VQC) GetPostLayer() Layer {
 	return v.post_layer
 }
 
-func (v VQC) GetMeasurement() *Measurement {
+func (v VQC) GetMeasurement() Measurement {
 	return v.measurement
 }
 

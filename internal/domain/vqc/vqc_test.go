@@ -8,55 +8,33 @@ func TestNewVQC(t *testing.T) {
 	tests := []struct {
 		name        string
 		num_qubits  uint
-		embedding   *Embedding
+		embedding   Embedding
 		pre_layer   Layer
 		layer       Layer
 		post_layer  Layer
-		measurement *Measurement
+		measurement Measurement
 		num_layers  uint
 		expectErr   bool
 	}{
 		{
 			name:        "valid VQC",
 			num_qubits:  2,
-			embedding:   &Embedding{},
+			embedding:   AngleEmbedding{},
 			pre_layer:   Layer{},
 			layer:       Layer{},
 			post_layer:  Layer{},
-			measurement: &Measurement{},
+			measurement: Measurement{},
 			num_layers:  1,
 			expectErr:   false,
 		},
 		{
 			name:        "zero qubits",
 			num_qubits:  0,
-			embedding:   &Embedding{},
+			embedding:   AngleEmbedding{},
 			pre_layer:   Layer{},
 			layer:       Layer{},
 			post_layer:  Layer{},
-			measurement: &Measurement{},
-			num_layers:  1,
-			expectErr:   true,
-		},
-		{
-			name:        "nil embedding",
-			num_qubits:  2,
-			embedding:   nil,
-			pre_layer:   Layer{},
-			layer:       Layer{},
-			post_layer:  Layer{},
-			measurement: &Measurement{},
-			num_layers:  1,
-			expectErr:   true,
-		},
-		{
-			name:        "nil measurement",
-			num_qubits:  2,
-			embedding:   &Embedding{},
-			pre_layer:   Layer{},
-			layer:       Layer{},
-			post_layer:  Layer{},
-			measurement: nil,
+			measurement: Measurement{},
 			num_layers:  1,
 			expectErr:   true,
 		},

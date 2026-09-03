@@ -30,11 +30,11 @@ type VQCBuilderInput struct {
 type VQCBuilder struct {
 	numQubits   uint
 	numLayers   uint
-	embedding   *Embedding
+	embedding   Embedding
 	preLayer    Layer
 	layer       Layer
 	postLayer   Layer
-	measurement *Measurement
+	measurement Measurement
 }
 
 func NewVQCBuilder(input VQCBuilderInput) (*VQCBuilder, error) {
@@ -59,7 +59,7 @@ func NewVQCBuilder(input VQCBuilderInput) (*VQCBuilder, error) {
 }
 
 // Delegates validation to Embedding constructors (Secure by Design)
-func buildEmbedding(input EmbeddingBuilderInput, numQubits int) (*Embedding, error) {
+func buildEmbedding(input EmbeddingBuilderInput, numQubits int) (Embedding, error) {
 	switch input.Type {
 	case "angle":
 		qubits, err := buildQubits(input.Qubits, numQubits)
@@ -91,10 +91,10 @@ func buildQubits(qubitIndices []int, numQubits int) ([]Qubit, error) {
 	return qubits, nil
 }
 
-func buildMeasurement(input MeasurementBuilderInput, numQubits int) (*Measurement, error) {
+func buildMeasurement(input MeasurementBuilderInput, numQubits int) (Measurement, error) {
 	qubits, err := buildQubits(input.Qubits, numQubits)
 	if err != nil {
-		return nil, err
+		return Measurement{}, err
 	}
 	measurementType := MeasurementType(input.Type)
 	rotation := MeasurementRotation(input.Rotation)
@@ -112,15 +112,15 @@ func (b *VQCBuilder) WithPreLayer(gates []GateBuilderInput) (*VQCBuilder, error)
 }
 
 func buildLayer(gates []GateBuilderInput, numQubits uint) (Layer, error) {
-	layer := NewLayer()
+	layer := make([]QuantumGate, 0, len(gates))
 	for _, gateInput := range gates {
 		gate, err := buildGate(gateInput, numQubits)
 		if err != nil {
 			return Layer{}, err
 		}
-		layer.AddGate(*gate)
+		layer = append(layer, *gate)
 	}
-	return *layer, nil
+	return *NewLayer(layer), nil
 }
 
 func buildGate(gateInput GateBuilderInput, numQubits uint) (*QuantumGate, error) {

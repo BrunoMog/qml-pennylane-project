@@ -76,14 +76,6 @@ func (e *InvalidGetPadWithError) Error() string {
 	return "GetPadWith can only be called on AmplitudeEmbedding"
 }
 
-type InvalidIndexError struct {
-	index LayerIndex
-}
-
-func (e *InvalidIndexError) Error() string {
-	return fmt.Sprintf("Invalid index: %d", e.index)
-}
-
 type InvalidMeasurementError struct {
 	measurement_type MeasurementType
 }
@@ -106,18 +98,6 @@ type ZeroQubitVQCError struct {
 
 func (e *ZeroQubitVQCError) Error() string {
 	return fmt.Sprintf("VQC must have at least one qubit, got: %d", e.num_qubits)
-}
-
-type NilEmbeddingError struct{}
-
-func (e *NilEmbeddingError) Error() string {
-	return "Embedding cannot be nil"
-}
-
-type NilMeasurementError struct{}
-
-func (e *NilMeasurementError) Error() string {
-	return "Measurement cannot be nil"
 }
 
 type InvalidMeasurementRotationError struct {

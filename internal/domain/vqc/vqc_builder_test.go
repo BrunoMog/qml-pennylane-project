@@ -4,7 +4,6 @@ import (
 	"testing"
 )
 
-// Helper function to create valid EmbeddingBuilderInput
 func validAngleEmbeddingInput() EmbeddingBuilderInput {
 	return EmbeddingBuilderInput{
 		Type:      "angle",
@@ -15,7 +14,6 @@ func validAngleEmbeddingInput() EmbeddingBuilderInput {
 	}
 }
 
-// Helper function to create valid AmplitudeEmbeddingBuilderInput
 func validAmplitudeEmbeddingInput() EmbeddingBuilderInput {
 	return EmbeddingBuilderInput{
 		Type:      "amplitude",
@@ -26,7 +24,6 @@ func validAmplitudeEmbeddingInput() EmbeddingBuilderInput {
 	}
 }
 
-// Helper function to create valid MeasurementBuilderInput
 func validMeasurementInput() MeasurementBuilderInput {
 	return MeasurementBuilderInput{
 		Type:     "expectation",
@@ -35,7 +32,6 @@ func validMeasurementInput() MeasurementBuilderInput {
 	}
 }
 
-// Helper function to create valid VQCBuilderInput with angle embedding
 func validVQCBuilderInputAngle() VQCBuilderInput {
 	return VQCBuilderInput{
 		NumQubits:   3,
@@ -45,7 +41,6 @@ func validVQCBuilderInputAngle() VQCBuilderInput {
 	}
 }
 
-// Helper function to create valid VQCBuilderInput with amplitude embedding
 func validVQCBuilderInputAmplitude() VQCBuilderInput {
 	return VQCBuilderInput{
 		NumQubits:   2,
@@ -55,7 +50,6 @@ func validVQCBuilderInputAmplitude() VQCBuilderInput {
 	}
 }
 
-// Helper function to create valid GateBuilderInput
 func validGateInput(qubitIndex int) GateBuilderInput {
 	return GateBuilderInput{
 		GateType:      "rx",
@@ -64,7 +58,6 @@ func validGateInput(qubitIndex int) GateBuilderInput {
 	}
 }
 
-// Helper function to create valid GateBuilderInput with control qubit
 func validControlledGateInput(targetQubit, controlQubit int) GateBuilderInput {
 	return GateBuilderInput{
 		GateType:      "cnot",
@@ -109,7 +102,7 @@ func TestNewVQCBuilder(t *testing.T) {
 				NumLayers: 1,
 				Embedding: EmbeddingBuilderInput{
 					Type:     "angle",
-					Qubits:   []int{0, 5}, // Out of range
+					Qubits:   []int{0, 5},
 					Rotation: "x",
 				},
 				Measurement: validMeasurementInput(),
@@ -123,7 +116,7 @@ func TestNewVQCBuilder(t *testing.T) {
 				NumLayers: 1,
 				Embedding: EmbeddingBuilderInput{
 					Type:     "angle",
-					Qubits:   []int{0, 1, 1}, // Duplicate
+					Qubits:   []int{0, 1, 1},
 					Rotation: "x",
 				},
 				Measurement: validMeasurementInput(),
@@ -138,7 +131,7 @@ func TestNewVQCBuilder(t *testing.T) {
 				Embedding: validAngleEmbeddingInput(),
 				Measurement: MeasurementBuilderInput{
 					Type:   "expectation",
-					Qubits: []int{5}, // Out of range
+					Qubits: []int{5},
 				},
 			},
 			expectErr: true,
@@ -188,7 +181,7 @@ func TestVQCBuilderWithPreLayer(t *testing.T) {
 		{
 			name: "Invalid gate qubit index",
 			gates: []GateBuilderInput{
-				{GateType: "rx", Qubit: 10}, // Out of range
+				{GateType: "rx", Qubit: 10},
 			},
 			expectErr: true,
 		},
@@ -244,7 +237,7 @@ func TestVQCBuilderWithLayer(t *testing.T) {
 		{
 			name: "Invalid gate qubit index",
 			gates: []GateBuilderInput{
-				{GateType: "ry", Qubit: 5}, // Out of range
+				{GateType: "ry", Qubit: 5},
 			},
 			expectErr: true,
 		},
@@ -293,7 +286,7 @@ func TestVQCBuilderWithPostLayer(t *testing.T) {
 		{
 			name: "Invalid gate qubit index",
 			gates: []GateBuilderInput{
-				{GateType: "rz", Qubit: 8}, // Out of range
+				{GateType: "rz", Qubit: 8},
 			},
 			expectErr: true,
 		},
@@ -408,7 +401,6 @@ func TestVQCBuilderBuild(t *testing.T) {
 }
 
 func TestVQCBuilderFluentInterface(t *testing.T) {
-	// Test method chaining (fluent interface)
 	builder, err := NewVQCBuilder(validVQCBuilderInputAngle())
 	if err != nil {
 		t.Fatalf("NewVQCBuilder() failed: %v", err)
@@ -420,21 +412,18 @@ func TestVQCBuilderFluentInterface(t *testing.T) {
 		validGateInput(2),
 	}
 
-	// Chain WithPreLayer
 	result, err := builder.WithPreLayer(gates)
 	if err != nil {
 		t.Errorf("WithPreLayer chaining failed: %v", err)
 		return
 	}
 
-	// Chain WithLayer
 	result, err = result.WithLayer(gates)
 	if err != nil {
 		t.Errorf("WithLayer chaining failed: %v", err)
 		return
 	}
 
-	// Chain WithPostLayer
 	result, err = result.WithPostLayer(gates)
 	if err != nil {
 		t.Errorf("WithPostLayer chaining failed: %v", err)
@@ -445,7 +434,6 @@ func TestVQCBuilderFluentInterface(t *testing.T) {
 		t.Error("Fluent interface returned nil")
 	}
 
-	// Build should work after chaining
 	vqc, err := result.Build()
 	if err != nil {
 		t.Errorf("Build after chaining failed: %v", err)
@@ -520,7 +508,6 @@ func TestVQCBuilderErrorPropagation(t *testing.T) {
 }
 
 func TestVQCBuilderMultipleCallSequences(t *testing.T) {
-	// Test that builder can be called multiple times with different layer configurations
 	testCases := []struct {
 		name           string
 		preLayerCalls  int
@@ -548,7 +535,6 @@ func TestVQCBuilderMultipleCallSequences(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			builder, _ := NewVQCBuilder(validVQCBuilderInputAngle())
 
-			// Call WithPreLayer multiple times
 			for i := 0; i < tc.preLayerCalls; i++ {
 				_, err := builder.WithPreLayer([]GateBuilderInput{validGateInput(0)})
 				if (err != nil) != tc.expectErr {
@@ -556,7 +542,6 @@ func TestVQCBuilderMultipleCallSequences(t *testing.T) {
 				}
 			}
 
-			// Call WithLayer multiple times
 			for i := 0; i < tc.mainLayerCalls; i++ {
 				_, err := builder.WithLayer([]GateBuilderInput{validGateInput(1)})
 				if (err != nil) != tc.expectErr {
@@ -564,7 +549,6 @@ func TestVQCBuilderMultipleCallSequences(t *testing.T) {
 				}
 			}
 
-			// Call WithPostLayer multiple times
 			for i := 0; i < tc.postLayerCalls; i++ {
 				_, err := builder.WithPostLayer([]GateBuilderInput{validGateInput(2)})
 				if (err != nil) != tc.expectErr {
@@ -572,7 +556,6 @@ func TestVQCBuilderMultipleCallSequences(t *testing.T) {
 				}
 			}
 
-			// Build should still succeed
 			_, err := builder.Build()
 			if (err != nil) != tc.expectErr {
 				t.Errorf("Build failed: %v", err)
@@ -629,7 +612,7 @@ func TestVQCBuilderEdgeCases(t *testing.T) {
 				Measurement: MeasurementBuilderInput{
 					Type:     "expectation",
 					Rotation: "x",
-					Qubits:   []int{0}, // Use first qubit which is always valid
+					Qubits:   []int{0},
 				},
 			}
 
