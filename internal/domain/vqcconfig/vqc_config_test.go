@@ -1,4 +1,4 @@
-package vqc_config
+package vqcconfig
 
 import (
 	"pennylane_project_backend/internal/domain/vqc"
@@ -33,9 +33,9 @@ func TestNewVQCConfig(t *testing.T) {
 			expectErr:   true,
 		},
 		{
-			name:        "name toooooo long",
+			name:        "name too long",
 			userID:      uuid.New(),
-			nameInput:   "This name is way too long for the validation rules.",
+			nameInput:   "This name is way too long for the validation rules. It exceeds the maximum allowed length of 100 characters.",
 			description: "This is a test VQC configuration.",
 			vqc:         &vqc.VQC{},
 			expectErr:   true,
@@ -44,7 +44,7 @@ func TestNewVQCConfig(t *testing.T) {
 			name:        "description too long",
 			userID:      uuid.New(),
 			nameInput:   "Test Config",
-			description: "This description is way too long for the validation rules. It exceeds the maximum allowed length of 100 characters.",
+			description: "050-----------------------------------------------100-----------------------------------------------150-----------------------------------------------200-----------------------------------------------250-----------------------------------------------300-----------------------------------------------350-----------------------------------------------400-----------------------------------------------450-----------------------------------------------500-----------------------------------------------X",
 			vqc:         &vqc.VQC{},
 			expectErr:   true,
 		},

@@ -1,4 +1,4 @@
-package vqc_config
+package vqcconfig
 
 import "fmt"
 

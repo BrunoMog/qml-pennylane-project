@@ -1,10 +1,15 @@
-package vqc_config
+package vqcconfig
 
 import (
 	"pennylane_project_backend/internal/domain/vqc"
 	"time"
 
 	"github.com/google/uuid"
+)
+
+const (
+	MaxNameLength        = 100
+	MaxDescriptionLength = 500
 )
 
 type VQCConfig struct {
@@ -46,14 +51,14 @@ func validateName(name string) error {
 	if name == "" {
 		return &InvalidNameError{name}
 	}
-	if len(name) > 20 {
+	if len(name) > MaxNameLength {
 		return &InvalidNameError{name}
 	}
 	return nil
 }
 
 func validateDescription(description string) error {
-	if len(description) > 100 {
+	if len(description) > MaxDescriptionLength {
 		return &InvalidDescriptionError{description}
 	}
 	return nil
