@@ -1,27 +1,27 @@
 package testkit
 
 import (
-	"pennylane_project_backend/internal/domain/vqc_config"
+	"pennylane_project_backend/internal/domain/vqcconfig"
 
 	"github.com/google/uuid"
 )
 
 type MockVQCConfigRepository struct {
-	vqcConfigs map[uuid.UUID]*vqc_config.VQCConfig
+	vqcConfigs map[uuid.UUID]*vqcconfig.VQCConfig
 }
 
 func NewMockVQCConfigRepository() *MockVQCConfigRepository {
 	return &MockVQCConfigRepository{
-		vqcConfigs: make(map[uuid.UUID]*vqc_config.VQCConfig),
+		vqcConfigs: make(map[uuid.UUID]*vqcconfig.VQCConfig),
 	}
 }
 
-func (r *MockVQCConfigRepository) Save(vqcConfig *vqc_config.VQCConfig) error {
+func (r *MockVQCConfigRepository) Save(vqcConfig *vqcconfig.VQCConfig) error {
 	r.vqcConfigs[vqcConfig.GetVQCConfigID()] = vqcConfig
 	return nil
 }
 
-func (r *MockVQCConfigRepository) FindByID(id uuid.UUID) (*vqc_config.VQCConfig, error) {
+func (r *MockVQCConfigRepository) FindByID(id uuid.UUID) (*vqcconfig.VQCConfig, error) {
 	if v, ok := r.vqcConfigs[id]; ok {
 		copiedVQCConfig := *v
 		return &copiedVQCConfig, nil
@@ -29,7 +29,7 @@ func (r *MockVQCConfigRepository) FindByID(id uuid.UUID) (*vqc_config.VQCConfig,
 	return nil, &ErrVQCConfigNotFound{}
 }
 
-func (r *MockVQCConfigRepository) FindByName(name string) (*vqc_config.VQCConfig, error) {
+func (r *MockVQCConfigRepository) FindByName(name string) (*vqcconfig.VQCConfig, error) {
 	for _, v := range r.vqcConfigs {
 		if v.GetName() == name {
 			copiedVQCConfig := *v
@@ -53,8 +53,8 @@ func (r *MockVQCConfigRepository) ExistsByName(ownerID uuid.UUID, name string) (
 	return false, nil
 }
 
-func (r *MockVQCConfigRepository) FindAllByOwnerID(ownerID uuid.UUID) ([]*vqc_config.VQCConfig, error) {
-	var result []*vqc_config.VQCConfig
+func (r *MockVQCConfigRepository) FindAllByOwnerID(ownerID uuid.UUID) ([]*vqcconfig.VQCConfig, error) {
+	var result []*vqcconfig.VQCConfig
 	for _, v := range r.vqcConfigs {
 		if v.GetOwnerID() == ownerID {
 			copiedVQCConfig := *v

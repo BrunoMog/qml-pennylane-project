@@ -1,8 +1,8 @@
-package vqc_config_usecase
+package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/vqc"
-	"pennylane_project_backend/internal/domain/vqc_config"
+	"pennylane_project_backend/internal/domain/vqcconfig"
 	"time"
 
 	"github.com/google/uuid"
@@ -31,7 +31,7 @@ func (s *VQCConfigService) GetVQCConfig(input GetVQCConfigInput) (*GetVQCConfigO
 		return nil, &UserNotFoundError{}
 	}
 
-	var config *vqc_config.VQCConfig
+	var config *vqcconfig.VQCConfig
 	if input.VQCConfigID != nil {
 		config, err = s.vqcConfigRepository.FindByID(*input.VQCConfigID)
 		if err != nil {
@@ -60,7 +60,7 @@ func (s *VQCConfigService) GetVQCConfig(input GetVQCConfigInput) (*GetVQCConfigO
 	return output, nil
 }
 
-func canGetVQCConfig(callerID uuid.UUID, config *vqc_config.VQCConfig) bool {
+func canGetVQCConfig(callerID uuid.UUID, config *vqcconfig.VQCConfig) bool {
 	return callerID == config.GetOwnerID()
 }
 

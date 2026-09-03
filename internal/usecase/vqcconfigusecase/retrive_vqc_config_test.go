@@ -1,4 +1,4 @@
-package vqc_config_usecase
+package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/user"

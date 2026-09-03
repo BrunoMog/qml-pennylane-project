@@ -1,11 +1,13 @@
-package user_controller
+package usercontroller
 
 import (
-	"pennylane_project_backend/internal/usecase/user_usecase"
+	"pennylane_project_backend/internal/usecase/userusecase"
 )
 
 type UserUseCase interface {
-	CreateUser(name, email string) (*user_usecase.UserOutput, error)
-	ChangeUserRole(input user_usecase.ChangeUserRoleInput) error
-	UpdateUser(input user_usecase.UpdateUserInput) error
+	CreateUser(name, email string) (*userusecase.UserOutput, error)
+	ChangeUserRole(input userusecase.ChangeUserRoleInput) error
+	ChangeOwner(input userusecase.ChangeOwnerInput) error
+	UpdateUser(input userusecase.UpdateUserInput) error
+	DeleteUser(input userusecase.DeleteUserInput) error
 }

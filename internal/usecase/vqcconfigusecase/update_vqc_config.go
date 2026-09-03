@@ -1,8 +1,8 @@
-package vqc_config_usecase
+package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/vqc"
-	"pennylane_project_backend/internal/domain/vqc_config"
+	"pennylane_project_backend/internal/domain/vqcconfig"
 
 	"github.com/google/uuid"
 )
@@ -60,6 +60,6 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 	return nil
 }
 
-func canUpdateVQCConfig(callerID uuid.UUID, vqcConfig *vqc_config.VQCConfig) bool {
+func canUpdateVQCConfig(callerID uuid.UUID, vqcConfig *vqcconfig.VQCConfig) bool {
 	return callerID == vqcConfig.GetOwnerID()
 }

@@ -1,7 +1,7 @@
-package vqc_config_usecase
+package vqcconfigusecase
 
 import (
-	"pennylane_project_backend/internal/domain/vqc_config"
+	"pennylane_project_backend/internal/domain/vqcconfig"
 
 	"github.com/google/uuid"
 )
@@ -37,6 +37,6 @@ func (s *VQCConfigService) DeleteVQCConfig(input DeleteVQCConfigInput) error {
 	return nil
 }
 
-func canDeleteVQCConfig(callerID uuid.UUID, vqcConfig *vqc_config.VQCConfig) bool {
+func canDeleteVQCConfig(callerID uuid.UUID, vqcConfig *vqcconfig.VQCConfig) bool {
 	return callerID == vqcConfig.GetOwnerID()
 }

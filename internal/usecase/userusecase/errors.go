@@ -1,4 +1,4 @@
-package user_usecase
+package userusecase
 
 import "fmt"
 

@@ -1,8 +1,8 @@
-package vqc_config_usecase
+package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/vqc"
-	"pennylane_project_backend/internal/domain/vqc_config"
+	"pennylane_project_backend/internal/domain/vqcconfig"
 	"time"
 
 	"github.com/google/uuid"
@@ -44,7 +44,7 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 		return nil, &VQCConfigNameAlreadyExistsError{Name: *input.Name}
 	}
 
-	newConfig, err := vqc_config.NewVQCConfig(input.CallerID, *input.Name, *input.Description, input.VQC)
+	newConfig, err := vqcconfig.NewVQCConfig(input.CallerID, *input.Name, *input.Description, input.VQC)
 	if err != nil {
 		return nil, err
 	}

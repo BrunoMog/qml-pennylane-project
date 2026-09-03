@@ -1,4 +1,4 @@
-package vqc_config_usecase
+package vqcconfigusecase
 
 import "fmt"
 

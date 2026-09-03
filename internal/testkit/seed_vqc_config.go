@@ -2,7 +2,7 @@ package testkit
 
 import (
 	"pennylane_project_backend/internal/domain/vqc"
-	"pennylane_project_backend/internal/domain/vqc_config"
+	"pennylane_project_backend/internal/domain/vqcconfig"
 
 	"github.com/google/uuid"
 )
@@ -16,11 +16,11 @@ type VQCConfigSeed struct {
 }
 
 type VQCConfigResult struct {
-	ByRef map[uint8]*vqc_config.VQCConfig
+	ByRef map[uint8]*vqcconfig.VQCConfig
 }
 
 func SeedVQCConfigs(vqcConfigRepository *MockVQCConfigRepository, userSeedResult UserSeedResult, seeds []VQCConfigSeed) (VQCConfigResult, error) {
-	res := VQCConfigResult{ByRef: map[uint8]*vqc_config.VQCConfig{}}
+	res := VQCConfigResult{ByRef: map[uint8]*vqcconfig.VQCConfig{}}
 	for _, s := range seeds {
 		var callerID uuid.UUID
 		caller, ok := userSeedResult.ByRef[s.CallerRef]
@@ -29,7 +29,7 @@ func SeedVQCConfigs(vqcConfigRepository *MockVQCConfigRepository, userSeedResult
 		} else {
 			callerID = caller.GetID()
 		}
-		newConfig, err := vqc_config.NewVQCConfig(callerID, s.Name, s.Description, s.VQC)
+		newConfig, err := vqcconfig.NewVQCConfig(callerID, s.Name, s.Description, s.VQC)
 		if err != nil {
 			return VQCConfigResult{}, err
 		}

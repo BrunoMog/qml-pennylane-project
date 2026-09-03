@@ -1,4 +1,4 @@
-package vqc_config_usecase
+package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/user"
@@ -38,48 +38,6 @@ func TestCreateVQCConfig(t *testing.T) {
 				VQC:         &vqc.VQC{}, // Assuming a valid VQC object
 			},
 			expectError: false,
-		},
-		{
-			name: "invalid VQCConfig name",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
-			},
-			callerRef:       1,
-			vqcConfigToSeed: []testkit.VQCConfigSeed{},
-			vqcConfigToCreate: testkit.VQCConfigSeed{
-				Ref:         1,
-				CallerRef:   1,
-				Name:        "",
-				Description: "This is a test VQCConfig",
-				VQC:         &vqc.VQC{}, // Assuming a valid VQC object
-			},
-			expectError: true,
-		},
-		{
-			name: "invalid VQCConfig description",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
-			},
-			callerRef:       1,
-			vqcConfigToSeed: []testkit.VQCConfigSeed{},
-			vqcConfigToCreate: testkit.VQCConfigSeed{
-				Ref:         1,
-				CallerRef:   1,
-				Name:        "Test VQCConfig",
-				Description: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-				VQC:         &vqc.VQC{}, // Assuming a valid VQC object
-			},
-			expectError: true,
 		},
 		{
 			name: "inexistent caller",

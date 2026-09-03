@@ -1,4 +1,4 @@
-package user_usecase
+package userusecase
 
 import (
 	"pennylane_project_backend/internal/domain/user"
