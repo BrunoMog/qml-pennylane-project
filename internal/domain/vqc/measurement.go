@@ -25,13 +25,13 @@ type Measurement struct {
 	measurementType     MeasurementType
 }
 
-func NewMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) (*Measurement, error) {
+func NewMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) (Measurement, error) {
 	err := validateMeasurement(qubits, measurementType, measurementRotation)
 	if err != nil {
-		return nil, err
+		return Measurement{}, err
 	}
 
-	return &Measurement{
+	return Measurement{
 		qubits:              qubits,
 		measurementRotation: measurementRotation,
 		measurementType:     measurementType,
