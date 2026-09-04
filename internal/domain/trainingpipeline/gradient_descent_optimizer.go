@@ -5,7 +5,7 @@ type GradientDescentOptimizer struct {
 }
 
 func NewGradientDescentOptimizer(learningRate float64) (GradientDescentOptimizer, error) {
-	if learningRate <= 0 {
+	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
 		return GradientDescentOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
 
@@ -18,7 +18,7 @@ func (o GradientDescentOptimizer) Name() OptimizerName {
 	return OptimizerNameGradientDescent
 }
 
-func (o GradientDescentOptimizer) Equals(other Optimizer) bool {
+func (o GradientDescentOptimizer) Equal(other Optimizer) bool {
 	if otherGD, ok := other.(GradientDescentOptimizer); ok {
 		return o.learningRate == otherGD.LearningRate()
 	}

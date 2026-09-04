@@ -7,13 +7,13 @@ type RMSPropOptimizer struct {
 }
 
 func NewRMSPropOptimizer(learningRate, decay, epsilon float64) (RMSPropOptimizer, error) {
-	if learningRate <= 0 {
+	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
 		return RMSPropOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
-	if decay < 0 || decay >= 1 {
+	if isFiniteFloat64(decay) && (decay < 0 || decay >= 1) {
 		return RMSPropOptimizer{}, &InvalidDecayError{decay}
 	}
-	if epsilon <= 0 {
+	if isFiniteFloat64(epsilon) && (epsilon <= 0) {
 		return RMSPropOptimizer{}, &InvalidEpsilonError{epsilon}
 	}
 
@@ -28,7 +28,7 @@ func (o RMSPropOptimizer) Name() OptimizerName {
 	return OptimizerNameRMSProp
 }
 
-func (o RMSPropOptimizer) Equals(other Optimizer) bool {
+func (o RMSPropOptimizer) Equal(other Optimizer) bool {
 	if otherRMSProp, ok := other.(RMSPropOptimizer); ok {
 		return o.learningRate == otherRMSProp.LearningRate() &&
 			o.decay == otherRMSProp.Decay() &&

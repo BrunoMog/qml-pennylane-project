@@ -1,6 +1,9 @@
 package trainingpipeline
 
-import "slices"
+import (
+	"math"
+	"slices"
+)
 
 const EPSILON = 1e-9
 
@@ -9,9 +12,9 @@ type TrainingPipeline struct {
 	learningTask      LearningTask
 	costFunction      CostFunction
 	learningType      LearningType
-	evaluationMetrics []EvaluationMetric
-	earlyStopping     EarlyStoppingConfig
-	crossValidation   CrossValidationConfig
+	evaluationMetrics []EvalMetric
+	earlyStopping     EarlyStopping
+	crossValidation   CrossValidation
 	trainRatio        float64
 	validationRatio   float64
 	testRatio         float64
@@ -25,9 +28,9 @@ type TrainingPipelineInput struct {
 	LearningTask      LearningTask
 	CostFunction      CostFunction
 	LearningType      LearningType
-	EvaluationMetrics []EvaluationMetric
-	EarlyStopping     EarlyStoppingConfig
-	CrossValidation   CrossValidationConfig
+	EvaluationMetrics []EvalMetric
+	EarlyStopping     EarlyStopping
+	CrossValidation   CrossValidation
 	TrainRatio        float64
 	ValidationRatio   float64
 	TestRatio         float64
@@ -46,7 +49,7 @@ func NewTrainingPipeline(input TrainingPipelineInput) (*TrainingPipeline, error)
 		learningType:      input.LearningType,
 		learningTask:      input.LearningTask,
 		costFunction:      input.CostFunction,
-		evaluationMetrics: input.EvaluationMetrics,
+		evaluationMetrics: slices.Clone(input.EvaluationMetrics),
 		trainRatio:        input.TrainRatio,
 		validationRatio:   input.ValidationRatio,
 		testRatio:         input.TestRatio,
@@ -60,34 +63,19 @@ func NewTrainingPipeline(input TrainingPipelineInput) (*TrainingPipeline, error)
 }
 
 func validateInput(input TrainingPipelineInput) error {
-	if !input.LearningType.IsValid() {
-		return &InvalidLearningTypeError{learningType: input.LearningType}
+	err := validateLearningSettings(input.LearningType, input.LearningTask)
+	if err != nil {
+		return err
 	}
 
-	if !input.LearningTask.IsValid() {
-		return &InvalidLearningTaskError{learningTask: input.LearningTask}
+	err = validateFunctions(input.CostFunction, input.EvaluationMetrics)
+	if err != nil {
+		return err
 	}
 
-	if !input.CostFunction.IsValid() {
-		return &InvalidCostFunctionError{costFunction: input.CostFunction}
-	}
-
-	for _, metric := range input.EvaluationMetrics {
-		if !metric.IsValid() {
-			return &InvalidEvaluationMetricError{evaluationMetric: metric}
-		}
-	}
-
-	if len(input.EvaluationMetrics) == 0 {
-		return &InvalidEvaluationMetricError{evaluationMetric: ""}
-	}
-
-	if !input.EarlyStopping.IsValid() {
-		return &InvalidEarlyStoppingConfigError{earlyStoppingConfig: input.EarlyStopping}
-	}
-
-	if !input.CrossValidation.IsValid() {
-		return &InvalidCrossValidationConfigError{crossValidationConfig: input.CrossValidation}
+	err = validateFunctionsCompatibility(input.LearningTask, input.CostFunction, input.EvaluationMetrics)
+	if err != nil {
+		return err
 	}
 
 	if input.RandomSeed < 0 {
@@ -102,28 +90,80 @@ func validateInput(input TrainingPipelineInput) error {
 		return &InvalidBatchSizeError{batchSize: input.BatchSize}
 	}
 
-	if input.TrainRatio < 0 || input.TrainRatio > 1 {
-		return &InvalidTrainRatioError{trainRatio: input.TrainRatio}
-	}
-
-	if input.ValidationRatio < 0 || input.ValidationRatio > 1 {
-		return &InvalidValidationRatioError{validationRatio: input.ValidationRatio}
-	}
-
-	if input.TestRatio < 0 || input.TestRatio > 1 {
-		return &InvalidTestRatioError{testRatio: input.TestRatio}
-	}
-
-	if input.TrainRatio+input.ValidationRatio+input.TestRatio < 1-EPSILON || input.TrainRatio+input.ValidationRatio+input.TestRatio > 1+EPSILON {
-		return &InvalidDataSplitError{
-			trainRatio:      input.TrainRatio,
-			validationRatio: input.ValidationRatio,
-			testRatio:       input.TestRatio,
-		}
+	err = validateDataSplit(input.TrainRatio, input.ValidationRatio, input.TestRatio)
+	if err != nil {
+		return err
 	}
 
 	if input.Optimizer == nil {
 		return &InvalidOptimizerError{optimizer: nil}
+	}
+
+	return nil
+}
+
+func validateLearningSettings(learningType LearningType, learningTask LearningTask) error {
+	if !learningType.IsValid() {
+		return &InvalidLearningTypeError{learningType: learningType}
+	}
+	if !learningTask.IsValid() {
+		return &InvalidLearningTaskError{learningTask: learningTask}
+	}
+
+	return nil
+}
+
+func validateFunctions(costFunction CostFunction, evaluationMetrics []EvalMetric) error {
+	if !costFunction.IsValid() {
+		return &InvalidCostFunctionError{costFunction: costFunction}
+	}
+
+	for _, metric := range evaluationMetrics {
+		if !metric.IsValid() {
+			return &InvalidEvalMetricError{evaluationMetric: metric}
+		}
+	}
+
+	if len(evaluationMetrics) == 0 {
+		return &InvalidEvalMetricError{evaluationMetric: ""}
+	}
+
+	return nil
+}
+
+func validateFunctionsCompatibility(learningTask LearningTask, costFunction CostFunction, evaluationMetrics []EvalMetric) error {
+	if !learningTask.IsCostFunctionCompatible(costFunction) {
+		return &IncompatibleCostFunctionError{Task: learningTask, CostFunction: costFunction}
+	}
+	for _, metric := range evaluationMetrics {
+		if !learningTask.IsEvalMetricCompatible(metric) {
+			return &IncompatibleMetricError{Task: learningTask, Metric: metric}
+		}
+	}
+
+	return nil
+}
+
+func validateDataSplit(trainRatio, validationRatio, testRatio float64) error {
+	if isFiniteFloat64(trainRatio) && (trainRatio < 0 || trainRatio > 1) {
+		return &InvalidTrainRatioError{trainRatio: trainRatio}
+	}
+
+	if isFiniteFloat64(validationRatio) && (validationRatio < 0 || validationRatio > 1) {
+		return &InvalidValidationRatioError{validationRatio: validationRatio}
+	}
+
+	if isFiniteFloat64(testRatio) && (testRatio < 0 || testRatio > 1) {
+		return &InvalidTestRatioError{testRatio: testRatio}
+	}
+
+	total := trainRatio + validationRatio + testRatio
+	if math.Abs(total-1.0) > EPSILON {
+		return &InvalidDataSplitError{
+			trainRatio:      trainRatio,
+			validationRatio: validationRatio,
+			testRatio:       testRatio,
+		}
 	}
 
 	return nil
@@ -145,15 +185,15 @@ func (tp TrainingPipeline) LearningType() LearningType {
 	return tp.learningType
 }
 
-func (tp TrainingPipeline) EvaluationMetrics() []EvaluationMetric {
+func (tp TrainingPipeline) EvaluationMetrics() []EvalMetric {
 	return slices.Clone(tp.evaluationMetrics)
 }
 
-func (tp TrainingPipeline) EarlyStopping() EarlyStoppingConfig {
+func (tp TrainingPipeline) EarlyStopping() EarlyStopping {
 	return tp.earlyStopping
 }
 
-func (tp TrainingPipeline) CrossValidation() CrossValidationConfig {
+func (tp TrainingPipeline) CrossValidation() CrossValidation {
 	return tp.crossValidation
 }
 

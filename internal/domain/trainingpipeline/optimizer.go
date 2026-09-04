@@ -2,7 +2,7 @@ package trainingpipeline
 
 type Optimizer interface {
 	Name() OptimizerName
-	Equals(other Optimizer) bool
+	Equal(other Optimizer) bool
 
 	isOptimizer()
 }

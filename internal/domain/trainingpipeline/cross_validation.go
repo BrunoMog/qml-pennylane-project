@@ -1,11 +1,28 @@
 package trainingpipeline
 
-type CrossValidationConfig struct {
+type CrossValidation struct {
+	enabled bool
+	folds   int
+}
+
+type CrossValidationInput struct {
 	Enabled bool
 	Folds   int
 }
 
-func (cvc CrossValidationConfig) IsValid() bool {
+func NewCrossValidationConfig(input CrossValidationInput) (CrossValidation, error) {
+	if !input.IsValid() {
+		return CrossValidation{}, &ErrInvalidCrossValidationConfig{}
+	}
+
+	config := CrossValidation{
+		enabled: input.Enabled,
+		folds:   input.Folds,
+	}
+	return config, nil
+}
+
+func (cvc CrossValidationInput) IsValid() bool {
 	if !cvc.Enabled {
 		return true
 	}
@@ -17,6 +34,10 @@ func (cvc CrossValidationConfig) IsValid() bool {
 	return true
 }
 
-func (cvc CrossValidationConfig) EnabledCrossValidation() bool {
-	return cvc.Enabled
+func (cvc CrossValidation) Enabled() bool {
+	return cvc.enabled
+}
+
+func (cvc CrossValidation) Folds() int {
+	return cvc.folds
 }

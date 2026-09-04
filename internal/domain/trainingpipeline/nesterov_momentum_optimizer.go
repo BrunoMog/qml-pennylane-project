@@ -6,10 +6,10 @@ type NesterovMomentumOptimizer struct {
 }
 
 func NewNesterovMomentumOptimizer(learningRate, momentum float64) (NesterovMomentumOptimizer, error) {
-	if learningRate <= 0 {
+	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
 		return NesterovMomentumOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
-	if momentum < 0 || momentum >= 1 {
+	if isFiniteFloat64(momentum) && (momentum < 0 || momentum >= 1) {
 		return NesterovMomentumOptimizer{}, &InvalidMomentumError{momentum}
 	}
 
@@ -23,7 +23,7 @@ func (o NesterovMomentumOptimizer) Name() OptimizerName {
 	return OptimizerNameNesterovMomentum
 }
 
-func (o NesterovMomentumOptimizer) Equals(other Optimizer) bool {
+func (o NesterovMomentumOptimizer) Equal(other Optimizer) bool {
 	if otherNesterov, ok := other.(NesterovMomentumOptimizer); ok {
 		return o.learningRate == otherNesterov.LearningRate() &&
 			o.momentum == otherNesterov.Momentum()

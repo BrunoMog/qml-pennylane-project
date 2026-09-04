@@ -3,31 +3,38 @@ package trainingpipeline
 type CostFunction string
 
 const (
-	MeanSquaredError   CostFunction = "mean_squared_error"
-	BinaryCrossEntropy CostFunction = "binary_cross_entropy"
+	CostFunctionMeanSquaredError   CostFunction = "mean_squared_error"
+	CostFunctionBinaryCrossEntropy CostFunction = "binary_cross_entropy"
+	CostFunctionMSE                CostFunction = "mse"
+	CostFunctionRMSE               CostFunction = "rmse"
+	CostFunctionMAE                CostFunction = "mae"
 )
 
 func (cf CostFunction) IsValid() bool {
 	switch cf {
-	case MeanSquaredError, BinaryCrossEntropy:
+	case CostFunctionMeanSquaredError, CostFunctionBinaryCrossEntropy,
+		CostFunctionMSE, CostFunctionRMSE, CostFunctionMAE:
 		return true
 	default:
 		return false
 	}
 }
 
-type EvaluationMetric string
+type EvalMetric string
 
 const (
-	Accuracy  EvaluationMetric = "accuracy"
-	F1Score   EvaluationMetric = "f1_score"
-	Precision EvaluationMetric = "precision"
-	Recall    EvaluationMetric = "recall"
+	EvalMetricAccuracy  EvalMetric = "accuracy"
+	EvalMetricF1Score   EvalMetric = "f1_score"
+	EvalMetricPrecision EvalMetric = "precision"
+	EvalMetricRecall    EvalMetric = "recall"
+	EvalMetricRMSE      EvalMetric = "rmse"
+	EvalMetricMAE       EvalMetric = "mae"
 )
 
-func (em EvaluationMetric) IsValid() bool {
+func (em EvalMetric) IsValid() bool {
 	switch em {
-	case Accuracy, F1Score, Precision, Recall:
+	case EvalMetricAccuracy, EvalMetricF1Score, EvalMetricPrecision,
+		EvalMetricRecall, EvalMetricRMSE, EvalMetricMAE:
 		return true
 	default:
 		return false

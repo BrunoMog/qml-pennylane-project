@@ -16,16 +16,16 @@ func validTrainingPipelineInput(t *testing.T) TrainingPipelineInput {
 	return TrainingPipelineInput{
 		Optimizer:         optimizer,
 		LearningTask:      BinaryClassification,
-		CostFunction:      BinaryCrossEntropy,
+		CostFunction:      CostFunctionBinaryCrossEntropy,
 		LearningType:      SupervisedLearning,
-		EvaluationMetrics: []EvaluationMetric{Accuracy, F1Score},
-		EarlyStopping: EarlyStoppingConfig{
+		EvaluationMetrics: []EvalMetric{EvalMetricAccuracy, EvalMetricF1Score},
+		EarlyStopping: EarlyStopping{
 			enabled:          true,
 			patience:         5,
 			minDelta:         0.01,
-			validationMetric: Accuracy,
+			validationMetric: EvalMetricAccuracy,
 		},
-		CrossValidation: CrossValidationConfig{Enabled: true, Folds: 5},
+		CrossValidation: CrossValidation{enabled: true, folds: 5},
 		TrainRatio:      0.7,
 		ValidationRatio: 0.2,
 		TestRatio:       0.1,
@@ -86,8 +86,8 @@ func TestNewTrainingPipeline(t *testing.T) {
 		}
 
 		metrics := pipeline.EvaluationMetrics()
-		metrics[0] = Recall
-		if pipeline.EvaluationMetrics()[0] != Accuracy {
+		metrics[0] = EvalMetricRecall
+		if pipeline.EvaluationMetrics()[0] != EvalMetricAccuracy {
 			t.Errorf("EvaluationMetrics() exposes the pipeline's internal slice")
 		}
 	})
@@ -125,11 +125,15 @@ func TestNewTrainingPipeline_InvalidInput(t *testing.T) {
 		{name: "learning task", mutate: func(input *TrainingPipelineInput) { input.LearningTask = LearningTask("invalid") }, expectedErr: &InvalidLearningTaskError{}},
 		{name: "cost function", mutate: func(input *TrainingPipelineInput) { input.CostFunction = CostFunction("invalid") }, expectedErr: &InvalidCostFunctionError{}},
 		{name: "evaluation metric", mutate: func(input *TrainingPipelineInput) {
-			input.EvaluationMetrics = []EvaluationMetric{EvaluationMetric("invalid")}
-		}, expectedErr: &InvalidEvaluationMetricError{}},
-		{name: "missing evaluation metrics", mutate: func(input *TrainingPipelineInput) { input.EvaluationMetrics = nil }, expectedErr: &InvalidEvaluationMetricError{}},
-		{name: "early stopping", mutate: func(input *TrainingPipelineInput) { input.EarlyStopping.patience = 0 }, expectedErr: &InvalidEarlyStoppingConfigError{}},
-		{name: "cross-validation", mutate: func(input *TrainingPipelineInput) { input.CrossValidation.Folds = 1 }, expectedErr: &InvalidCrossValidationConfigError{}},
+			input.EvaluationMetrics = []EvalMetric{EvalMetric("invalid")}
+		}, expectedErr: &InvalidEvalMetricError{}},
+		{name: "incompatible cost function", mutate: func(input *TrainingPipelineInput) { input.CostFunction = CostFunction("invalid") }, expectedErr: &IncompatibleCostFunctionError{}},
+		{name: "incompatible evaluation metric", mutate: func(input *TrainingPipelineInput) {
+			input.EvaluationMetrics = []EvalMetric{EvalMetric("invalid")}
+		}, expectedErr: &IncompatibleMetricError{}},
+		{name: "missing evaluation metrics", mutate: func(input *TrainingPipelineInput) { input.EvaluationMetrics = nil }, expectedErr: &InvalidEvalMetricError{}},
+		{name: "early stopping", mutate: func(input *TrainingPipelineInput) { input.EarlyStopping.patience = 0 }, expectedErr: &InvalidEarlyStoppingError{}},
+		{name: "cross-validation", mutate: func(input *TrainingPipelineInput) { input.CrossValidation.folds = 1 }, expectedErr: &InvalidCrossValidationConfigError{}},
 		{name: "negative seed", mutate: func(input *TrainingPipelineInput) { input.RandomSeed = -1 }, expectedErr: &InvalidSeedError{}},
 		{name: "zero max epochs", mutate: func(input *TrainingPipelineInput) { input.MaxEpochs = 0 }, expectedErr: &InvalidMaxEpochsError{}},
 		{name: "zero batch size", mutate: func(input *TrainingPipelineInput) { input.BatchSize = 0 }, expectedErr: &InvalidBatchSizeError{}},

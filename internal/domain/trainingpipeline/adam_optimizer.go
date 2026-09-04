@@ -8,16 +8,16 @@ type AdamOptimizer struct {
 }
 
 func NewAdamOptimizer(learningRate, beta1, beta2, epsilon float64) (AdamOptimizer, error) {
-	if learningRate <= 0 {
+	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
 		return AdamOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
-	if beta1 < 0 || beta1 >= 1 {
+	if isFiniteFloat64(beta1) && (beta1 < 0 || beta1 >= 1) {
 		return AdamOptimizer{}, &InvalidBeta1Error{beta1}
 	}
-	if beta2 < 0 || beta2 >= 1 {
+	if isFiniteFloat64(beta2) && (beta2 < 0 || beta2 >= 1) {
 		return AdamOptimizer{}, &InvalidBeta2Error{beta2}
 	}
-	if epsilon <= 0 {
+	if isFiniteFloat64(epsilon) && (epsilon <= 0) {
 		return AdamOptimizer{}, &InvalidEpsilonError{epsilon}
 	}
 
@@ -33,7 +33,7 @@ func (o AdamOptimizer) Name() OptimizerName {
 	return OptimizerNameAdam
 }
 
-func (o AdamOptimizer) Equals(other Optimizer) bool {
+func (o AdamOptimizer) Equal(other Optimizer) bool {
 	if otherAdam, ok := other.(AdamOptimizer); ok {
 		return o.learningRate == otherAdam.LearningRate() &&
 			o.beta1 == otherAdam.Beta1() &&

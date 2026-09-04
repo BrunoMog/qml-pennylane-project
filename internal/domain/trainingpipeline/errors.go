@@ -36,11 +36,11 @@ func (e *InvalidCostFunctionError) Error() string {
 	return fmt.Sprintf("Invalid cost function: %s. Valid options are: mean_squared_error, binary_cross_entropy.", e.costFunction)
 }
 
-type InvalidEvaluationMetricError struct {
-	evaluationMetric EvaluationMetric
+type InvalidEvalMetricError struct {
+	evaluationMetric EvalMetric
 }
 
-func (e *InvalidEvaluationMetricError) Error() string {
+func (e *InvalidEvalMetricError) Error() string {
 	return fmt.Sprintf("Invalid evaluation metric: %s. Valid options are: accuracy, f1_score, precision, recall.", e.evaluationMetric)
 }
 
@@ -94,20 +94,32 @@ func (e *InvalidBatchSizeError) Error() string {
 	return fmt.Sprintf("Invalid batch size: %d. Batch size must be a positive integer.", e.batchSize)
 }
 
-type InvalidEarlyStoppingConfigError struct {
-	earlyStoppingConfig EarlyStoppingConfig
+type InvalidEarlyStoppingError struct {
+	earlyStopping EarlyStopping
 }
 
-func (e *InvalidEarlyStoppingConfigError) Error() string {
-	return fmt.Sprintf("Invalid early stopping configuration: %+v. Please ensure the configuration is valid.", e.earlyStoppingConfig)
+func (e *InvalidEarlyStoppingError) Error() string {
+	return fmt.Sprintf("Invalid early stopping configuration: %+v. Please ensure the configuration is valid.", e.earlyStopping)
+}
+
+type ErrInvalidEarlyStopping struct{}
+
+func (e *ErrInvalidEarlyStopping) Error() string {
+	return "Invalid early stopping configuration. Please ensure the configuration is valid."
 }
 
 type InvalidCrossValidationConfigError struct {
-	crossValidationConfig CrossValidationConfig
+	crossValidationConfig CrossValidation
 }
 
 func (e *InvalidCrossValidationConfigError) Error() string {
 	return fmt.Sprintf("Invalid cross-validation configuration: %+v. Please ensure the configuration is valid.", e.crossValidationConfig)
+}
+
+type ErrInvalidCrossValidationConfig struct{}
+
+func (e *ErrInvalidCrossValidationConfig) Error() string {
+	return "Invalid cross-validation configuration. Please ensure the configuration is valid."
 }
 
 type InvalidLearningRateError struct {
@@ -164,4 +176,22 @@ type InvalidOptimizerError struct {
 
 func (e *InvalidOptimizerError) Error() string {
 	return fmt.Sprintf("Invalid optimizer: %+v. Please ensure the optimizer is valid.", e.optimizer)
+}
+
+type IncompatibleCostFunctionError struct {
+	Task         LearningTask
+	CostFunction CostFunction
+}
+
+func (e *IncompatibleCostFunctionError) Error() string {
+	return fmt.Sprintf("cost function '%s' is not compatible with learning task '%s'", e.CostFunction, e.Task)
+}
+
+type IncompatibleMetricError struct {
+	Task   LearningTask
+	Metric EvalMetric
+}
+
+func (e *IncompatibleMetricError) Error() string {
+	return fmt.Sprintf("evaluation metric '%s' is not compatible with learning task '%s'", e.Metric, e.Task)
 }
