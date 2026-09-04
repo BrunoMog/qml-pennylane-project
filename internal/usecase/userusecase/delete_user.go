@@ -29,7 +29,7 @@ func (s *UserService) DeleteUser(input DeleteUserInput) error {
 	}
 
 	if !canDeleteUser(caller, target) {
-		return &UnauthorizedError{name: caller.GetName()}
+		return &UnauthorizedError{name: caller.Name()}
 	}
 
 	err = s.repository.DeleteByID(input.TargetID)
@@ -41,14 +41,14 @@ func (s *UserService) DeleteUser(input DeleteUserInput) error {
 }
 
 func canDeleteUser(caller *user.User, target *user.User) bool {
-	if caller.GetID() == target.GetID() && !caller.IsOwner() {
+	if caller.ID() == target.ID() && !caller.IsOwner() {
 		return true
 	}
-	switch caller.GetRole() {
+	switch caller.Role() {
 	case user.RoleOwner:
 		return true
 	case user.RoleAdmin:
-		return target.GetRole() != user.RoleOwner
+		return target.Role() != user.RoleOwner
 	default:
 		return false
 	}

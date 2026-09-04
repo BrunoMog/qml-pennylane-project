@@ -24,7 +24,7 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 	}
 
 	if !canUpdateUser(caller, user) {
-		return &UnauthorizedError{caller.GetName()}
+		return &UnauthorizedError{caller.Name()}
 	}
 
 	if input.Name != nil {
@@ -43,11 +43,11 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 }
 
 func canUpdateUser(caller, target *user.User) bool {
-	if caller.GetID() == target.GetID() {
+	if caller.ID() == target.ID() {
 		return true
 	}
 
-	switch caller.GetRole() {
+	switch caller.Role() {
 	case user.RoleOwner:
 		return true
 	default:

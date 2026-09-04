@@ -27,7 +27,7 @@ func SeedVQCConfigs(vqcConfigRepository *MockVQCConfigRepository, userSeedResult
 		if !ok {
 			callerID = uuid.New()
 		} else {
-			callerID = caller.GetID()
+			callerID = caller.ID()
 		}
 		newConfig, err := vqcconfig.NewVQCConfig(callerID, s.Name, s.Description, s.VQC)
 		if err != nil {

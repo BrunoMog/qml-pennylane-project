@@ -22,8 +22,8 @@ func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 		return err
 	}
 
-	if !canAssignRole(caller.GetRole(), target.GetRole(), input.Role) {
-		return &UnauthorizedError{caller.GetName()}
+	if !canAssignRole(caller.Role(), target.Role(), input.Role) {
+		return &UnauthorizedError{caller.Name()}
 	}
 
 	err = target.SetRole(input.Role)

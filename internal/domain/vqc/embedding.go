@@ -5,8 +5,8 @@ import (
 )
 
 type Embedding interface {
-	GetType() EmbeddingType
-	GetQubits() []Qubit
+	Type() EmbeddingType
+	Qubits() []Qubit
 
 	isEmbedding()
 }
@@ -61,15 +61,15 @@ func validateEmbeddingQubits(qubits []Qubit) error {
 	return nil
 }
 
-func (a AngleEmbedding) GetType() EmbeddingType {
+func (a AngleEmbedding) Type() EmbeddingType {
 	return EmbeddingTypeAngle
 }
 
-func (a AngleEmbedding) GetQubits() []Qubit {
+func (a AngleEmbedding) Qubits() []Qubit {
 	return slices.Clone(a.qubits)
 }
 
-func (a AngleEmbedding) GetRotation() EmbeddingRotation {
+func (a AngleEmbedding) Rotation() EmbeddingRotation {
 	return a.rotation
 }
 
@@ -89,19 +89,19 @@ func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padWidth float64) (Am
 	return AmplitudeEmbedding{qubits: qubits, normalize: normalize, padWidth: padWidth}, nil
 }
 
-func (a AmplitudeEmbedding) GetType() EmbeddingType {
+func (a AmplitudeEmbedding) Type() EmbeddingType {
 	return EmbeddingTypeAmplitude
 }
 
-func (a AmplitudeEmbedding) GetQubits() []Qubit {
+func (a AmplitudeEmbedding) Qubits() []Qubit {
 	return slices.Clone(a.qubits)
 }
 
-func (a AmplitudeEmbedding) GetNormalize() bool {
+func (a AmplitudeEmbedding) Normalize() bool {
 	return a.normalize
 }
 
-func (a AmplitudeEmbedding) GetPadWidth() float64 {
+func (a AmplitudeEmbedding) PadWidth() float64 {
 	return a.padWidth
 }
 

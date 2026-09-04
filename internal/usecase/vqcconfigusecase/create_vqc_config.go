@@ -55,10 +55,10 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 	}
 
 	output := &CreateVQCConfigOutput{
-		Name:        newConfig.GetName(),
-		Description: newConfig.GetDescription(),
-		VQCId:       newConfig.GetVQCConfigID(),
-		CreatedAt:   newConfig.GetCreatedAt(),
+		Name:        newConfig.Name(),
+		Description: newConfig.Description(),
+		VQCId:       newConfig.VQCConfigID(),
+		CreatedAt:   newConfig.CreatedAt(),
 	}
 	return output, nil
 

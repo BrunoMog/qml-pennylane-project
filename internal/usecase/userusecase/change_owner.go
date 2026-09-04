@@ -23,7 +23,7 @@ func (s *UserService) ChangeOwner(input ChangeOwnerInput) error {
 	}
 
 	if !canChangeOwner(caller, target) {
-		return &UnauthorizedError{name: caller.GetName()}
+		return &UnauthorizedError{name: caller.Name()}
 	}
 
 	err = s.repository.ChangeOwner(input.CallerID, input.TargetID)
@@ -35,10 +35,10 @@ func (s *UserService) ChangeOwner(input ChangeOwnerInput) error {
 }
 
 func canChangeOwner(caller *user.User, target *user.User) bool {
-	if caller.GetID() == target.GetID() {
+	if caller.ID() == target.ID() {
 		return false
 	}
-	if caller.GetRole() != user.RoleOwner {
+	if caller.Role() != user.RoleOwner {
 		return false
 	}
 	return true

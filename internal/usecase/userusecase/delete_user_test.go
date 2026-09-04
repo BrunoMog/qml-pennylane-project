@@ -96,13 +96,13 @@ func TestDeleteUser(t *testing.T) {
 			}
 
 			if callerExists {
-				input.CallerID = caller.GetID()
+				input.CallerID = caller.ID()
 			} else {
 				input.CallerID = uuid.New()
 			}
 
 			if targetExists {
-				input.TargetID = target.GetID()
+				input.TargetID = target.ID()
 			} else {
 				input.TargetID = uuid.New()
 			}

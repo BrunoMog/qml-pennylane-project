@@ -48,7 +48,7 @@ func TestNewLayer(t *testing.T) {
 				t.Error("NewLayer returned nil")
 			}
 
-			gates := layer.GetGates()
+			gates := layer.Gates()
 			if uint(len(gates)) != tc.expectedCount {
 				t.Errorf("Expected %d gates, got %d", tc.expectedCount, len(gates))
 			}
@@ -63,7 +63,7 @@ func TestLayerGetGates(t *testing.T) {
 	}
 
 	layer := NewLayer(originalGates)
-	retrievedGates := layer.GetGates()
+	retrievedGates := layer.Gates()
 
 	testCases := []struct {
 		name     string
@@ -94,7 +94,7 @@ func TestLayerGetGates(t *testing.T) {
 					// Modify the returned slice
 					retrievedGates[0].gate_type = YGate
 					// Get gates again and check they're unchanged
-					newRetrieval := layer.GetGates()
+					newRetrieval := layer.Gates()
 					return newRetrieval[0].gate_type == HGate
 				}
 				return true
@@ -164,7 +164,7 @@ func TestLayerGetNumParameterizedGates(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			layer := NewLayer(tc.gates)
-			count := layer.GetNumParameterizedGates()
+			count := layer.NumParameterizedGates()
 			if count != tc.expectedParameterCount {
 				t.Errorf("Expected %d parameterized gates, got %d", tc.expectedParameterCount, count)
 			}
@@ -185,7 +185,7 @@ func TestLayerImmutability(t *testing.T) {
 	originalGates = append(originalGates, QuantumGate{gate_type: RXGate, qubit: Qubit(2), control_qubit: []Qubit{}})
 
 	// Get gates from layer and verify they're unchanged
-	layerGates := layer.GetGates()
+	layerGates := layer.Gates()
 	if layerGates[0].gate_type != HGate {
 		t.Error("Layer was affected by modification of original input slice")
 	}

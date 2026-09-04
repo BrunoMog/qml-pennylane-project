@@ -8,13 +8,13 @@ import (
 	"github.com/google/uuid"
 )
 
-type GetVQCConfigInput struct {
+type LoadVQCConfigInput struct {
 	VQCConfigID   *uuid.UUID
 	VQCConfigName *string
 	CallerID      uuid.UUID
 }
 
-type GetVQCConfigOutput struct {
+type LoadVQCConfigOutput struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 	Name        string
@@ -22,7 +22,7 @@ type GetVQCConfigOutput struct {
 	VQC         vqc.VQC
 }
 
-func (s *VQCConfigService) GetVQCConfig(input GetVQCConfigInput) (*GetVQCConfigOutput, error) {
+func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConfigOutput, error) {
 	exists, err := s.userRepository.ExistByID(input.CallerID)
 	if err != nil {
 		return nil, err
@@ -46,29 +46,29 @@ func (s *VQCConfigService) GetVQCConfig(input GetVQCConfigInput) (*GetVQCConfigO
 		return nil, &InvalidInputError{}
 	}
 
-	if !canGetVQCConfig(input.CallerID, config) {
+	if !canLoadVQCConfig(input.CallerID, config) {
 		return nil, &UnauthorizedError{}
 	}
 
-	output := &GetVQCConfigOutput{
-		Name:        config.GetName(),
-		Description: config.GetDescription(),
-		VQC:         config.GetVQC(),
-		CreatedAt:   config.GetCreatedAt(),
-		UpdatedAt:   config.GetUpdatedAt(),
+	output := &LoadVQCConfigOutput{
+		Name:        config.Name(),
+		Description: config.Description(),
+		VQC:         config.VQC(),
+		CreatedAt:   config.CreatedAt(),
+		UpdatedAt:   config.UpdatedAt(),
 	}
 	return output, nil
 }
 
-func canGetVQCConfig(callerID uuid.UUID, config *vqcconfig.VQCConfig) bool {
-	return callerID == config.GetOwnerID()
+func canLoadVQCConfig(callerID uuid.UUID, config *vqcconfig.VQCConfig) bool {
+	return callerID == config.OwnerID()
 }
 
-type ListVQCConfigsInput struct {
+type LoadAllVQCConfigsInput struct {
 	CallerID uuid.UUID
 }
 
-func (s *VQCConfigService) ListVQCConfigs(input ListVQCConfigsInput) ([]*GetVQCConfigOutput, error) {
+func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) ([]*LoadVQCConfigOutput, error) {
 	exists, err := s.userRepository.ExistByID(input.CallerID)
 	if err != nil {
 		return nil, err
@@ -82,14 +82,14 @@ func (s *VQCConfigService) ListVQCConfigs(input ListVQCConfigsInput) ([]*GetVQCC
 		return nil, err
 	}
 
-	outputs := make([]*GetVQCConfigOutput, len(configs))
+	outputs := make([]*LoadVQCConfigOutput, len(configs))
 	for i, config := range configs {
-		outputs[i] = &GetVQCConfigOutput{
-			Name:        config.GetName(),
-			Description: config.GetDescription(),
-			VQC:         config.GetVQC(),
-			CreatedAt:   config.GetCreatedAt(),
-			UpdatedAt:   config.GetUpdatedAt(),
+		outputs[i] = &LoadVQCConfigOutput{
+			Name:        config.Name(),
+			Description: config.Description(),
+			VQC:         config.VQC(),
+			CreatedAt:   config.CreatedAt(),
+			UpdatedAt:   config.UpdatedAt(),
 		}
 	}
 	return outputs, nil

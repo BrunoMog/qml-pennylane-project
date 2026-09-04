@@ -12,11 +12,11 @@ func NewLayer(gates []QuantumGate) *Layer {
 	}
 }
 
-func (l Layer) GetGates() []QuantumGate {
+func (l Layer) Gates() []QuantumGate {
 	return slices.Clone(l.gates)
 }
 
-func (l Layer) GetNumParameterizedGates() uint {
+func (l Layer) NumParameterizedGates() uint {
 	count := uint(0)
 	for _, gate := range l.gates {
 		if gate.HasParameters() {

@@ -76,14 +76,14 @@ func isPermitedMeasurementRotation(measurementRotation MeasurementRotation) bool
 	}
 }
 
-func (m Measurement) GetQubits() []Qubit {
+func (m Measurement) Qubits() []Qubit {
 	return slices.Clone(m.qubits)
 }
 
-func (m Measurement) GetMeasurementType() MeasurementType {
+func (m Measurement) MeasurementType() MeasurementType {
 	return m.measurementType
 }
 
-func (m Measurement) GetMeasurementRotation() MeasurementRotation {
+func (m Measurement) MeasurementRotation() MeasurementRotation {
 	return m.measurementRotation
 }

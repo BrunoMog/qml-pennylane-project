@@ -61,5 +61,5 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 }
 
 func canUpdateVQCConfig(callerID uuid.UUID, vqcConfig *vqcconfig.VQCConfig) bool {
-	return callerID == vqcConfig.GetOwnerID()
+	return callerID == vqcConfig.OwnerID()
 }

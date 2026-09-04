@@ -83,18 +83,18 @@ func (u *User) IsOwner() bool {
 	return u.role == RoleOwner
 }
 
-func (u *User) GetID() uuid.UUID {
+func (u *User) ID() uuid.UUID {
 	return u.id
 }
 
-func (u *User) GetName() string {
+func (u *User) Name() string {
 	return u.name
 }
 
-func (u *User) GetRole() Role {
+func (u *User) Role() Role {
 	return u.role
 }
 
-func (u *User) GetEmail() string {
+func (u *User) Email() string {
 	return u.email
 }

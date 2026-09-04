@@ -33,10 +33,10 @@ func (s *UserService) CreateUser(name string, email string) (*UserOutput, error)
 	}
 
 	output := &UserOutput{
-		ID:    newUser.GetID(),
-		Name:  newUser.GetName(),
-		Email: newUser.GetEmail(),
-		Role:  newUser.GetRole(),
+		ID:    newUser.ID(),
+		Name:  newUser.Name(),
+		Email: newUser.Email(),
+		Role:  newUser.Role(),
 	}
 
 	return output, nil

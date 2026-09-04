@@ -17,7 +17,7 @@ func NewMockVQCConfigRepository() *MockVQCConfigRepository {
 }
 
 func (r *MockVQCConfigRepository) Save(vqcConfig *vqcconfig.VQCConfig) error {
-	r.vqcConfigs[vqcConfig.GetVQCConfigID()] = vqcConfig
+	r.vqcConfigs[vqcConfig.VQCConfigID()] = vqcConfig
 	return nil
 }
 
@@ -31,7 +31,7 @@ func (r *MockVQCConfigRepository) FindByID(id uuid.UUID) (*vqcconfig.VQCConfig, 
 
 func (r *MockVQCConfigRepository) FindByName(name string) (*vqcconfig.VQCConfig, error) {
 	for _, v := range r.vqcConfigs {
-		if v.GetName() == name {
+		if v.Name() == name {
 			copiedVQCConfig := *v
 			return &copiedVQCConfig, nil
 		}
@@ -46,7 +46,7 @@ func (r *MockVQCConfigRepository) ExistsByID(id uuid.UUID) (bool, error) {
 
 func (r *MockVQCConfigRepository) ExistsByName(ownerID uuid.UUID, name string) (bool, error) {
 	for _, v := range r.vqcConfigs {
-		if v.GetOwnerID() == ownerID && v.GetName() == name {
+		if v.OwnerID() == ownerID && v.Name() == name {
 			return true, nil
 		}
 	}
@@ -56,7 +56,7 @@ func (r *MockVQCConfigRepository) ExistsByName(ownerID uuid.UUID, name string) (
 func (r *MockVQCConfigRepository) FindAllByOwnerID(ownerID uuid.UUID) ([]*vqcconfig.VQCConfig, error) {
 	var result []*vqcconfig.VQCConfig
 	for _, v := range r.vqcConfigs {
-		if v.GetOwnerID() == ownerID {
+		if v.OwnerID() == ownerID {
 			copiedVQCConfig := *v
 			result = append(result, &copiedVQCConfig)
 		}
@@ -71,7 +71,7 @@ func (r *MockVQCConfigRepository) DeleteByID(id uuid.UUID) error {
 
 func (r *MockVQCConfigRepository) DeleteByName(name string) error {
 	for id, v := range r.vqcConfigs {
-		if v.GetName() == name {
+		if v.Name() == name {
 			delete(r.vqcConfigs, id)
 			return nil
 		}
@@ -81,7 +81,7 @@ func (r *MockVQCConfigRepository) DeleteByName(name string) error {
 
 func (r *MockVQCConfigRepository) DeleteAllByOwnerID(ownerID uuid.UUID) error {
 	for id, v := range r.vqcConfigs {
-		if v.GetOwnerID() == ownerID {
+		if v.OwnerID() == ownerID {
 			delete(r.vqcConfigs, id)
 		}
 	}

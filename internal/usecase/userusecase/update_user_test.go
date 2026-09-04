@@ -91,7 +91,7 @@ func TestUpdateUser(t *testing.T) {
 			if !ok || callerUser == nil {
 				callerID = uuid.New()
 			} else {
-				callerID = callerUser.GetID()
+				callerID = callerUser.ID()
 			}
 
 			targetUser, ok := seedResult.ByRef[tt.targetUserRef]
@@ -100,7 +100,7 @@ func TestUpdateUser(t *testing.T) {
 			if !ok || targetUser == nil {
 				targetID = uuid.New()
 			} else {
-				targetID = targetUser.GetID()
+				targetID = targetUser.ID()
 			}
 
 			inpput := UpdateUserInput{
@@ -123,11 +123,11 @@ func TestUpdateUser(t *testing.T) {
 					t.Fatalf("Failed to retrieve updated user: %v", err)
 				}
 
-				if tt.newName != nil && updatedUser.GetName() != *tt.newName {
-					t.Errorf("Expected user name %s, got %s", *tt.newName, updatedUser.GetName())
+				if tt.newName != nil && updatedUser.Name() != *tt.newName {
+					t.Errorf("Expected user name %s, got %s", *tt.newName, updatedUser.Name())
 				}
-				if tt.newEmail != nil && updatedUser.GetEmail() != *tt.newEmail {
-					t.Errorf("Expected user email %s, got %s", *tt.newEmail, updatedUser.GetEmail())
+				if tt.newEmail != nil && updatedUser.Email() != *tt.newEmail {
+					t.Errorf("Expected user email %s, got %s", *tt.newEmail, updatedUser.Email())
 				}
 			}
 		})

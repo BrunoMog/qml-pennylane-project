@@ -110,7 +110,7 @@ func TestCreateVQCConfig(t *testing.T) {
 			if !exists {
 				callerID = uuid.New()
 			} else {
-				callerID = caller.GetID()
+				callerID = caller.ID()
 			}
 
 			vqcConfigService := NewVQCConfigService(vqcConfigRepo, userRepo)

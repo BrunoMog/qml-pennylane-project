@@ -101,30 +101,30 @@ func (vqcConfig *VQCConfig) SetVQC(vqc *vqc.VQC) error {
 	return nil
 }
 
-func (vqcConfig VQCConfig) GetName() string {
+func (vqcConfig VQCConfig) Name() string {
 	return vqcConfig.name
 }
 
-func (vqcConfig VQCConfig) GetDescription() string {
+func (vqcConfig VQCConfig) Description() string {
 	return vqcConfig.description
 }
 
-func (vqcConfig VQCConfig) GetOwnerID() uuid.UUID {
+func (vqcConfig VQCConfig) OwnerID() uuid.UUID {
 	return vqcConfig.userID
 }
 
-func (vqcConfig VQCConfig) GetVQCConfigID() uuid.UUID {
+func (vqcConfig VQCConfig) VQCConfigID() uuid.UUID {
 	return vqcConfig.vqcID
 }
 
-func (vqcConfig VQCConfig) GetCreatedAt() time.Time {
+func (vqcConfig VQCConfig) CreatedAt() time.Time {
 	return vqcConfig.createdAt
 }
 
-func (vqcConfig VQCConfig) GetUpdatedAt() time.Time {
+func (vqcConfig VQCConfig) UpdatedAt() time.Time {
 	return vqcConfig.updatedAt
 }
 
-func (vqcConfig VQCConfig) GetVQC() vqc.VQC {
+func (vqcConfig VQCConfig) VQC() vqc.VQC {
 	return *vqcConfig.vqc
 }

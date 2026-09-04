@@ -17,7 +17,7 @@ func NewMockUserRepository() *MockUserRepository {
 }
 
 func (r *MockUserRepository) Save(u *user.User) error {
-	r.users[u.GetID()] = u
+	r.users[u.ID()] = u
 	return nil
 }
 
@@ -31,7 +31,7 @@ func (r *MockUserRepository) FindByID(id uuid.UUID) (*user.User, error) {
 
 func (r *MockUserRepository) FindByEmail(email string) (*user.User, error) {
 	for _, u := range r.users {
-		if u.GetEmail() == email {
+		if u.Email() == email {
 			copiedUser := *u
 			return &copiedUser, nil
 		}
@@ -41,7 +41,7 @@ func (r *MockUserRepository) FindByEmail(email string) (*user.User, error) {
 
 func (r *MockUserRepository) ExistsByEmail(email string) (bool, error) {
 	for _, u := range r.users {
-		if u.GetEmail() == email {
+		if u.Email() == email {
 			return true, nil
 		}
 	}

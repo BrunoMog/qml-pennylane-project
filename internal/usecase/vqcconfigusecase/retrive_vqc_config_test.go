@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestGetVQCConfig(t *testing.T) {
+func TestLoadVQCConfig(t *testing.T) {
 	tests := []struct {
 		name             string
 		usersToSeed      []testkit.UserSeed
@@ -91,7 +91,7 @@ func TestGetVQCConfig(t *testing.T) {
 			if !exists {
 				callerID = uuid.New()
 			} else {
-				callerID = caller.GetID()
+				callerID = caller.ID()
 			}
 
 			var vqcConfigID uuid.UUID
@@ -101,44 +101,44 @@ func TestGetVQCConfig(t *testing.T) {
 				vqcConfigID = uuid.New()
 				vqcName = nil
 			} else {
-				vqcConfigID = vqcConfig.GetVQCConfigID()
-				name := vqcConfig.GetName()
+				vqcConfigID = vqcConfig.VQCConfigID()
+				name := vqcConfig.Name()
 				vqcName = &name
 			}
 
 			vqcConfigService := NewVQCConfigService(vqcConfigRepo, userRepo)
 
-			var input GetVQCConfigInput
+			var input LoadVQCConfigInput
 			if tt.findByID {
-				input = GetVQCConfigInput{
+				input = LoadVQCConfigInput{
 					CallerID:    callerID,
 					VQCConfigID: &vqcConfigID,
 				}
 			} else {
-				input = GetVQCConfigInput{
+				input = LoadVQCConfigInput{
 					CallerID:      callerID,
 					VQCConfigName: vqcName,
 				}
 			}
 
-			vqcConfigRetrived, err := vqcConfigService.GetVQCConfig(input)
+			vqcConfigRetrived, err := vqcConfigService.LoadVQCConfig(input)
 			if (err != nil) != tt.expectError {
-				t.Errorf("GetVQCConfig() error = %v, expectError %v", err, tt.expectError)
+				t.Errorf("LoadVQCConfig() error = %v, expectError %v", err, tt.expectError)
 			}
 
 			if !tt.expectError {
-				if vqcConfigRetrived.Name != vqcConfig.GetName() {
-					t.Errorf("Expected Name %v, got %v", vqcConfig.GetName(), vqcConfigRetrived.Name)
+				if vqcConfigRetrived.Name != vqcConfig.Name() {
+					t.Errorf("Expected Name %v, got %v", vqcConfig.Name(), vqcConfigRetrived.Name)
 				}
-				if vqcConfigRetrived.Description != vqcConfig.GetDescription() {
-					t.Errorf("Expected Description %v, got %v", vqcConfig.GetDescription(), vqcConfigRetrived.Description)
+				if vqcConfigRetrived.Description != vqcConfig.Description() {
+					t.Errorf("Expected Description %v, got %v", vqcConfig.Description(), vqcConfigRetrived.Description)
 				}
 			}
 		})
 	}
 }
 
-func TestListVQCConfigs(t *testing.T) {
+func TestLoadAllVQCConfigs(t *testing.T) {
 	tests := []struct {
 		name             string
 		usersToSeed      []testkit.UserSeed
@@ -195,18 +195,18 @@ func TestListVQCConfigs(t *testing.T) {
 			if !exists {
 				callerID = uuid.New()
 			} else {
-				callerID = caller.GetID()
+				callerID = caller.ID()
 			}
 
 			vqcConfigService := NewVQCConfigService(vqcConfigRepo, userRepo)
 
-			input := ListVQCConfigsInput{
+			input := LoadAllVQCConfigsInput{
 				CallerID: callerID,
 			}
 
-			vqcConfigsListed, err := vqcConfigService.ListVQCConfigs(input)
+			vqcConfigsListed, err := vqcConfigService.LoadAllVQCConfigs(input)
 			if (err != nil) != tt.expectError {
-				t.Errorf("ListVQCConfigs() error = %v, expectError %v", err, tt.expectError)
+				t.Errorf("LoadAllVQCConfigs() error = %v, expectError %v", err, tt.expectError)
 			}
 
 			if !tt.expectError {

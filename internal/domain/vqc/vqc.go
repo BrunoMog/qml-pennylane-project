@@ -10,51 +10,61 @@ type VQC struct {
 	num_layers  uint
 }
 
-func NewVQC(num_qubits uint, embedding Embedding, pre_layer Layer, layer Layer, post_layer Layer, measurement Measurement, num_layers uint) (*VQC, error) {
-	if num_qubits == 0 {
-		return nil, &ZeroQubitVQCError{num_qubits: num_qubits}
+type VQCInput struct {
+	embedding   Embedding
+	measurement Measurement
+	pre_layer   Layer
+	layer       Layer
+	post_layer  Layer
+	num_qubits  uint
+	num_layers  uint
+}
+
+func NewVQC(input VQCInput) (*VQC, error) {
+	if input.num_qubits == 0 {
+		return nil, &ZeroQubitVQCError{num_qubits: input.num_qubits}
 	}
 
 	return &VQC{
-		num_qubits:  num_qubits,
-		embedding:   embedding,
-		pre_layer:   pre_layer,
-		layer:       layer,
-		post_layer:  post_layer,
-		measurement: measurement,
-		num_layers:  num_layers,
+		num_qubits:  input.num_qubits,
+		embedding:   input.embedding,
+		pre_layer:   input.pre_layer,
+		layer:       input.layer,
+		post_layer:  input.post_layer,
+		measurement: input.measurement,
+		num_layers:  input.num_layers,
 	}, nil
 }
 
-func (v VQC) GetNumQubits() uint {
+func (v VQC) NumQubits() uint {
 	return v.num_qubits
 }
 
-func (v VQC) GetNumLayers() uint {
+func (v VQC) NumLayers() uint {
 	return v.num_layers
 }
 
-func (v VQC) GetEmbedding() Embedding {
+func (v VQC) Embedding() Embedding {
 	return v.embedding
 }
 
-func (v VQC) GetPreLayer() Layer {
+func (v VQC) PreLayer() Layer {
 	return v.pre_layer
 }
 
-func (v VQC) GetLayer() Layer {
+func (v VQC) Layer() Layer {
 	return v.layer
 }
 
-func (v VQC) GetPostLayer() Layer {
+func (v VQC) PostLayer() Layer {
 	return v.post_layer
 }
 
-func (v VQC) GetMeasurement() Measurement {
+func (v VQC) Measurement() Measurement {
 	return v.measurement
 }
 
-func (v VQC) GetNumParameters() uint {
-	num_parameters := v.pre_layer.GetNumParameterizedGates() + v.layer.GetNumParameterizedGates()*v.num_layers + v.post_layer.GetNumParameterizedGates()
+func (v VQC) NumParameters() uint {
+	num_parameters := v.pre_layer.NumParameterizedGates() + v.layer.NumParameterizedGates()*v.num_layers + v.post_layer.NumParameterizedGates()
 	return num_parameters
 }

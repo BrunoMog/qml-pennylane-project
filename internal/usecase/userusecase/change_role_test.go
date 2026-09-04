@@ -112,7 +112,7 @@ func TestChangeUserRole(t *testing.T) {
 			if !ok || caller == nil {
 				callerID = uuid.New() // Generate a random UUID for non-existing caller
 			} else {
-				callerID = caller.GetID()
+				callerID = caller.ID()
 			}
 
 			target, ok := seedResult.ByRef[tt.userTarget]
@@ -121,7 +121,7 @@ func TestChangeUserRole(t *testing.T) {
 			if !ok || target == nil {
 				targetID = uuid.New() // Generate a random UUID for non-existing target
 			} else {
-				targetID = target.GetID()
+				targetID = target.ID()
 			}
 
 			input := ChangeUserRoleInput{

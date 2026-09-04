@@ -76,7 +76,7 @@ func TestDeleteVQCConfig(t *testing.T) {
 			if !exists {
 				callerID = uuid.New()
 			} else {
-				callerID = caller.GetID()
+				callerID = caller.ID()
 			}
 
 			var vqcConfigID uuid.UUID
@@ -84,7 +84,7 @@ func TestDeleteVQCConfig(t *testing.T) {
 			if !exists {
 				vqcConfigID = uuid.New()
 			} else {
-				vqcConfigID = vqcConfig.GetVQCConfigID()
+				vqcConfigID = vqcConfig.VQCConfigID()
 			}
 
 			vqcConfigService := NewVQCConfigService(vqcConfigRepo, userRepo)

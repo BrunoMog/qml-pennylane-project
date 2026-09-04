@@ -158,5 +158,14 @@ func (b *VQCBuilder) WithPostLayer(gates []GateBuilderInput) (*VQCBuilder, error
 
 // Build returns the constructed VQC (validation delegated to NewVQC)
 func (b *VQCBuilder) Build() (*VQC, error) {
-	return NewVQC(b.numQubits, b.embedding, b.preLayer, b.layer, b.postLayer, b.measurement, b.numLayers)
+	input := VQCInput{
+		embedding:   b.embedding,
+		measurement: b.measurement,
+		pre_layer:   b.preLayer,
+		layer:       b.layer,
+		post_layer:  b.postLayer,
+		num_qubits:  b.numQubits,
+		num_layers:  b.numLayers,
+	}
+	return NewVQC(input)
 }
