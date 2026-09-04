@@ -24,6 +24,9 @@ func NewVQC(input VQCInput) (*VQC, error) {
 	if input.num_qubits == 0 {
 		return nil, &ZeroQubitVQCError{num_qubits: input.num_qubits}
 	}
+	if input.embedding == nil {
+		return nil, &NilEmbeddingError{}
+	}
 
 	return &VQC{
 		num_qubits:  input.num_qubits,
