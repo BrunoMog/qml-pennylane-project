@@ -213,14 +213,26 @@ func TestLoadAllVQCConfigs(t *testing.T) {
 				if len(vqcConfigsListed) != len(tt.vqcConfigsToSeed) {
 					t.Errorf("Expected %d VQCConfigs, got %d", len(tt.vqcConfigsToSeed), len(vqcConfigsListed))
 				}
-				for i, vqcConfig := range vqcConfigsListed {
-					expectedVQCConfig := tt.vqcConfigsToSeed[i]
-					if vqcConfig.Name != expectedVQCConfig.Name {
-						t.Errorf("Expected Name %v, got %v", expectedVQCConfig.Name, vqcConfig.Name)
+
+				expectedByName := make(map[string]string, len(tt.vqcConfigsToSeed))
+				for _, expectedVQCConfig := range tt.vqcConfigsToSeed {
+					expectedByName[expectedVQCConfig.Name] = expectedVQCConfig.Description
+				}
+
+				for _, vqcConfig := range vqcConfigsListed {
+					expectedDescription, exists := expectedByName[vqcConfig.Name]
+					if !exists {
+						t.Errorf("Unexpected VQCConfig name %q", vqcConfig.Name)
+						continue
 					}
-					if vqcConfig.Description != expectedVQCConfig.Description {
-						t.Errorf("Expected Description %v, got %v", expectedVQCConfig.Description, vqcConfig.Description)
+					if vqcConfig.Description != expectedDescription {
+						t.Errorf("Expected Description %v for %v, got %v", expectedDescription, vqcConfig.Name, vqcConfig.Description)
 					}
+					delete(expectedByName, vqcConfig.Name)
+				}
+
+				for name := range expectedByName {
+					t.Errorf("VQCConfig %q was not returned", name)
 				}
 			}
 		})
