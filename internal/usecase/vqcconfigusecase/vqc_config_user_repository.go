@@ -5,5 +5,5 @@ import (
 )
 
 type UserRepository interface {
-	ExistByID(id uuid.UUID) (bool, error)
+	ExistsByID(id uuid.UUID) (bool, error)
 }

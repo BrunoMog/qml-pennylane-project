@@ -117,8 +117,8 @@ func TestCreateVQCConfig(t *testing.T) {
 
 			input := CreateVQCConfigInput{
 				CallerID:    callerID,
-				Name:        &tt.vqcConfigToCreate.Name,
-				Description: &tt.vqcConfigToCreate.Description,
+				Name:        tt.vqcConfigToCreate.Name,
+				Description: tt.vqcConfigToCreate.Description,
 				VQC:         tt.vqcConfigToCreate.VQC,
 			}
 

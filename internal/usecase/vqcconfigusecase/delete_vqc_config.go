@@ -12,7 +12,7 @@ type DeleteVQCConfigInput struct {
 }
 
 func (s *VQCConfigService) DeleteVQCConfig(input DeleteVQCConfigInput) error {
-	exists, err := s.userRepository.ExistByID(input.CallerID)
+	exists, err := s.userRepository.ExistsByID(input.CallerID)
 	if err != nil {
 		return err
 	}

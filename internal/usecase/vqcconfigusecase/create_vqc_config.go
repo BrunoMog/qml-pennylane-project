@@ -9,8 +9,8 @@ import (
 )
 
 type CreateVQCConfigInput struct {
-	Name        *string
-	Description *string
+	Name        string
+	Description string
 	VQC         *vqc.VQC
 	CallerID    uuid.UUID
 }
@@ -23,12 +23,8 @@ type CreateVQCConfigOutput struct {
 }
 
 func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateVQCConfigOutput, error) {
-	err := validateName(input.Name)
-	if err != nil {
-		return nil, err
-	}
 
-	exists, err := s.userRepository.ExistByID(input.CallerID)
+	exists, err := s.userRepository.ExistsByID(input.CallerID)
 	if err != nil {
 		return nil, err
 	}
@@ -36,15 +32,15 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 		return nil, &UserNotFoundError{}
 	}
 
-	exists, err = s.vqcConfigRepository.ExistsByName(input.CallerID, *input.Name)
+	exists, err = s.vqcConfigRepository.ExistsByName(input.CallerID, input.Name)
 	if err != nil {
 		return nil, err
 	}
 	if exists {
-		return nil, &VQCConfigNameAlreadyExistsError{Name: *input.Name}
+		return nil, &VQCConfigNameAlreadyExistsError{Name: input.Name}
 	}
 
-	newConfig, err := vqcconfig.NewVQCConfig(input.CallerID, *input.Name, *input.Description, input.VQC)
+	newConfig, err := vqcconfig.NewVQCConfig(input.CallerID, input.Name, input.Description, input.VQC)
 	if err != nil {
 		return nil, err
 	}
@@ -62,21 +58,4 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 	}
 	return output, nil
 
-}
-
-func validateName(name *string) error {
-	if name == nil {
-		return &InvalidNameError{}
-	}
-	if len(*name) > 20 {
-		return &InvalidNameError{}
-	}
-	return nil
-}
-
-func validateDescription(description *string) error {
-	if description != nil && len(*description) > 100 {
-		return &InvalidDescriptionError{}
-	}
-	return nil
 }

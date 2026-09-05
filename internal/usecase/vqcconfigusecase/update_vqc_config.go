@@ -16,7 +16,7 @@ type UpdateVQCConfigInput struct {
 }
 
 func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
-	exists, err := s.userRepository.ExistByID(input.CallerID)
+	exists, err := s.userRepository.ExistsByID(input.CallerID)
 	if err != nil {
 		return err
 	}
@@ -34,6 +34,13 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 	}
 
 	if input.Name != nil {
+		exists, err := s.vqcConfigRepository.ExistsByName(input.CallerID, *input.Name)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return &VQCConfigNameAlreadyExistsError{}
+		}
 		err = config.SetName(*input.Name)
 		if err != nil {
 			return err

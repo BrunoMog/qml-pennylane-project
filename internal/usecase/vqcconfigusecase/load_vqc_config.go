@@ -23,7 +23,7 @@ type LoadVQCConfigOutput struct {
 }
 
 func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConfigOutput, error) {
-	exists, err := s.userRepository.ExistByID(input.CallerID)
+	exists, err := s.userRepository.ExistsByID(input.CallerID)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +68,12 @@ type LoadAllVQCConfigsInput struct {
 	CallerID uuid.UUID
 }
 
-func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) ([]*LoadVQCConfigOutput, error) {
-	exists, err := s.userRepository.ExistByID(input.CallerID)
+type LoadAllVQCConfigsOutput struct {
+	VQCConfigs []LoadVQCConfigOutput
+}
+
+func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) (*LoadAllVQCConfigsOutput, error) {
+	exists, err := s.userRepository.ExistsByID(input.CallerID)
 	if err != nil {
 		return nil, err
 	}
@@ -82,9 +86,11 @@ func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) ([]*L
 		return nil, err
 	}
 
-	outputs := make([]*LoadVQCConfigOutput, len(configs))
+	output := &LoadAllVQCConfigsOutput{
+		VQCConfigs: make([]LoadVQCConfigOutput, len(configs)),
+	}
 	for i, config := range configs {
-		outputs[i] = &LoadVQCConfigOutput{
+		output.VQCConfigs[i] = LoadVQCConfigOutput{
 			Name:        config.Name(),
 			Description: config.Description(),
 			VQC:         config.VQC(),
@@ -92,5 +98,5 @@ func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) ([]*L
 			UpdatedAt:   config.UpdatedAt(),
 		}
 	}
-	return outputs, nil
+	return output, nil
 }
