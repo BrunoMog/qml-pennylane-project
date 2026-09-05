@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 type RMSPropOptimizer struct {
 	learningRate float64
@@ -7,13 +7,13 @@ type RMSPropOptimizer struct {
 }
 
 func NewRMSPropOptimizer(learningRate, decay, epsilon float64) (RMSPropOptimizer, error) {
-	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
+	if !isFiniteFloat64(learningRate) || learningRate <= 0 {
 		return RMSPropOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
-	if isFiniteFloat64(decay) && (decay < 0 || decay >= 1) {
+	if !isFiniteFloat64(decay) || decay < 0 || decay >= 1 {
 		return RMSPropOptimizer{}, &InvalidDecayError{decay}
 	}
-	if isFiniteFloat64(epsilon) && (epsilon <= 0) {
+	if !isFiniteFloat64(epsilon) || epsilon <= 0 {
 		return RMSPropOptimizer{}, &InvalidEpsilonError{epsilon}
 	}
 

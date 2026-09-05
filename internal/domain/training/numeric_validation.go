@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 import "math"
 

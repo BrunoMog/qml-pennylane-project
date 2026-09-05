@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 type Optimizer interface {
 	Name() OptimizerName

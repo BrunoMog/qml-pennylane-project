@@ -1,11 +1,11 @@
-package trainingpipeline
+package training
 
 type GradientDescentOptimizer struct {
 	learningRate float64
 }
 
 func NewGradientDescentOptimizer(learningRate float64) (GradientDescentOptimizer, error) {
-	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
+	if !isFiniteFloat64(learningRate) || (learningRate <= 0) {
 		return GradientDescentOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
 

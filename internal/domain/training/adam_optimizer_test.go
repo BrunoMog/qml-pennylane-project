@@ -1,6 +1,7 @@
-package trainingpipeline
+package training
 
 import (
+	"math"
 	"testing"
 )
 
@@ -18,6 +19,14 @@ func TestNewAdamOptimizer(t *testing.T) {
 		{name: "Invalid beta1", learningRate: 0.001, beta1: -0.9, beta2: 0.999, epsilon: 1e-8, expectErr: true},
 		{name: "Invalid beta2", learningRate: 0.001, beta1: 0.9, beta2: 1.5, epsilon: 1e-8, expectErr: true},
 		{name: "Invalid epsilon", learningRate: 0.001, beta1: 0.9, beta2: 0.999, epsilon: -1e-8, expectErr: true},
+		{name: "NaN learning rate", learningRate: math.NaN(), beta1: 0.9, beta2: 0.999, epsilon: 1e-8, expectErr: true},
+		{name: "NaN beta1", learningRate: 0.001, beta1: math.NaN(), beta2: 0.999, epsilon: 1e-8, expectErr: true},
+		{name: "NaN beta2", learningRate: 0.001, beta1: 0.9, beta2: math.NaN(), epsilon: 1e-8, expectErr: true},
+		{name: "NaN epsilon", learningRate: 0.001, beta1: 0.9, beta2: 0.999, epsilon: math.NaN(), expectErr: true},
+		{name: "Infinite learning rate", learningRate: math.Inf(1), beta1: 0.9, beta2: 0.999, epsilon: 1e-8, expectErr: true},
+		{name: "Infinite beta1", learningRate: 0.001, beta1: math.Inf(1), beta2: 0.999, epsilon: 1e-8, expectErr: true},
+		{name: "Infinite beta2", learningRate: 0.001, beta1: 0.9, beta2: math.Inf(1), epsilon: 1e-8, expectErr: true},
+		{name: "Infinite epsilon", learningRate: 0.001, beta1: 0.9, beta2: 0.999, epsilon: math.Inf(1), expectErr: true},
 	}
 
 	for _, tc := range testCases {

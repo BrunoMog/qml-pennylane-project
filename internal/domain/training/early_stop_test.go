@@ -1,6 +1,7 @@
-package trainingpipeline
+package training
 
 import (
+	"math"
 	"testing"
 )
 
@@ -15,6 +16,8 @@ func TestEarlyStoppingConfig_IsValid(t *testing.T) {
 		{name: "Invalid early stopping (patience <= 0)", config: EarlyStoppingInput{Enabled: true, Patience: 0, MinDelta: 0.01, ValidationMetric: EvalMetric("accuracy")}, expected: false},
 		{name: "Invalid early stopping (minDelta < 0)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: -0.01, ValidationMetric: EvalMetric("accuracy")}, expected: false},
 		{name: "Invalid early stopping (invalid validation metric)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: 0.01, ValidationMetric: EvalMetric("invalid")}, expected: false},
+		{name: "Invalid early stopping (minDelta is NaN)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: math.NaN(), ValidationMetric: EvalMetric("accuracy")}, expected: false},
+		{name: "Invalid early stopping (minDelta is Inf)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: math.Inf(1), ValidationMetric: EvalMetric("accuracy")}, expected: false},
 	}
 
 	for _, tc := range testCases {

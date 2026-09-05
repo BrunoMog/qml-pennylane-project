@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 type CrossValidation struct {
 	enabled bool

@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 import (
 	"math"
@@ -7,7 +7,7 @@ import (
 
 const EPSILON = 1e-9
 
-type TrainingPipeline struct {
+type Training struct {
 	optimizer         Optimizer
 	learningTask      LearningTask
 	costFunction      CostFunction
@@ -23,7 +23,7 @@ type TrainingPipeline struct {
 	batchSize         uint
 }
 
-type TrainingPipelineInput struct {
+type TrainingInput struct {
 	Optimizer         Optimizer
 	LearningTask      LearningTask
 	CostFunction      CostFunction
@@ -39,13 +39,13 @@ type TrainingPipelineInput struct {
 	BatchSize         uint
 }
 
-func NewTrainingPipeline(input TrainingPipelineInput) (*TrainingPipeline, error) {
+func NewTraining(input TrainingInput) (*Training, error) {
 	err := validateInput(input)
 	if err != nil {
 		return nil, err
 	}
 
-	return &TrainingPipeline{
+	return &Training{
 		learningType:      input.LearningType,
 		learningTask:      input.LearningTask,
 		costFunction:      input.CostFunction,
@@ -62,7 +62,7 @@ func NewTrainingPipeline(input TrainingPipelineInput) (*TrainingPipeline, error)
 	}, nil
 }
 
-func validateInput(input TrainingPipelineInput) error {
+func validateInput(input TrainingInput) error {
 	err := validateLearningSettings(input.LearningType, input.LearningTask)
 	if err != nil {
 		return err
@@ -145,15 +145,15 @@ func validateFunctionsCompatibility(learningTask LearningTask, costFunction Cost
 }
 
 func validateDataSplit(trainRatio, validationRatio, testRatio float64) error {
-	if isFiniteFloat64(trainRatio) && (trainRatio < 0 || trainRatio > 1) {
+	if !isFiniteFloat64(trainRatio) || trainRatio < 0 || trainRatio > 1 {
 		return &InvalidTrainRatioError{trainRatio: trainRatio}
 	}
 
-	if isFiniteFloat64(validationRatio) && (validationRatio < 0 || validationRatio > 1) {
+	if !isFiniteFloat64(validationRatio) || validationRatio < 0 || validationRatio > 1 {
 		return &InvalidValidationRatioError{validationRatio: validationRatio}
 	}
 
-	if isFiniteFloat64(testRatio) && (testRatio < 0 || testRatio > 1) {
+	if !isFiniteFloat64(testRatio) || testRatio < 0 || testRatio > 1 {
 		return &InvalidTestRatioError{testRatio: testRatio}
 	}
 
@@ -169,54 +169,54 @@ func validateDataSplit(trainRatio, validationRatio, testRatio float64) error {
 	return nil
 }
 
-func (tp TrainingPipeline) Optimizer() Optimizer {
-	return tp.optimizer
+func (t Training) Optimizer() Optimizer {
+	return t.optimizer
 }
 
-func (tp TrainingPipeline) LearningTask() LearningTask {
-	return tp.learningTask
+func (t Training) LearningTask() LearningTask {
+	return t.learningTask
 }
 
-func (tp TrainingPipeline) CostFunction() CostFunction {
-	return tp.costFunction
+func (t Training) CostFunction() CostFunction {
+	return t.costFunction
 }
 
-func (tp TrainingPipeline) LearningType() LearningType {
-	return tp.learningType
+func (t Training) LearningType() LearningType {
+	return t.learningType
 }
 
-func (tp TrainingPipeline) EvaluationMetrics() []EvalMetric {
-	return slices.Clone(tp.evaluationMetrics)
+func (t Training) EvaluationMetrics() []EvalMetric {
+	return slices.Clone(t.evaluationMetrics)
 }
 
-func (tp TrainingPipeline) EarlyStopping() EarlyStopping {
-	return tp.earlyStopping
+func (t Training) EarlyStopping() EarlyStopping {
+	return t.earlyStopping
 }
 
-func (tp TrainingPipeline) CrossValidation() CrossValidation {
-	return tp.crossValidation
+func (t Training) CrossValidation() CrossValidation {
+	return t.crossValidation
 }
 
-func (tp TrainingPipeline) TrainRatio() float64 {
-	return tp.trainRatio
+func (t Training) TrainRatio() float64 {
+	return t.trainRatio
 }
 
-func (tp TrainingPipeline) ValidationRatio() float64 {
-	return tp.validationRatio
+func (t Training) ValidationRatio() float64 {
+	return t.validationRatio
 }
 
-func (tp TrainingPipeline) TestRatio() float64 {
-	return tp.testRatio
+func (t Training) TestRatio() float64 {
+	return t.testRatio
 }
 
-func (tp TrainingPipeline) RandomSeed() int {
-	return tp.randomSeed
+func (t Training) RandomSeed() int {
+	return t.randomSeed
 }
 
-func (tp TrainingPipeline) MaxEpochs() uint {
-	return tp.maxEpochs
+func (t Training) MaxEpochs() uint {
+	return t.maxEpochs
 }
 
-func (tp TrainingPipeline) BatchSize() uint {
-	return tp.batchSize
+func (t Training) BatchSize() uint {
+	return t.batchSize
 }

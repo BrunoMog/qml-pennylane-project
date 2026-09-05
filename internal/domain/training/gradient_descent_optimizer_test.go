@@ -1,6 +1,7 @@
-package trainingpipeline
+package training
 
 import (
+	"math"
 	"testing"
 )
 
@@ -13,6 +14,8 @@ func TestGradientDescentOptimizer_IsValid(t *testing.T) {
 		{name: "Valid learning rate", learningRate: 0.01, expected: true},
 		{name: "Invalid learning rate (negative)", learningRate: -0.01, expected: false},
 		{name: "Invalid learning rate (zero)", learningRate: 0.0, expected: false},
+		{name: "Invalid learning rate (NaN)", learningRate: math.NaN(), expected: false},
+		{name: "Invalid learning rate (Inf)", learningRate: math.Inf(1), expected: false},
 	}
 
 	for _, tc := range testCases {

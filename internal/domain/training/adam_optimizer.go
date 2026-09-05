@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 type AdamOptimizer struct {
 	learningRate float64
@@ -8,16 +8,16 @@ type AdamOptimizer struct {
 }
 
 func NewAdamOptimizer(learningRate, beta1, beta2, epsilon float64) (AdamOptimizer, error) {
-	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
+	if !isFiniteFloat64(learningRate) || (learningRate <= 0) {
 		return AdamOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
-	if isFiniteFloat64(beta1) && (beta1 < 0 || beta1 >= 1) {
+	if !isFiniteFloat64(beta1) || beta1 < 0 || beta1 >= 1 {
 		return AdamOptimizer{}, &InvalidBeta1Error{beta1}
 	}
-	if isFiniteFloat64(beta2) && (beta2 < 0 || beta2 >= 1) {
+	if !isFiniteFloat64(beta2) || beta2 < 0 || beta2 >= 1 {
 		return AdamOptimizer{}, &InvalidBeta2Error{beta2}
 	}
-	if isFiniteFloat64(epsilon) && (epsilon <= 0) {
+	if !isFiniteFloat64(epsilon) || epsilon <= 0 {
 		return AdamOptimizer{}, &InvalidEpsilonError{epsilon}
 	}
 

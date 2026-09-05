@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 type EarlyStopping struct {
 	validationMetric EvalMetric
@@ -35,7 +35,7 @@ func (esc EarlyStoppingInput) IsValid() bool {
 	if esc.Patience <= 0 {
 		return false
 	}
-	if isFiniteFloat64(esc.MinDelta) && (esc.MinDelta < 0) {
+	if !isFiniteFloat64(esc.MinDelta) || esc.MinDelta < 0 {
 		return false
 	}
 	if !esc.ValidationMetric.IsValid() {

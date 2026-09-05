@@ -1,4 +1,4 @@
-package trainingpipeline
+package training
 
 type NesterovMomentumOptimizer struct {
 	learningRate float64
@@ -6,10 +6,10 @@ type NesterovMomentumOptimizer struct {
 }
 
 func NewNesterovMomentumOptimizer(learningRate, momentum float64) (NesterovMomentumOptimizer, error) {
-	if isFiniteFloat64(learningRate) && (learningRate <= 0) {
+	if !isFiniteFloat64(learningRate) || (learningRate <= 0) {
 		return NesterovMomentumOptimizer{}, &InvalidLearningRateError{learningRate}
 	}
-	if isFiniteFloat64(momentum) && (momentum < 0 || momentum >= 1) {
+	if !isFiniteFloat64(momentum) || momentum < 0 || momentum >= 1 {
 		return NesterovMomentumOptimizer{}, &InvalidMomentumError{momentum}
 	}
 

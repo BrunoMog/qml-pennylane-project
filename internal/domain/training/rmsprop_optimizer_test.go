@@ -1,6 +1,7 @@
-package trainingpipeline
+package training
 
 import (
+	"math"
 	"testing"
 )
 
@@ -16,6 +17,12 @@ func TestRMSPropOptimizer_IsValid(t *testing.T) {
 		{name: "Invalid learning rate (negative)", learningRate: -0.01, decay: 0.9, epsilon: 1e-8, expected: false},
 		{name: "Invalid decay (negative)", learningRate: 0.01, decay: -0.9, epsilon: 1e-8, expected: false},
 		{name: "Invalid epsilon (negative)", learningRate: 0.01, decay: 0.9, epsilon: -1e-8, expected: false},
+		{name: "Invalid learning rate NaN", learningRate: math.NaN(), decay: 0.9, epsilon: 1e-8, expected: false},
+		{name: "Invalid decay NaN", learningRate: 0.01, decay: math.NaN(), epsilon: 1e-8, expected: false},
+		{name: "Invalid epsilon NaN", learningRate: 0.01, decay: 0.9, epsilon: math.NaN(), expected: false},
+		{name: "Invalid learning rate Inf", learningRate: math.Inf(1), decay: 0.9, epsilon: 1e-8, expected: false},
+		{name: "Invalid decay Inf", learningRate: 0.01, decay: math.Inf(1), epsilon: 1e-8, expected: false},
+		{name: "Invalid epsilon Inf", learningRate: 0.01, decay: 0.9, epsilon: math.Inf(1), expected: false},
 	}
 
 	for _, tc := range testCases {
