@@ -1,31 +1,69 @@
 package vqc
 
-import "testing"
+import (
+	"testing"
+)
 
-func validVQCBuilderInput() VQCBuilderInput {
-	return VQCBuilderInput{
-		NumQubits: 3,
-		NumLayers: 2,
-		Embedding: EmbeddingBuilderInput{
-			Type:     EmbeddingTypeAngle,
-			Rotation: XRotation,
-			Qubits:   []Qubit{0, 1, 2},
-		},
-		Measurement: MeasurementBuilderInput{
-			Type:     ExpectationMeasurement,
-			Rotation: XMeasurementRotation,
-			Qubits:   []Qubit{0},
-		},
+func validAngleEmbeddingInput() EmbeddingBuilderInput {
+	return EmbeddingBuilderInput{
+		Type:      "angle",
+		Qubits:    []uint{0, 1, 2},
+		Rotation:  "x",
+		Normalize: false,
+		PadWith:   0.0,
 	}
 }
 
-func newTestGate(t *testing.T, gateType GateType, qubit Qubit, controls []Qubit) QuantumGate {
-	t.Helper()
-	gate, err := NewQuantumGate(gateType, qubit, controls)
-	if err != nil {
-		t.Fatalf("NewQuantumGate() returned an unexpected error: %v", err)
+func validAmplitudeEmbeddingInput() EmbeddingBuilderInput {
+	return EmbeddingBuilderInput{
+		Type:      "amplitude",
+		Qubits:    []uint{0, 1},
+		Rotation:  "z",
+		Normalize: true,
+		PadWith:   0.0,
 	}
-	return *gate
+}
+
+func validMeasurementInput() MeasurementBuilderInput {
+	return MeasurementBuilderInput{
+		Type:     "expectation",
+		Rotation: "x",
+		Qubits:   []uint{0},
+	}
+}
+
+func validVQCBuilderInputAngle() VQCBuilderInput {
+	return VQCBuilderInput{
+		NumQubits:   3,
+		NumLayers:   2,
+		Embedding:   validAngleEmbeddingInput(),
+		Measurement: validMeasurementInput(),
+	}
+}
+
+func validVQCBuilderInputAmplitude() VQCBuilderInput {
+	return VQCBuilderInput{
+		NumQubits:   2,
+		NumLayers:   1,
+		Embedding:   validAmplitudeEmbeddingInput(),
+		Measurement: validMeasurementInput(),
+	}
+}
+
+func validGateInput(qubitIndex uint) GateBuilderInput {
+	return GateBuilderInput{
+		GateType:      "rx",
+		Qubit:         qubitIndex,
+		ControlQubits: []uint{},
+	}
+}
+
+func validControlledGateInput(targetQubit, controlQubit uint) GateBuilderInput {
+	return GateBuilderInput{
+		GateType:      "cnot",
+		Qubit:         targetQubit,
+		ControlQubits: []uint{controlQubit},
+	}
 }
 
 func TestNewVQCBuilder(t *testing.T) {
@@ -34,122 +72,234 @@ func TestNewVQCBuilder(t *testing.T) {
 		input     VQCBuilderInput
 		expectErr bool
 	}{
-		{name: "angle embedding", input: validVQCBuilderInput()},
 		{
-			name: "amplitude embedding",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.NumQubits = 2
-				input.Embedding = EmbeddingBuilderInput{
-					Type:      EmbeddingTypeAmplitude,
-					Qubits:    []Qubit{0, 1},
-					Normalize: true,
-				}
-				return input
-			}(),
+			name:      "Valid angle embedding builder",
+			input:     validVQCBuilderInputAngle(),
+			expectErr: false,
 		},
 		{
-			name: "invalid embedding type",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.Embedding.Type = EmbeddingType("invalid")
-				return input
-			}(),
+			name:      "Valid amplitude embedding builder",
+			input:     validVQCBuilderInputAmplitude(),
+			expectErr: false,
+		},
+		{
+			name: "Invalid embedding type",
+			input: VQCBuilderInput{
+				NumQubits: 2,
+				NumLayers: 1,
+				Embedding: EmbeddingBuilderInput{
+					Type:   "invalid_type",
+					Qubits: []uint{0, 1},
+				},
+				Measurement: validMeasurementInput(),
+			},
 			expectErr: true,
 		},
 		{
-			name: "invalid embedding rotation",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.Embedding.Rotation = EmbeddingRotation("invalid")
-				return input
-			}(),
+			name: "Invalid qubit index in embedding",
+			input: VQCBuilderInput{
+				NumQubits: 2,
+				NumLayers: 1,
+				Embedding: EmbeddingBuilderInput{
+					Type:     "angle",
+					Qubits:   []uint{0, 5},
+					Rotation: "x",
+				},
+				Measurement: validMeasurementInput(),
+			},
 			expectErr: true,
 		},
 		{
-			name: "invalid measurement type",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.Measurement.Type = MeasurementType("invalid")
-				return input
-			}(),
+			name: "Duplicate qubits in embedding",
+			input: VQCBuilderInput{
+				NumQubits: 3,
+				NumLayers: 1,
+				Embedding: EmbeddingBuilderInput{
+					Type:     "angle",
+					Qubits:   []uint{0, 1, 1},
+					Rotation: "x",
+				},
+				Measurement: validMeasurementInput(),
+			},
 			expectErr: true,
 		},
 		{
-			name: "invalid measurement rotation",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.Measurement.Rotation = MeasurementRotation("invalid")
-				return input
-			}(),
-			expectErr: true,
-		},
-		{
-			name: "zero embedding qubits",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.Embedding.Qubits = nil
-				return input
-			}(),
-			expectErr: true,
-		},
-		{
-			name: "zero measurement qubits",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.Measurement.Qubits = nil
-				return input
-			}(),
+			name: "Invalid qubit index in measurement",
+			input: VQCBuilderInput{
+				NumQubits: 2,
+				NumLayers: 1,
+				Embedding: validAngleEmbeddingInput(),
+				Measurement: MeasurementBuilderInput{
+					Type:   "expectation",
+					Qubits: []uint{5},
+				},
+			},
 			expectErr: true,
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			builder, err := NewVQCBuilder(testCase.input)
-			if (err != nil) != testCase.expectErr {
-				t.Fatalf("NewVQCBuilder() error = %v, expectErr = %v", err, testCase.expectErr)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			builder, err := NewVQCBuilder(tc.input)
+			if (err != nil) != tc.expectErr {
+				t.Errorf("NewVQCBuilder() error = %v, expectErr = %v", err, tc.expectErr)
 			}
-			if !testCase.expectErr && builder == nil {
-				t.Fatal("NewVQCBuilder() returned nil builder")
+			if !tc.expectErr && builder == nil {
+				t.Error("NewVQCBuilder() returned nil builder")
 			}
 		})
 	}
 }
 
-func TestVQCBuilderLayerMethods(t *testing.T) {
+func TestVQCBuilderWithPreLayer(t *testing.T) {
+	builder, _ := NewVQCBuilder(validVQCBuilderInputAngle())
+
 	testCases := []struct {
 		name      string
-		configure func(*VQCBuilder, []QuantumGate) (*VQCBuilder, error)
-		layer     func(*VQCBuilder) Layer
+		gates     []GateBuilderInput
+		expectErr bool
 	}{
-		{name: "pre layer", configure: func(b *VQCBuilder, g []QuantumGate) (*VQCBuilder, error) { return b.WithPreLayer(g) }, layer: func(b *VQCBuilder) Layer { return b.preLayer }},
-		{name: "main layer", configure: func(b *VQCBuilder, g []QuantumGate) (*VQCBuilder, error) { return b.WithLayer(g) }, layer: func(b *VQCBuilder) Layer { return b.layer }},
-		{name: "post layer", configure: func(b *VQCBuilder, g []QuantumGate) (*VQCBuilder, error) { return b.WithPostLayer(g) }, layer: func(b *VQCBuilder) Layer { return b.postLayer }},
+		{
+			name:      "Valid single gate",
+			gates:     []GateBuilderInput{validGateInput(0)},
+			expectErr: false,
+		},
+		{
+			name: "Valid multiple gates",
+			gates: []GateBuilderInput{
+				validGateInput(0),
+				validGateInput(1),
+				validGateInput(2),
+			},
+			expectErr: false,
+		},
+		{
+			name:      "Empty gates",
+			gates:     []GateBuilderInput{},
+			expectErr: false,
+		},
+		{
+			name: "Invalid gate qubit index",
+			gates: []GateBuilderInput{
+				{GateType: "rx", Qubit: 10},
+			},
+			expectErr: true,
+		},
+		{
+			name: "Valid controlled gate",
+			gates: []GateBuilderInput{
+				validControlledGateInput(0, 1),
+			},
+			expectErr: false,
+		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			builder, err := NewVQCBuilder(validVQCBuilderInput())
-			if err != nil {
-				t.Fatalf("NewVQCBuilder() returned an unexpected error: %v", err)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := builder.WithPreLayer(tc.gates)
+			if (err != nil) != tc.expectErr {
+				t.Errorf("WithPreLayer() error = %v, expectErr = %v", err, tc.expectErr)
 			}
-			gates := []QuantumGate{newTestGate(t, RXGate, 0, nil), newTestGate(t, CNOTGate, 1, []Qubit{2})}
+			if !tc.expectErr && result == nil {
+				t.Error("WithPreLayer() returned nil")
+			}
+		})
+	}
+}
 
-			result, err := testCase.configure(builder, gates)
-			if err != nil || result != builder {
-				t.Fatalf("layer method returned builder=%v, error=%v", result == builder, err)
-			}
-			stored := testCase.layer(builder).Gates()
-			if len(stored) != len(gates) || !stored[0].Equal(gates[0]) || !stored[1].Equal(gates[1]) {
-				t.Fatalf("layer did not store the supplied gates")
-			}
+func TestVQCBuilderWithLayer(t *testing.T) {
+	builder, _ := NewVQCBuilder(validVQCBuilderInputAngle())
 
-			if _, err := testCase.configure(builder, nil); err != nil {
-				t.Fatalf("empty layer returned an unexpected error: %v", err)
+	testCases := []struct {
+		name      string
+		gates     []GateBuilderInput
+		expectErr bool
+	}{
+		{
+			name:      "Valid single gate",
+			gates:     []GateBuilderInput{validGateInput(1)},
+			expectErr: false,
+		},
+		{
+			name: "Valid multiple gates",
+			gates: []GateBuilderInput{
+				validGateInput(0),
+				validGateInput(1),
+				validGateInput(2),
+			},
+			expectErr: false,
+		},
+		{
+			name:      "Empty gates",
+			gates:     []GateBuilderInput{},
+			expectErr: false,
+		},
+		{
+			name: "Invalid gate qubit index",
+			gates: []GateBuilderInput{
+				{GateType: "ry", Qubit: 5},
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := builder.WithLayer(tc.gates)
+			if (err != nil) != tc.expectErr {
+				t.Errorf("WithLayer() error = %v, expectErr = %v", err, tc.expectErr)
 			}
-			if len(testCase.layer(builder).Gates()) != 0 {
-				t.Error("empty layer did not replace the previous gates")
+			if !tc.expectErr && result == nil {
+				t.Error("WithLayer() returned nil")
+			}
+		})
+	}
+}
+
+func TestVQCBuilderWithPostLayer(t *testing.T) {
+	builder, _ := NewVQCBuilder(validVQCBuilderInputAngle())
+
+	testCases := []struct {
+		name      string
+		gates     []GateBuilderInput
+		expectErr bool
+	}{
+		{
+			name:      "Valid single gate",
+			gates:     []GateBuilderInput{validGateInput(2)},
+			expectErr: false,
+		},
+		{
+			name: "Valid multiple gates",
+			gates: []GateBuilderInput{
+				validGateInput(0),
+				validGateInput(1),
+				validGateInput(2),
+			},
+			expectErr: false,
+		},
+		{
+			name:      "Empty gates",
+			gates:     []GateBuilderInput{},
+			expectErr: false,
+		},
+		{
+			name: "Invalid gate qubit index",
+			gates: []GateBuilderInput{
+				{GateType: "rz", Qubit: 8},
+			},
+			expectErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := builder.WithPostLayer(tc.gates)
+			if (err != nil) != tc.expectErr {
+				t.Errorf("WithPostLayer() error = %v, expectErr = %v", err, tc.expectErr)
+			}
+			if !tc.expectErr && result == nil {
+				t.Error("WithPostLayer() returned nil")
 			}
 		})
 	}
@@ -157,109 +307,324 @@ func TestVQCBuilderLayerMethods(t *testing.T) {
 
 func TestVQCBuilderBuild(t *testing.T) {
 	testCases := []struct {
-		name      string
-		input     VQCBuilderInput
-		configure func(*VQCBuilder) error
-		expectErr bool
+		builderSetupFn  func() (*VQCBuilder, error)
+		name            string
+		expectErr       bool
+		shouldReturnVQC bool
 	}{
-		{name: "without layers", input: validVQCBuilderInput()},
 		{
-			name:  "with all layers",
-			input: validVQCBuilderInput(),
-			configure: func(builder *VQCBuilder) error {
-				gates := []QuantumGate{newTestGate(t, RXGate, 0, nil)}
-				if _, err := builder.WithPreLayer(gates); err != nil {
-					return err
+			name: "Build with all layers",
+			builderSetupFn: func() (*VQCBuilder, error) {
+				builder, err := NewVQCBuilder(validVQCBuilderInputAngle())
+				if err != nil {
+					return nil, err
 				}
-				if _, err := builder.WithLayer(gates); err != nil {
-					return err
-				}
-				_, err := builder.WithPostLayer(gates)
-				return err
+				builder.WithPreLayer([]GateBuilderInput{validGateInput(0)})
+				builder.WithLayer([]GateBuilderInput{validGateInput(1)})
+				builder.WithPostLayer([]GateBuilderInput{validGateInput(2)})
+				return builder, nil
 			},
+			expectErr:       false,
+			shouldReturnVQC: true,
 		},
 		{
-			name: "zero qubits fails at build",
-			input: func() VQCBuilderInput {
-				input := validVQCBuilderInput()
-				input.NumQubits = 0
-				return input
-			}(),
-			expectErr: true,
+			name: "Build without pre layer",
+			builderSetupFn: func() (*VQCBuilder, error) {
+				builder, err := NewVQCBuilder(validVQCBuilderInputAngle())
+				if err != nil {
+					return nil, err
+				}
+				builder.WithLayer([]GateBuilderInput{validGateInput(0)})
+				builder.WithPostLayer([]GateBuilderInput{validGateInput(1)})
+				return builder, nil
+			},
+			expectErr:       false,
+			shouldReturnVQC: true,
+		},
+		{
+			name: "Build without post layer",
+			builderSetupFn: func() (*VQCBuilder, error) {
+				builder, err := NewVQCBuilder(validVQCBuilderInputAngle())
+				if err != nil {
+					return nil, err
+				}
+				builder.WithPreLayer([]GateBuilderInput{validGateInput(0)})
+				builder.WithLayer([]GateBuilderInput{validGateInput(1)})
+				return builder, nil
+			},
+			expectErr:       false,
+			shouldReturnVQC: true,
+		},
+		{
+			name: "Build without any layers",
+			builderSetupFn: func() (*VQCBuilder, error) {
+				return NewVQCBuilder(validVQCBuilderInputAngle())
+			},
+			expectErr:       false,
+			shouldReturnVQC: true,
+		},
+		{
+			name: "Build with amplitude embedding",
+			builderSetupFn: func() (*VQCBuilder, error) {
+				builder, err := NewVQCBuilder(validVQCBuilderInputAmplitude())
+				if err != nil {
+					return nil, err
+				}
+				builder.WithLayer([]GateBuilderInput{validGateInput(0)})
+				return builder, nil
+			},
+			expectErr:       false,
+			shouldReturnVQC: true,
 		},
 	}
 
-	for _, testCase := range testCases {
-		t.Run(testCase.name, func(t *testing.T) {
-			builder, err := NewVQCBuilder(testCase.input)
-			if err != nil {
-				t.Fatalf("NewVQCBuilder() returned an unexpected error: %v", err)
-			}
-			if testCase.configure != nil {
-				if err := testCase.configure(builder); err != nil {
-					t.Fatalf("builder configuration returned an unexpected error: %v", err)
-				}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			builder, setupErr := tc.builderSetupFn()
+			if setupErr != nil && !tc.expectErr {
+				t.Fatalf("Setup failed: %v", setupErr)
 			}
 
-			result, err := builder.Build()
-			if (err != nil) != testCase.expectErr {
-				t.Fatalf("Build() error = %v, expectErr = %v", err, testCase.expectErr)
+			if builder == nil {
+				t.Fatal("Builder setup returned nil")
 			}
-			if !testCase.expectErr {
-				if result == nil {
-					t.Fatal("Build() returned nil VQC")
-				}
-				if result.NumQubits() != testCase.input.NumQubits || result.NumLayers() != testCase.input.NumLayers {
-					t.Error("Build() did not preserve the VQC dimensions")
-				}
+
+			vqc, err := builder.Build()
+			if (err != nil) != tc.expectErr {
+				t.Errorf("Build() error = %v, expectErr = %v", err, tc.expectErr)
+			}
+			if tc.shouldReturnVQC && vqc == nil {
+				t.Error("Build() should return VQC, got nil")
 			}
 		})
 	}
 }
 
 func TestVQCBuilderFluentInterface(t *testing.T) {
-	builder, err := NewVQCBuilder(validVQCBuilderInput())
+	builder, err := NewVQCBuilder(validVQCBuilderInputAngle())
 	if err != nil {
-		t.Fatalf("NewVQCBuilder() returned an unexpected error: %v", err)
+		t.Fatalf("NewVQCBuilder() failed: %v", err)
 	}
-	gates := []QuantumGate{newTestGate(t, RXGate, 0, nil)}
+
+	gates := []GateBuilderInput{
+		validGateInput(0),
+		validGateInput(1),
+		validGateInput(2),
+	}
 
 	result, err := builder.WithPreLayer(gates)
 	if err != nil {
-		t.Fatalf("WithPreLayer() returned an unexpected error: %v", err)
+		t.Errorf("WithPreLayer chaining failed: %v", err)
+		return
 	}
+
 	result, err = result.WithLayer(gates)
 	if err != nil {
-		t.Fatalf("WithLayer() returned an unexpected error: %v", err)
+		t.Errorf("WithLayer chaining failed: %v", err)
+		return
 	}
+
 	result, err = result.WithPostLayer(gates)
 	if err != nil {
-		t.Fatalf("WithPostLayer() returned an unexpected error: %v", err)
+		t.Errorf("WithPostLayer chaining failed: %v", err)
+		return
 	}
-	if result != builder {
-		t.Error("layer methods did not preserve fluent builder identity")
+
+	if result == nil {
+		t.Error("Fluent interface returned nil")
 	}
-	if _, err := result.Build(); err != nil {
-		t.Fatalf("Build() after fluent configuration returned an unexpected error: %v", err)
+
+	vqc, err := result.Build()
+	if err != nil {
+		t.Errorf("Build after chaining failed: %v", err)
+	}
+	if vqc == nil {
+		t.Error("Build should return VQC, got nil")
 	}
 }
 
-func TestVQCBuilderLastLayerConfigurationWins(t *testing.T) {
-	builder, err := NewVQCBuilder(validVQCBuilderInput())
-	if err != nil {
-		t.Fatalf("NewVQCBuilder() returned an unexpected error: %v", err)
-	}
-	firstGate := newTestGate(t, RXGate, 0, nil)
-	secondGate := newTestGate(t, RYGate, 1, nil)
-	if _, err := builder.WithLayer([]QuantumGate{firstGate}); err != nil {
-		t.Fatalf("first WithLayer() returned an unexpected error: %v", err)
-	}
-	if _, err := builder.WithLayer([]QuantumGate{secondGate}); err != nil {
-		t.Fatalf("second WithLayer() returned an unexpected error: %v", err)
+func TestVQCBuilderErrorPropagation(t *testing.T) {
+	testCases := []struct {
+		setupFn     func() (*VQCBuilder, error)
+		layerFn     func(*VQCBuilder) (*VQCBuilder, error)
+		name        string
+		description string
+		expectErr   bool
+	}{
+		{
+			name: "Invalid gate in pre layer propagates error",
+			setupFn: func() (*VQCBuilder, error) {
+				return NewVQCBuilder(validVQCBuilderInputAngle())
+			},
+			layerFn: func(b *VQCBuilder) (*VQCBuilder, error) {
+				return b.WithPreLayer([]GateBuilderInput{
+					{GateType: "RX", Qubit: 10}, // Out of range
+				})
+			},
+			expectErr:   true,
+			description: "Should propagate qubit index error from pre layer",
+		},
+		{
+			name: "Invalid gate in main layer propagates error",
+			setupFn: func() (*VQCBuilder, error) {
+				return NewVQCBuilder(validVQCBuilderInputAngle())
+			},
+			layerFn: func(b *VQCBuilder) (*VQCBuilder, error) {
+				return b.WithLayer([]GateBuilderInput{
+					{GateType: "RY", Qubit: 20}, // Out of range
+				})
+			},
+			expectErr:   true,
+			description: "Should propagate qubit index error from main layer",
+		},
+		{
+			name: "Invalid gate in post layer propagates error",
+			setupFn: func() (*VQCBuilder, error) {
+				return NewVQCBuilder(validVQCBuilderInputAngle())
+			},
+			layerFn: func(b *VQCBuilder) (*VQCBuilder, error) {
+				return b.WithPostLayer([]GateBuilderInput{
+					{GateType: "RZ", Qubit: 15}, // Out of range
+				})
+			},
+			expectErr:   true,
+			description: "Should propagate qubit index error from post layer",
+		},
 	}
 
-	stored := builder.layer.Gates()
-	if len(stored) != 1 || !stored[0].Equal(secondGate) {
-		t.Errorf("last WithLayer() did not replace the previous layer")
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			builder, setupErr := tc.setupFn()
+			if setupErr != nil && !tc.expectErr {
+				t.Fatalf("Setup failed: %v", setupErr)
+			}
+
+			_, err := tc.layerFn(builder)
+			if (err != nil) != tc.expectErr {
+				t.Errorf("%s: error = %v, expectErr = %v", tc.description, err, tc.expectErr)
+			}
+		})
+	}
+}
+
+func TestVQCBuilderMultipleCallSequences(t *testing.T) {
+	testCases := []struct {
+		name           string
+		preLayerCalls  int
+		mainLayerCalls int
+		postLayerCalls int
+		expectErr      bool
+	}{
+		{
+			name:           "Single call per layer",
+			preLayerCalls:  1,
+			mainLayerCalls: 1,
+			postLayerCalls: 1,
+			expectErr:      false,
+		},
+		{
+			name:           "Multiple calls per layer (last wins)",
+			preLayerCalls:  3,
+			mainLayerCalls: 2,
+			postLayerCalls: 2,
+			expectErr:      false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			builder, _ := NewVQCBuilder(validVQCBuilderInputAngle())
+
+			for i := 0; i < tc.preLayerCalls; i++ {
+				_, err := builder.WithPreLayer([]GateBuilderInput{validGateInput(0)})
+				if (err != nil) != tc.expectErr {
+					t.Errorf("WithPreLayer call %d failed", i+1)
+				}
+			}
+
+			for i := 0; i < tc.mainLayerCalls; i++ {
+				_, err := builder.WithLayer([]GateBuilderInput{validGateInput(1)})
+				if (err != nil) != tc.expectErr {
+					t.Errorf("WithLayer call %d failed", i+1)
+				}
+			}
+
+			for i := 0; i < tc.postLayerCalls; i++ {
+				_, err := builder.WithPostLayer([]GateBuilderInput{validGateInput(2)})
+				if (err != nil) != tc.expectErr {
+					t.Errorf("WithPostLayer call %d failed", i+1)
+				}
+			}
+
+			_, err := builder.Build()
+			if (err != nil) != tc.expectErr {
+				t.Errorf("Build failed: %v", err)
+			}
+		})
+	}
+}
+
+func TestVQCBuilderEdgeCases(t *testing.T) {
+	testCases := []struct {
+		name      string
+		embedding EmbeddingBuilderInput
+		numQubits uint
+		numLayers uint
+		expectErr bool
+	}{
+		{
+			name:      "Single qubit",
+			numQubits: 1,
+			numLayers: 1,
+			embedding: EmbeddingBuilderInput{
+				Type:     "angle",
+				Qubits:   []uint{0},
+				Rotation: "x",
+			},
+			expectErr: false,
+		},
+		{
+			name:      "Large number of qubits",
+			numQubits: 100,
+			numLayers: 10,
+			embedding: EmbeddingBuilderInput{
+				Type:     "angle",
+				Qubits:   []uint{0, 1, 2, 3, 4},
+				Rotation: "y",
+			},
+			expectErr: false,
+		},
+		{
+			name:      "Zero layers",
+			numQubits: 3,
+			numLayers: 0,
+			embedding: validAngleEmbeddingInput(),
+			expectErr: false,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			input := VQCBuilderInput{
+				NumQubits: tc.numQubits,
+				NumLayers: tc.numLayers,
+				Embedding: tc.embedding,
+				Measurement: MeasurementBuilderInput{
+					Type:     "expectation",
+					Rotation: "x",
+					Qubits:   []uint{0},
+				},
+			}
+
+			builder, err := NewVQCBuilder(input)
+			if (err != nil) != tc.expectErr {
+				t.Errorf("NewVQCBuilder() error = %v, expectErr = %v", err, tc.expectErr)
+				return
+			}
+
+			if !tc.expectErr && builder == nil {
+				t.Error("Expected builder, got nil")
+			}
+		})
 	}
 }

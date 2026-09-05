@@ -3,15 +3,21 @@ package vqc
 type EmbeddingBuilderInput struct {
 	Type      EmbeddingType
 	Rotation  EmbeddingRotation
-	Qubits    []Qubit
-	PadWidth  float64
+	Qubits    []uint
+	PadWith   float64
 	Normalize bool
 }
 
 type MeasurementBuilderInput struct {
 	Type     MeasurementType
 	Rotation MeasurementRotation
-	Qubits   []Qubit
+	Qubits   []uint
+}
+
+type GateBuilderInput struct {
+	GateType      GateType
+	ControlQubits []uint
+	Qubit         uint
 }
 
 type VQCBuilderInput struct {
@@ -54,34 +60,95 @@ func NewVQCBuilder(input VQCBuilderInput) (*VQCBuilder, error) {
 
 func buildEmbedding(input EmbeddingBuilderInput, numQubits uint) (Embedding, error) {
 	switch input.Type {
-	case EmbeddingTypeAngle:
-		return NewAngleEmbedding(input.Qubits, input.Rotation)
-	case EmbeddingTypeAmplitude:
-		return NewAmplitudeEmbedding(input.Qubits, input.Normalize, input.PadWidth)
+	case "angle":
+		qubits, err := buildQubits(input.Qubits, numQubits)
+		if err != nil {
+			return nil, err
+		}
+		rotation := EmbeddingRotation(input.Rotation)
+		return NewAngleEmbedding(qubits, rotation)
+	case "amplitude":
+		qubits, err := buildQubits(input.Qubits, numQubits)
+		if err != nil {
+			return nil, err
+		}
+		return NewAmplitudeEmbedding(qubits, input.Normalize, input.PadWith)
 	default:
 		return nil, &InvalidEmbeddingError{EmbeddingType(input.Type)}
 	}
 }
 
+func buildQubits(qubitIndices []uint, numQubits uint) ([]Qubit, error) {
+	qubits := make([]Qubit, len(qubitIndices))
+	for i, index := range qubitIndices {
+		qubit, err := NewQubit(uint(index), uint(numQubits))
+		if err != nil {
+			return nil, err
+		}
+		qubits[i] = qubit
+	}
+	return qubits, nil
+}
+
 func buildMeasurement(input MeasurementBuilderInput, numQubits uint) (Measurement, error) {
-	return NewMeasurement(input.Qubits, input.Type, input.Rotation)
+	qubits, err := buildQubits(input.Qubits, numQubits)
+	if err != nil {
+		return Measurement{}, err
+	}
+	measurementType := MeasurementType(input.Type)
+	rotation := MeasurementRotation(input.Rotation)
+	return NewMeasurement(qubits, measurementType, rotation)
 }
 
-func (b *VQCBuilder) WithPreLayer(gates []QuantumGate) (*VQCBuilder, error) {
-	layer := NewLayer(gates)
-	b.preLayer = *layer
+func (b *VQCBuilder) WithPreLayer(gates []GateBuilderInput) (*VQCBuilder, error) {
+	layer, err := buildLayer(gates, b.numQubits)
+	if err != nil {
+		return nil, err
+	}
+	b.preLayer = layer
 	return b, nil
 }
 
-func (b *VQCBuilder) WithLayer(gates []QuantumGate) (*VQCBuilder, error) {
-	layer := NewLayer(gates)
-	b.layer = *layer
+func buildLayer(gates []GateBuilderInput, numQubits uint) (Layer, error) {
+	layer := make([]QuantumGate, 0, len(gates))
+	for _, gateInput := range gates {
+		gate, err := buildGate(gateInput, numQubits)
+		if err != nil {
+			return Layer{}, err
+		}
+		layer = append(layer, *gate)
+	}
+	return NewLayer(layer), nil
+}
+
+func buildGate(gateInput GateBuilderInput, numQubits uint) (*QuantumGate, error) {
+	gateType := GateType(gateInput.GateType)
+	qubit, err := NewQubit(uint(gateInput.Qubit), numQubits)
+	if err != nil {
+		return nil, err
+	}
+	controlQubits, err := buildQubits(gateInput.ControlQubits, numQubits)
+	if err != nil {
+		return nil, err
+	}
+	return NewQuantumGate(gateType, qubit, controlQubits)
+}
+
+func (b *VQCBuilder) WithLayer(gates []GateBuilderInput) (*VQCBuilder, error) {
+	layer, err := buildLayer(gates, b.numQubits)
+	if err != nil {
+		return nil, err
+	}
+	b.layer = layer
 	return b, nil
 }
 
-func (b *VQCBuilder) WithPostLayer(gates []QuantumGate) (*VQCBuilder, error) {
-	layer := NewLayer(gates)
-	b.postLayer = *layer
+func (b *VQCBuilder) WithPostLayer(gates []GateBuilderInput) (*VQCBuilder, error) {
+	layer, err := buildLayer(gates, b.numQubits)
+	if err != nil {
+		return nil, err
+	}
+	b.postLayer = layer
 	return b, nil
 }
 

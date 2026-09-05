@@ -8,6 +8,7 @@ const (
 	HGate    GateType = "h"
 	XGate    GateType = "x"
 	YGate    GateType = "y"
+	ZGate    GateType = "z"
 	RXGate   GateType = "rx"
 	RYGate   GateType = "ry"
 	RZGate   GateType = "rz"
@@ -34,7 +35,7 @@ func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (*Qu
 }
 
 func validateGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) error {
-	if !isPermitedGate(gate_type) {
+	if !isPermittedGate(gate_type) {
 		return &InvalidGateError{gate_type}
 	}
 
@@ -54,9 +55,9 @@ func validateGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) error 
 	return nil
 }
 
-func isPermitedGate(gate_type GateType) bool {
+func isPermittedGate(gate_type GateType) bool {
 	switch gate_type {
-	case HGate, XGate, YGate, RXGate, RYGate, RZGate, CNOTGate:
+	case HGate, XGate, YGate, ZGate, RXGate, RYGate, RZGate, CNOTGate:
 		return true
 	default:
 		return false

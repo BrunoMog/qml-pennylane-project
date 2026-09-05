@@ -44,9 +44,6 @@ func TestNewLayer(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			layer := NewLayer(tc.gates)
-			if layer == nil {
-				t.Error("NewLayer returned nil")
-			}
 
 			gates := layer.Gates()
 			if uint(len(gates)) != tc.expectedCount {

@@ -1,6 +1,7 @@
 package vqc
 
 import (
+	"math"
 	"slices"
 )
 
@@ -78,15 +79,18 @@ func (a AngleEmbedding) isEmbedding() {}
 type AmplitudeEmbedding struct {
 	qubits    []Qubit
 	normalize bool
-	padWidth  float64
+	padWith   float64
 }
 
-func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padWidth float64) (AmplitudeEmbedding, error) {
+func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padWith float64) (AmplitudeEmbedding, error) {
 	if err := validateEmbeddingQubits(qubits); err != nil {
 		return AmplitudeEmbedding{}, err
 	}
+	if math.IsNaN(padWith) || math.IsInf(padWith, 0) {
+		return AmplitudeEmbedding{}, &InvalidPadWithError{padWith: padWith}
+	}
 
-	return AmplitudeEmbedding{qubits: qubits, normalize: normalize, padWidth: padWidth}, nil
+	return AmplitudeEmbedding{qubits: qubits, normalize: normalize, padWith: padWith}, nil
 }
 
 func (a AmplitudeEmbedding) Type() EmbeddingType {
@@ -101,8 +105,8 @@ func (a AmplitudeEmbedding) Normalize() bool {
 	return a.normalize
 }
 
-func (a AmplitudeEmbedding) PadWidth() float64 {
-	return a.padWidth
+func (a AmplitudeEmbedding) PadWith() float64 {
+	return a.padWith
 }
 
 func (a AmplitudeEmbedding) isEmbedding() {}

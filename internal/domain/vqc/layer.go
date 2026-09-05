@@ -6,8 +6,8 @@ type Layer struct {
 	gates []QuantumGate
 }
 
-func NewLayer(gates []QuantumGate) *Layer {
-	return &Layer{
+func NewLayer(gates []QuantumGate) Layer {
+	return Layer{
 		gates: slices.Clone(gates),
 	}
 }

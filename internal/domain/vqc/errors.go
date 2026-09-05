@@ -113,3 +113,51 @@ type InvalidMeasurementRotationError struct {
 func (e *InvalidMeasurementRotationError) Error() string {
 	return fmt.Sprintf("Invalid measurement rotation: %s", e.measurement_rotation)
 }
+
+type InvalidParseEmbeddingError struct {
+	embeddingTypeStr string
+}
+
+func (e *InvalidParseEmbeddingError) Error() string {
+	return fmt.Sprintf("Invalid embedding type string: %s", e.embeddingTypeStr)
+}
+
+type InvalidPadWithError struct {
+	padWith float64
+}
+
+func (e *InvalidPadWithError) Error() string {
+	return fmt.Sprintf("Invalid pad width: %f", e.padWith)
+}
+
+type InvalidParseEmbeddingRotationError struct {
+	rotationStr string
+}
+
+func (e *InvalidParseEmbeddingRotationError) Error() string {
+	return fmt.Sprintf("Invalid embedding rotation string: %s", e.rotationStr)
+}
+
+type InvalidParseMeasurementTypeError struct {
+	measurementType MeasurementType
+}
+
+func (e *InvalidParseMeasurementTypeError) Error() string {
+	return fmt.Sprintf("Invalid measurement type string: %s", e.measurementType)
+}
+
+type InvalidParseMeasurementRotationError struct {
+	rotationStr string
+}
+
+func (e *InvalidParseMeasurementRotationError) Error() string {
+	return fmt.Sprintf("Invalid measurement rotation string: %s", e.rotationStr)
+}
+
+type InvalidParseGateTypeError struct {
+	gateTypeStr string
+}
+
+func (e *InvalidParseGateTypeError) Error() string {
+	return fmt.Sprintf("Invalid gate type string: %s", e.gateTypeStr)
+}
