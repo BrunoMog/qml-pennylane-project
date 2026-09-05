@@ -16,3 +16,10 @@ type ErrVQCConfigNotFound struct {
 func (e ErrVQCConfigNotFound) Error() string {
 	return "VQC config not found"
 }
+
+type ErrTrainConfigNotFound struct {
+}
+
+func (e ErrTrainConfigNotFound) Error() string {
+	return "Train config not found"
+}

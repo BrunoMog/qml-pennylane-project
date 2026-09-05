@@ -48,7 +48,7 @@ func (r *MockUserRepository) ExistsByEmail(email string) (bool, error) {
 	return false, nil
 }
 
-func (r *MockUserRepository) ExistByID(id uuid.UUID) (bool, error) {
+func (r *MockUserRepository) ExistsByID(id uuid.UUID) (bool, error) {
 	if _, ok := r.users[id]; ok {
 		return true, nil
 	}
