@@ -3,138 +3,94 @@ package vqcconfigusecase
 import (
 	"pennylane_project_backend/internal/domain/user"
 	"pennylane_project_backend/internal/domain/vqc"
-	"pennylane_project_backend/internal/testkit"
+	"pennylane_project_backend/internal/domain/vqcconfig"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateVQCConfig(t *testing.T) {
 	tests := []struct {
-		vqcConfigToCreate testkit.VQCConfigSeed
-		name              string
-		userToSeed        []testkit.UserSeed
-		vqcConfigToSeed   []testkit.VQCConfigSeed
-		callerRef         uint8
-		expectError       bool
+		expectedError error
+		setup         func(f *testFixture) CreateVQCConfigInput
+		testName      string
 	}{
 		{
-			name: "valid VQCConfig creation",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
-			},
-			callerRef:       1,
-			vqcConfigToSeed: []testkit.VQCConfigSeed{},
-			vqcConfigToCreate: testkit.VQCConfigSeed{
-				Ref:         1,
-				CallerRef:   1,
-				Name:        "Test VQCConfig",
-				Description: "This is a test VQCConfig",
-				VQC:         &vqc.VQC{}, // Assuming a valid VQC object
-			},
-			expectError: false,
-		},
-		{
-			name: "inexistent caller",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
-			},
-			callerRef:       2,
-			vqcConfigToSeed: []testkit.VQCConfigSeed{},
-			vqcConfigToCreate: testkit.VQCConfigSeed{
-				CallerRef:   2,
-				Ref:         1,
-				Name:        "Test VQCConfig",
-				Description: "This is a test VQCConfig",
-				VQC:         &vqc.VQC{}, // Assuming a valid VQC object
-			},
-			expectError: true,
-		},
-		{
-			name: "duplicate VQCConfig name",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
-			},
-			callerRef: 1,
-			vqcConfigToSeed: []testkit.VQCConfigSeed{
-				{
-					Ref:         1,
-					CallerRef:   1,
-					Name:        "Test VQCConfig",
+			testName: "create VQCConfig successfully",
+			setup: func(f *testFixture) CreateVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				return CreateVQCConfigInput{
+					Name:        "Test Config",
 					Description: "This is a test VQCConfig",
-					VQC:         &vqc.VQC{}, // Assuming a valid VQC object
-				},
+					CallerID:    user.ID(),
+					VQC:         &vqc.VQC{},
+				}
 			},
-			vqcConfigToCreate: testkit.VQCConfigSeed{
-				Ref:         2,
-				Name:        "Test VQCConfig",
-				Description: "This is a test VQCConfig",
-				VQC:         &vqc.VQC{}, // Assuming a valid VQC object
+			expectedError: nil,
+		},
+		{
+			testName: "fail to create VQCConfig due to non-existent user",
+			setup: func(f *testFixture) CreateVQCConfigInput {
+				return CreateVQCConfigInput{
+					Name:        "Test Config",
+					Description: "This is a test VQCConfig",
+					CallerID:    uuid.New(),
+					VQC:         &vqc.VQC{},
+				}
 			},
-			expectError: true,
+			expectedError: &UserNotFoundError{},
+		},
+		{
+			testName: "fail to create VQCConfig due to duplicate name",
+			setup: func(f *testFixture) CreateVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				vqcconfig := f.createVQCConfig(user.ID())
+				vqcconfig.SetName("Test Config")
+				return CreateVQCConfigInput{
+					Name:        "Test Config",
+					Description: "This is a test VQCConfig",
+					CallerID:    user.ID(),
+					VQC:         &vqc.VQC{},
+				}
+			},
+			expectedError: &VQCConfigNameAlreadyExistsError{},
+		},
+		{
+			testName: "nil reference to VQC",
+			setup: func(f *testFixture) CreateVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				return CreateVQCConfigInput{
+					Name:        "Test Config",
+					Description: "This is a test VQCConfig",
+					CallerID:    user.ID(),
+					VQC:         nil,
+				}
+			},
+			expectedError: &vqcconfig.VQCConfigMissingVQCError{},
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			userRepo := testkit.NewMockUserRepository()
-			vqcConfigRepo := testkit.NewMockVQCConfigRepository()
+		t.Run(tt.testName, func(t *testing.T) {
+			f := newTestFixture(t)
+			input := tt.setup(f)
 
-			userSeedResult, err := testkit.SeedUsers(userRepo, tt.userToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed users: %v", err)
-			}
+			output, err := f.service.CreateVQCConfig(input)
 
-			_, err = testkit.SeedVQCConfigs(vqcConfigRepo, userSeedResult, tt.vqcConfigToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed VQCConfigs: %v", err)
-			}
-
-			var callerID uuid.UUID
-			caller, exists := userSeedResult.ByRef[tt.callerRef]
-			if !exists {
-				callerID = uuid.New()
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectedError, err)
+				assert.Nil(t, output)
 			} else {
-				callerID = caller.ID()
-			}
-
-			vqcConfigService := NewVQCConfigService(vqcConfigRepo, userRepo)
-
-			input := CreateVQCConfigInput{
-				CallerID:    callerID,
-				Name:        tt.vqcConfigToCreate.Name,
-				Description: tt.vqcConfigToCreate.Description,
-				VQC:         tt.vqcConfigToCreate.VQC,
-			}
-
-			output, err := vqcConfigService.CreateVQCConfig(input)
-			if (err != nil) != tt.expectError {
-				t.Errorf("CreateVQCConfig() error = %v, expectError %v", err, tt.expectError)
-			}
-
-			if !tt.expectError {
-				if output.Name != tt.vqcConfigToCreate.Name {
-					t.Errorf("Expected name %v, got %v", tt.vqcConfigToCreate.Name, output.Name)
-				}
-				if output.Description != tt.vqcConfigToCreate.Description {
-					t.Errorf("Expected description %v, got %v", tt.vqcConfigToCreate.Description, output.Description)
-				}
+				assert.NoError(t, err)
+				assert.NotNil(t, output)
+				assert.Equal(t, input.Name, output.Name)
+				assert.Equal(t, input.Description, output.Description)
+				assert.NotZero(t, output.VQCId)
+				assert.NotZero(t, output.CreatedAt)
 			}
 		})
 	}
+
 }

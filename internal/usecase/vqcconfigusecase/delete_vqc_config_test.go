@@ -2,109 +2,84 @@ package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/user"
-	"pennylane_project_backend/internal/domain/vqc"
 	"pennylane_project_backend/internal/testkit"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteVQCConfig(t *testing.T) {
 	tests := []struct {
-		name             string
-		usersToSeed      []testkit.UserSeed
-		vqcConfigsToSeed []testkit.VQCConfigSeed
-		callerRef        uint8
-		vqcConfigRef     uint8
-		expectError      bool
+		expectedError error
+		setup         func(f *testFixture) DeleteVQCConfigInput
+		testName      string
 	}{
 		{
-			name: "successfully delete a VQCConfig",
-			usersToSeed: []testkit.UserSeed{
-				{Ref: 1, Name: "Alice", Email: "alice@example.com", Role: user.RoleAdmin},
+			testName: "delete VQCConfig successfully",
+			setup: func(f *testFixture) DeleteVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(user.ID())
+				return DeleteVQCConfigInput{
+					CallerID:    user.ID(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}
 			},
-			callerRef: 1,
-			vqcConfigsToSeed: []testkit.VQCConfigSeed{
-				{Ref: 1, CallerRef: 1, Name: "Test VQCConfig", Description: "This is a test VQCConfig", VQC: &vqc.VQC{}},
-				{Ref: 2, CallerRef: 1, Name: "Test VQCConfig 2", Description: "This is a test VQCConfig 2", VQC: &vqc.VQC{}},
-			},
-			vqcConfigRef: 1,
-			expectError:  false,
+			expectedError: nil,
 		},
 		{
-			name: "fail to delete a non-existent VQCConfig",
-			usersToSeed: []testkit.UserSeed{
-				{Ref: 1, Name: "Alice", Email: "alice@example.com", Role: user.RoleAdmin},
+			testName: "inexistent caller user",
+			setup: func(f *testFixture) DeleteVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(user.ID())
+				return DeleteVQCConfigInput{
+					CallerID:    uuid.New(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}
 			},
-			callerRef:        1,
-			vqcConfigsToSeed: []testkit.VQCConfigSeed{},
-			vqcConfigRef:     1,
-			expectError:      true,
+			expectedError: &UnauthorizedError{},
 		},
 		{
-			name: "fail to delete a VQCConfig with unauthorized user",
-			usersToSeed: []testkit.UserSeed{
-				{Ref: 1, Name: "Alice", Email: "alice@example.com", Role: user.RoleAdmin},
-				{Ref: 2, Name: "Bob", Email: "bob@example.com", Role: user.RoleUser},
+			testName: "inexistent VQCConfig",
+			setup: func(f *testFixture) DeleteVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				return DeleteVQCConfigInput{
+					CallerID:    user.ID(),
+					VQCConfigID: uuid.New(),
+				}
 			},
-			callerRef: 2,
-			vqcConfigsToSeed: []testkit.VQCConfigSeed{
-				{Ref: 1, CallerRef: 1, Name: "Test VQCConfig", Description: "This is a test VQCConfig", VQC: &vqc.VQC{}},
+			expectedError: &testkit.ErrVQCConfigNotFound{},
+		},
+		{
+			testName: "unauthorized user",
+			setup: func(f *testFixture) DeleteVQCConfigInput {
+				owner := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(owner.ID())
+				unauthorizedUser := f.createUser(user.RoleUser)
+				return DeleteVQCConfigInput{
+					CallerID:    unauthorizedUser.ID(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}
 			},
-			vqcConfigRef: 1,
-			expectError:  true,
+			expectedError: &UnauthorizedError{},
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			userRepo := testkit.NewMockUserRepository()
-			vqcConfigRepo := testkit.NewMockVQCConfigRepository()
-
-			userSeedResult, err := testkit.SeedUsers(userRepo, tt.usersToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed users: %v", err)
-			}
-
-			vqcConfigSeedResult, err := testkit.SeedVQCConfigs(vqcConfigRepo, userSeedResult, tt.vqcConfigsToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed VQCConfigs: %v", err)
-			}
-
-			var callerID uuid.UUID
-			caller, exists := userSeedResult.ByRef[tt.callerRef]
-			if !exists {
-				callerID = uuid.New()
+		t.Run(tt.testName, func(t *testing.T) {
+			fixture := newTestFixture(t)
+			input := tt.setup(fixture)
+			err := fixture.service.DeleteVQCConfig(input)
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectedError, err)
 			} else {
-				callerID = caller.ID()
-			}
-
-			var vqcConfigID uuid.UUID
-			vqcConfig, exists := vqcConfigSeedResult.ByRef[tt.vqcConfigRef]
-			if !exists {
-				vqcConfigID = uuid.New()
-			} else {
-				vqcConfigID = vqcConfig.VQCConfigID()
-			}
-
-			vqcConfigService := NewVQCConfigService(vqcConfigRepo, userRepo)
-
-			input := DeleteVQCConfigInput{
-				CallerID:    callerID,
-				VQCConfigID: vqcConfigID,
-			}
-
-			err = vqcConfigService.DeleteVQCConfig(input)
-			if (err != nil) != tt.expectError {
-				t.Errorf("DeleteVQCConfig() error = %v, expectError %v", err, tt.expectError)
-			}
-
-			if !tt.expectError {
-				_, err = vqcConfigRepo.FindByID(vqcConfigID)
-				if err == nil {
-					t.Errorf("VQCConfig with ID %v was not deleted", vqcConfigID)
-				}
+				assert.NoError(t, err)
+				exists, err := fixture.vqcConfigRepo.ExistsByID(input.VQCConfigID)
+				assert.NoError(t, err)
+				assert.False(t, exists)
 			}
 		})
 	}
+
 }

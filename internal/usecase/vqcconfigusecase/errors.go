@@ -51,3 +51,10 @@ type InvalidDescriptionError struct {
 func (e *InvalidDescriptionError) Error() string {
 	return "Invalid description"
 }
+
+type NoFieldsToUpdateError struct {
+}
+
+func (e *NoFieldsToUpdateError) Error() string {
+	return "No fields to update"
+}

@@ -20,25 +20,23 @@ type LoadVQCConfigOutput struct {
 	Name        string
 	Description string
 	VQC         vqc.VQC
+	OwnerID     uuid.UUID
+	VQCConfigID uuid.UUID
 }
 
 func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConfigOutput, error) {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return nil, err
+	if input.VQCConfigID == nil && input.VQCConfigName == nil {
+		return nil, &InvalidInputError{}
 	}
-	if !exists {
-		return nil, &UserNotFoundError{}
-	}
-
 	var config *vqcconfig.VQCConfig
+	var err error
 	if input.VQCConfigID != nil {
 		config, err = s.vqcConfigRepository.FindByID(*input.VQCConfigID)
 		if err != nil {
 			return nil, err
 		}
 	} else if input.VQCConfigName != nil {
-		config, err = s.vqcConfigRepository.FindByName(*input.VQCConfigName)
+		config, err = s.vqcConfigRepository.FindByName(input.CallerID, *input.VQCConfigName)
 		if err != nil {
 			return nil, err
 		}
@@ -56,6 +54,8 @@ func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConf
 		VQC:         config.VQC(),
 		CreatedAt:   config.CreatedAt(),
 		UpdatedAt:   config.UpdatedAt(),
+		OwnerID:     config.OwnerID(),
+		VQCConfigID: config.VQCConfigID(),
 	}
 	return output, nil
 }
@@ -73,14 +73,6 @@ type LoadAllVQCConfigsOutput struct {
 }
 
 func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) (*LoadAllVQCConfigsOutput, error) {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, &UserNotFoundError{}
-	}
-
 	configs, err := s.vqcConfigRepository.FindAllByOwnerID(input.CallerID)
 	if err != nil {
 		return nil, err
@@ -96,6 +88,8 @@ func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) (*Loa
 			VQC:         config.VQC(),
 			CreatedAt:   config.CreatedAt(),
 			UpdatedAt:   config.UpdatedAt(),
+			OwnerID:     config.OwnerID(),
+			VQCConfigID: config.VQCConfigID(),
 		}
 	}
 	return output, nil

@@ -1,8 +1,6 @@
 package vqcconfigusecase
 
 import (
-	"pennylane_project_backend/internal/domain/vqcconfig"
-
 	"github.com/google/uuid"
 )
 
@@ -12,20 +10,12 @@ type DeleteVQCConfigInput struct {
 }
 
 func (s *VQCConfigService) DeleteVQCConfig(input DeleteVQCConfigInput) error {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return &UserNotFoundError{}
-	}
-
-	vqcConfig, err := s.vqcConfigRepository.FindByID(input.VQCConfigID)
+	checkOwnership, err := s.vqcConfigRepository.CheckOwnership(input.CallerID, input.VQCConfigID)
 	if err != nil {
 		return err
 	}
 
-	if !canDeleteVQCConfig(input.CallerID, vqcConfig) {
+	if !checkOwnership {
 		return &UnauthorizedError{}
 	}
 
@@ -35,8 +25,4 @@ func (s *VQCConfigService) DeleteVQCConfig(input DeleteVQCConfigInput) error {
 	}
 
 	return nil
-}
-
-func canDeleteVQCConfig(callerID uuid.UUID, vqcConfig *vqcconfig.VQCConfig) bool {
-	return callerID == vqcConfig.OwnerID()
 }

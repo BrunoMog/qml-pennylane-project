@@ -16,12 +16,8 @@ type UpdateVQCConfigInput struct {
 }
 
 func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return &UserNotFoundError{}
+	if input.Name == nil && input.Description == nil && input.VQC == nil {
+		return &NoFieldsToUpdateError{}
 	}
 
 	config, err := s.vqcConfigRepository.FindByID(input.VQCConfigID)

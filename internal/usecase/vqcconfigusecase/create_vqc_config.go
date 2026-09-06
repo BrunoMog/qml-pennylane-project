@@ -9,9 +9,9 @@ import (
 )
 
 type CreateVQCConfigInput struct {
+	VQC         *vqc.VQC
 	Name        string
 	Description string
-	VQC         *vqc.VQC
 	CallerID    uuid.UUID
 }
 
