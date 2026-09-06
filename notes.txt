@@ -1,5 +1,0 @@
-O que existe até o momento?
-apenas o componente VQC, responsável por descrever um circuito quântico variacional
-
-próximos passos?
-um novo componente para interagir com o VQC, provavelmente uma versão inicial de usuário
