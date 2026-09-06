@@ -11,9 +11,9 @@ import (
 
 func TestUpdateUser(t *testing.T) {
 	tests := []struct {
-		testName      string
-		setup         func(fixture *testFixture) UpdateUserInput
 		expectedError error
+		setup         func(fixture *testFixture) UpdateUserInput
+		testName      string
 	}{
 		{
 			testName: "owner updates admin's name and email",

@@ -11,9 +11,9 @@ import (
 
 func TestChangeOwner(t *testing.T) {
 	tests := []struct {
-		testName      string
-		setup         func(fixture *testFixture) ChangeOwnerInput
 		expectedError error
+		setup         func(fixture *testFixture) ChangeOwnerInput
+		testName      string
 	}{
 		{
 			testName: "owner swaps ownership with admin",

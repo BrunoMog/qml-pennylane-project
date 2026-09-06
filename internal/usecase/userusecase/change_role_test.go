@@ -11,9 +11,9 @@ import (
 
 func TestChangeUserRole(t *testing.T) {
 	tests := []struct {
-		testName      string
-		setup         func(fixture *testFixture) ChangeUserRoleInput
 		expectedError error
+		setup         func(fixture *testFixture) ChangeUserRoleInput
+		testName      string
 	}{
 		{
 			testName: "owner changes admin to user",

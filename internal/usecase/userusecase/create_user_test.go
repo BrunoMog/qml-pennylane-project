@@ -15,11 +15,11 @@ func (f *testFixture) setupEmailAlreadyExists(t *testing.T, email string) {
 }
 func TestCreateUser(t *testing.T) {
 	tests := []struct {
+		expectedError error
+		setup         func(fixture *testFixture)
 		testName      string
 		userName      string
 		userEmail     string
-		setup         func(fixture *testFixture)
-		expectedError error
 	}{
 		{
 			testName:      "create user successfully",

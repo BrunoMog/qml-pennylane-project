@@ -11,9 +11,9 @@ import (
 
 func TestDeleteUser(t *testing.T) {
 	tests := []struct {
-		testName      string
-		setup         func(fixture *testFixture) DeleteUserInput
 		expectedError error
+		setup         func(fixture *testFixture) DeleteUserInput
+		testName      string
 	}{
 		{
 			testName: "owner deletes admin",
