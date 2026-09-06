@@ -15,12 +15,12 @@ type VQCConfigSeed struct {
 	CallerRef   uint8
 }
 
-type VQCConfigResult struct {
+type VQCConfigSeedResult struct {
 	ByRef map[uint8]*vqcconfig.VQCConfig
 }
 
-func SeedVQCConfigs(vqcConfigRepository *MockVQCConfigRepository, userSeedResult UserSeedResult, seeds []VQCConfigSeed) (VQCConfigResult, error) {
-	res := VQCConfigResult{ByRef: map[uint8]*vqcconfig.VQCConfig{}}
+func SeedVQCConfigs(vqcConfigRepository *MockVQCConfigRepository, userSeedResult UserSeedResult, seeds []VQCConfigSeed) (VQCConfigSeedResult, error) {
+	res := VQCConfigSeedResult{ByRef: map[uint8]*vqcconfig.VQCConfig{}}
 	for _, s := range seeds {
 		var callerID uuid.UUID
 		caller, ok := userSeedResult.ByRef[s.CallerRef]
@@ -31,10 +31,10 @@ func SeedVQCConfigs(vqcConfigRepository *MockVQCConfigRepository, userSeedResult
 		}
 		newConfig, err := vqcconfig.NewVQCConfig(callerID, s.Name, s.Description, s.VQC)
 		if err != nil {
-			return VQCConfigResult{}, err
+			return VQCConfigSeedResult{}, err
 		}
 		if err := vqcConfigRepository.Save(newConfig); err != nil {
-			return VQCConfigResult{}, err
+			return VQCConfigSeedResult{}, err
 		}
 		res.ByRef[s.Ref] = newConfig
 	}

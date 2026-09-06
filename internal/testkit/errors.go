@@ -23,3 +23,10 @@ type ErrTrainConfigNotFound struct {
 func (e ErrTrainConfigNotFound) Error() string {
 	return "Train config not found"
 }
+
+type ErrExperimentNotFound struct {
+}
+
+func (e ErrExperimentNotFound) Error() string {
+	return "Experiment not found"
+}

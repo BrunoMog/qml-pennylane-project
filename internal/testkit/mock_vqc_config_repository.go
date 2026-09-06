@@ -29,9 +29,9 @@ func (r *MockVQCConfigRepository) FindByID(id uuid.UUID) (*vqcconfig.VQCConfig, 
 	return nil, &ErrVQCConfigNotFound{}
 }
 
-func (r *MockVQCConfigRepository) FindByName(name string) (*vqcconfig.VQCConfig, error) {
+func (r *MockVQCConfigRepository) FindByName(ownerID uuid.UUID, name string) (*vqcconfig.VQCConfig, error) {
 	for _, v := range r.vqcConfigs {
-		if v.Name() == name {
+		if v.OwnerID() == ownerID && v.Name() == name {
 			copiedVQCConfig := *v
 			return &copiedVQCConfig, nil
 		}
@@ -69,14 +69,12 @@ func (r *MockVQCConfigRepository) DeleteByID(id uuid.UUID) error {
 	return nil
 }
 
-func (r *MockVQCConfigRepository) DeleteByName(name string) error {
-	for id, v := range r.vqcConfigs {
-		if v.Name() == name {
-			delete(r.vqcConfigs, id)
-			return nil
-		}
+func (r *MockVQCConfigRepository) CheckOwnership(ownerID uuid.UUID, vqcConfigID uuid.UUID) (bool, error) {
+	vqcConfig, exists := r.vqcConfigs[vqcConfigID]
+	if !exists {
+		return false, &ErrVQCConfigNotFound{}
 	}
-	return &ErrVQCConfigNotFound{}
+	return vqcConfig.OwnerID() == ownerID, nil
 }
 
 func (r *MockVQCConfigRepository) DeleteAllByOwnerID(ownerID uuid.UUID) error {

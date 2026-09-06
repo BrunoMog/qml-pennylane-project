@@ -29,9 +29,9 @@ func (m *MockTrainConfigRepository) FindByID(trainConfigID uuid.UUID) (*traincon
 	return nil, &ErrTrainConfigNotFound{}
 }
 
-func (m *MockTrainConfigRepository) FindByName(trainConfigName string) (*trainconfig.TrainConfig, error) {
+func (m *MockTrainConfigRepository) FindByName(ownerID uuid.UUID, name string) (*trainconfig.TrainConfig, error) {
 	for _, v := range m.trainConfigs {
-		if v.Name() == trainConfigName {
+		if v.OwnerID() == ownerID && v.Name() == name {
 			copiedTrainConfig := *v
 			return &copiedTrainConfig, nil
 		}
@@ -72,14 +72,12 @@ func (m *MockTrainConfigRepository) DeleteByID(trainConfigID uuid.UUID) error {
 	return &ErrTrainConfigNotFound{}
 }
 
-func (m *MockTrainConfigRepository) DeleteByName(trainConfigName string) error {
-	for id, v := range m.trainConfigs {
-		if v.Name() == trainConfigName {
-			delete(m.trainConfigs, id)
-			return nil
-		}
+func (m *MockTrainConfigRepository) CheckOwnership(onwerID uuid.UUID, trainConfigID uuid.UUID) (bool, error) {
+	trainConfig, exists := m.trainConfigs[trainConfigID]
+	if !exists {
+		return false, &ErrTrainConfigNotFound{}
 	}
-	return &ErrTrainConfigNotFound{}
+	return trainConfig.OwnerID() == onwerID, nil
 }
 
 func (m *MockTrainConfigRepository) DeleteAllByOwnerID(ownerID uuid.UUID) error {

@@ -15,12 +15,12 @@ type TrainConfigSeed struct {
 	CallerRef   uint8
 }
 
-type TrainConfigResult struct {
+type TrainConfigSeedResult struct {
 	ByRef map[uint8]*trainconfig.TrainConfig
 }
 
-func SeedTrainConfigs(trainConfigRepository *MockTrainConfigRepository, userSeedResult UserSeedResult, seeds []TrainConfigSeed) (TrainConfigResult, error) {
-	res := TrainConfigResult{ByRef: map[uint8]*trainconfig.TrainConfig{}}
+func SeedTrainConfigs(trainConfigRepository *MockTrainConfigRepository, userSeedResult UserSeedResult, seeds []TrainConfigSeed) (TrainConfigSeedResult, error) {
+	res := TrainConfigSeedResult{ByRef: map[uint8]*trainconfig.TrainConfig{}}
 	for _, s := range seeds {
 		var callerID uuid.UUID
 		caller, ok := userSeedResult.ByRef[s.CallerRef]
@@ -31,10 +31,10 @@ func SeedTrainConfigs(trainConfigRepository *MockTrainConfigRepository, userSeed
 		}
 		newConfig, err := trainconfig.NewTrainConfig(callerID, s.Name, s.Description, s.Train)
 		if err != nil {
-			return TrainConfigResult{}, err
+			return TrainConfigSeedResult{}, err
 		}
 		if err := trainConfigRepository.Save(newConfig); err != nil {
-			return TrainConfigResult{}, err
+			return TrainConfigSeedResult{}, err
 		}
 		res.ByRef[s.Ref] = newConfig
 	}
