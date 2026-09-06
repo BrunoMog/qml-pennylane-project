@@ -7,10 +7,10 @@ import (
 )
 
 type UserOutput struct {
-	Name  string    `json:"name"`
-	Email string    `json:"email"`
-	Role  user.Role `json:"role"`
-	ID    uuid.UUID `json:"id"`
+	Name  string
+	Email string
+	Role  user.Role
+	ID    uuid.UUID
 }
 
 func (s *UserService) CreateUser(name string, email string) (*UserOutput, error) {

@@ -42,7 +42,7 @@ func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 func canAssignRole(callerRole, targetRole, newRole user.Role) bool {
 	switch callerRole {
 	case user.RoleOwner:
-		if newRole == user.RoleOwner {
+		if newRole == user.RoleOwner || targetRole == user.RoleOwner {
 			return false
 		}
 		return true

@@ -24,3 +24,10 @@ type UserNotFoundError struct {
 func (e *UserNotFoundError) Error() string {
 	return "user not found"
 }
+
+type NoFieldsToUpdateError struct {
+}
+
+func (e *NoFieldsToUpdateError) Error() string {
+	return "no fields to update"
+}

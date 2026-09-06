@@ -6,84 +6,87 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestChangeOwner(t *testing.T) {
 	tests := []struct {
-		name          string
-		usersToCreate []testkit.UserSeed
-		callerRef     uint8
-		targetRef     uint8
-		wantErr       bool
+		testName      string
+		setup         func(fixture *testFixture) ChangeOwnerInput
+		expectedError error
 	}{
 		{
-			name: "Owner can change owner to another user",
-			usersToCreate: []testkit.UserSeed{
-				{Ref: 1, Name: "Owner", Email: "owner@example.com", Role: user.RoleOwner},
-				{Ref: 2, Name: "User", Email: "user@example.com", Role: user.RoleUser},
+			testName: "valid case: owner swaps ownership with admin",
+			setup: func(fixture *testFixture) ChangeOwnerInput {
+				owner := fixture.createUser(user.RoleOwner)
+				admin := fixture.createUser(user.RoleAdmin)
+				return ChangeOwnerInput{
+					CallerID: owner.ID(),
+					TargetID: admin.ID(),
+				}
 			},
-			callerRef: 1,
-			targetRef: 2,
-			wantErr:   false,
+			expectedError: nil,
 		},
 		{
-			name: "Admin cannot change owner",
-			usersToCreate: []testkit.UserSeed{
-				{Ref: 1, Name: "Owner", Email: "owner@example.com", Role: user.RoleOwner},
-				{Ref: 2, Name: "Admin", Email: "admin@example.com", Role: user.RoleAdmin},
+			testName: "inexistent caller user",
+			setup: func(fixture *testFixture) ChangeOwnerInput {
+				newUser := fixture.createUser(user.RoleUser)
+				return ChangeOwnerInput{
+					CallerID: uuid.New(),
+					TargetID: newUser.ID(),
+				}
 			},
-			callerRef: 2,
-			targetRef: 1,
-			wantErr:   true,
+			expectedError: &testkit.ErrUserNotFound{},
 		},
 		{
-			name: "Owner cannot change owner to themselves",
-			usersToCreate: []testkit.UserSeed{
-				{Ref: 1, Name: "Owner", Email: "owner@example.com", Role: user.RoleOwner},
+			testName: "inexistent target user",
+			setup: func(fixture *testFixture) ChangeOwnerInput {
+				owner := fixture.createUser(user.RoleOwner)
+				return ChangeOwnerInput{
+					CallerID: owner.ID(),
+					TargetID: uuid.New(),
+				}
 			},
-			callerRef: 1,
-			targetRef: 1,
-			wantErr:   true,
+			expectedError: &testkit.ErrUserNotFound{},
+		},
+		{
+			testName: "admin tries to change owner role",
+			setup: func(fixture *testFixture) ChangeOwnerInput {
+				owner := fixture.createUser(user.RoleOwner)
+				admin := fixture.createUser(user.RoleAdmin)
+				return ChangeOwnerInput{
+					CallerID: admin.ID(),
+					TargetID: owner.ID(),
+				}
+			},
+			expectedError: &UnauthorizedError{},
+		},
+		{
+			testName: "owner tries to swap ownership with self",
+			setup: func(fixture *testFixture) ChangeOwnerInput {
+				owner := fixture.createUser(user.RoleOwner)
+				return ChangeOwnerInput{
+					CallerID: owner.ID(),
+					TargetID: owner.ID(),
+				}
+			},
+			expectedError: &UnauthorizedError{},
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			repo := testkit.NewMockUserRepository()
-			seedResult, err := testkit.SeedUsers(repo, tt.usersToCreate)
-			if err != nil {
-				t.Fatalf("Failed to seed users: %v", err)
-			}
-
-			caller, callerExists := seedResult.ByRef[tt.callerRef]
-			target, targetExists := seedResult.ByRef[tt.targetRef]
-
-			if !callerExists && !targetExists {
-				t.Fatalf("Both caller and target do not exist in the seeded users")
-			}
-
-			input := ChangeOwnerInput{
-				CallerID: uuid.Nil,
-				TargetID: uuid.Nil,
-			}
-
-			if callerExists {
-				input.CallerID = caller.ID()
+		t.Run(tt.testName, func(t *testing.T) {
+			fixture := newTestFixture(t)
+			input := tt.setup(fixture)
+			err := fixture.service.ChangeOwner(input)
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectedError, err)
 			} else {
-				input.CallerID = uuid.New()
-			}
-
-			if targetExists {
-				input.TargetID = target.ID()
-			} else {
-				input.TargetID = uuid.New()
-			}
-
-			service := NewUserService(repo)
-			err = service.ChangeOwner(input)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ChangeOwner() error = %v, wantErr %v", err, tt.wantErr)
+				assert.NoError(t, err)
+				target, err := fixture.userRepo.FindByID(input.TargetID)
+				assert.NoError(t, err)
+				assert.Equal(t, user.RoleOwner, target.Role())
 			}
 		})
 	}

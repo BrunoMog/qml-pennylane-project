@@ -14,6 +14,10 @@ type UpdateUserInput struct {
 }
 
 func (s *UserService) UpdateUser(input UpdateUserInput) error {
+	if input.Name == nil && input.Email == nil {
+		return &NoFieldsToUpdateError{}
+	}
+
 	caller, err := s.repository.FindByID(input.CallerID)
 	if err != nil {
 		return err

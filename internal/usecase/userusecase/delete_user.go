@@ -41,8 +41,8 @@ func (s *UserService) DeleteUser(input DeleteUserInput) error {
 }
 
 func canDeleteUser(caller *user.User, target *user.User) bool {
-	if caller.ID() == target.ID() && !caller.IsOwner() {
-		return true
+	if caller.ID() == target.ID() && caller.IsOwner() {
+		return false
 	}
 	switch caller.Role() {
 	case user.RoleOwner:
