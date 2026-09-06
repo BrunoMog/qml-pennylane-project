@@ -65,8 +65,11 @@ func (r *MockVQCConfigRepository) FindAllByOwnerID(ownerID uuid.UUID) ([]*vqccon
 }
 
 func (r *MockVQCConfigRepository) DeleteByID(id uuid.UUID) error {
-	delete(r.vqcConfigs, id)
-	return nil
+	if _, ok := r.vqcConfigs[id]; ok {
+		delete(r.vqcConfigs, id)
+		return nil
+	}
+	return &ErrVQCConfigNotFound{}
 }
 
 func (r *MockVQCConfigRepository) CheckOwnership(ownerID uuid.UUID, vqcConfigID uuid.UUID) (bool, error) {
