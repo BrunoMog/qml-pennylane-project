@@ -25,3 +25,9 @@ type InvalidInputError struct{}
 func (e *InvalidInputError) Error() string {
 	return "invalid input"
 }
+
+type NoFieldsToUpdateError struct{}
+
+func (e *NoFieldsToUpdateError) Error() string {
+	return "no fields to update"
+}

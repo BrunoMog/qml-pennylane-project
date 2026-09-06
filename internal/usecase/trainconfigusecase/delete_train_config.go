@@ -1,8 +1,6 @@
 package trainconfigusecase
 
 import (
-	"pennylane_project_backend/internal/domain/trainconfig"
-
 	"github.com/google/uuid"
 )
 
@@ -12,20 +10,12 @@ type DeleteTrainConfigInput struct {
 }
 
 func (s *TrainConfigService) DeleteTrainConfig(input DeleteTrainConfigInput) error {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return err
-	}
-	if !exists {
-		return &UserNotFoundError{}
-	}
-
-	trainConfig, err := s.trainConfigRepository.FindByID(input.TrainConfigID)
+	checkOwnership, err := s.trainConfigRepository.CheckOwnership(input.CallerID, input.TrainConfigID)
 	if err != nil {
 		return err
 	}
 
-	if !canDeleteTrainConfig(input.CallerID, trainConfig) {
+	if !checkOwnership {
 		return &UnauthorizedError{}
 	}
 
@@ -35,8 +25,4 @@ func (s *TrainConfigService) DeleteTrainConfig(input DeleteTrainConfigInput) err
 	}
 
 	return nil
-}
-
-func canDeleteTrainConfig(callerID uuid.UUID, trainConfig *trainconfig.TrainConfig) bool {
-	return callerID == trainConfig.OwnerID()
 }

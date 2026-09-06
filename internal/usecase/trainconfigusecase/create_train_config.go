@@ -9,9 +9,9 @@ import (
 )
 
 type CreateTrainConfigInput struct {
-	Name        *string
-	Description *string
 	Training    *training.Training
+	Name        string
+	Description string
 	CallerID    uuid.UUID
 }
 
@@ -31,15 +31,15 @@ func (s *TrainConfigService) CreateTrainConfig(input CreateTrainConfigInput) (*C
 		return nil, &UserNotFoundError{}
 	}
 
-	exists, err = s.trainConfigRepository.ExistsByName(input.CallerID, *input.Name)
+	exists, err = s.trainConfigRepository.ExistsByName(input.CallerID, input.Name)
 	if err != nil {
 		return nil, err
 	}
 	if exists {
-		return nil, &TrainConfigNameAlreadyExistsError{Name: *input.Name}
+		return nil, &TrainConfigNameAlreadyExistsError{Name: input.Name}
 	}
 
-	newConfig, err := trainconfig.NewTrainConfig(input.CallerID, *input.Name, *input.Description, input.Training)
+	newConfig, err := trainconfig.NewTrainConfig(input.CallerID, input.Name, input.Description, input.Training)
 	if err != nil {
 		return nil, err
 	}

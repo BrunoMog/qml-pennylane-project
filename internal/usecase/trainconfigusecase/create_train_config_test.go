@@ -1,138 +1,91 @@
 package trainconfigusecase
 
 import (
+	"pennylane_project_backend/internal/domain/trainconfig"
 	"pennylane_project_backend/internal/domain/training"
 	"pennylane_project_backend/internal/domain/user"
-	"pennylane_project_backend/internal/testkit"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateTrainConfig(t *testing.T) {
 	tests := []struct {
-		testConfigToCreate testkit.TrainConfigSeed
-		name               string
-		userToSeed         []testkit.UserSeed
-		trainConfigToSeed  []testkit.TrainConfigSeed
-		callerRef          uint8
-		expectError        bool
+		expectedError error
+		setup         func(f *testFixture) CreateTrainConfigInput
+		testName      string
 	}{
 		{
-			name: "valid TrainConfig creation",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
+			testName: "create TrainConfig successfully",
+			setup: func(f *testFixture) CreateTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				return CreateTrainConfigInput{
+					Name:        "Test Train Config",
+					Description: "Test Train Config Description",
+					Training:    &training.Training{},
+					CallerID:    user.ID(),
+				}
 			},
-			callerRef:         1,
-			trainConfigToSeed: []testkit.TrainConfigSeed{},
-			testConfigToCreate: testkit.TrainConfigSeed{
-				Ref:         1,
-				CallerRef:   1,
-				Name:        "Test TrainConfig",
-				Description: "This is a test TrainConfig",
-				Train:       &training.Training{}, // Assuming a valid Training object
-			},
-			expectError: false,
+			expectedError: nil,
 		},
 		{
-			name: "inexistent caller",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
+			testName: "inexistent caller user",
+			setup: func(f *testFixture) CreateTrainConfigInput {
+				return CreateTrainConfigInput{
+					Name:        "Test Train Config",
+					Description: "Test Train Config Description",
+					Training:    &training.Training{},
+					CallerID:    uuid.New(),
+				}
 			},
-			callerRef:         2,
-			trainConfigToSeed: []testkit.TrainConfigSeed{},
-			testConfigToCreate: testkit.TrainConfigSeed{
-				Ref:         1,
-				CallerRef:   2,
-				Name:        "Test TrainConfig",
-				Description: "This is a test TrainConfig",
-				Train:       &training.Training{}, // Assuming a valid Training object
-			},
-			expectError: true,
+			expectedError: &UserNotFoundError{},
 		},
 		{
-			name: "duplicate TrainConfig",
-			userToSeed: []testkit.UserSeed{
-				{
-					Ref:   1,
-					Name:  "Test User",
-					Email: "test@example.com",
-					Role:  user.RoleAdmin,
-				},
+			testName: "duplicate TrainConfig name",
+			setup: func(f *testFixture) CreateTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				trainConfig := f.createTrainConfig(user.ID())
+				trainConfig.SetName("Duplicate Name")
+				return CreateTrainConfigInput{
+					Name:        "Duplicate Name",
+					Description: "Test Train Config Description",
+					Training:    &training.Training{},
+					CallerID:    user.ID(),
+				}
 			},
-			callerRef: 1,
-			trainConfigToSeed: []testkit.TrainConfigSeed{
-				{
-					Ref:         1,
-					CallerRef:   1,
-					Name:        "Test TrainConfig",
-					Description: "This is a test TrainConfig",
-					Train:       &training.Training{}, // Assuming a valid Training object
-				},
+			expectedError: &TrainConfigNameAlreadyExistsError{},
+		},
+		{
+			testName: "nil Training input",
+			setup: func(f *testFixture) CreateTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				return CreateTrainConfigInput{
+					Name:        "Test Train Config",
+					Description: "Test Train Config Description",
+					Training:    nil,
+					CallerID:    user.ID(),
+				}
 			},
-			testConfigToCreate: testkit.TrainConfigSeed{
-				Ref:         2,
-				CallerRef:   1,
-				Name:        "Test TrainConfig",
-				Description: "This is a test TrainConfig",
-				Train:       &training.Training{}, // Assuming a valid Training object
-			},
-			expectError: true,
+			expectedError: &trainconfig.TrainingMissingError{},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			userRepo := testkit.NewMockUserRepository()
-			trainConfigRepo := testkit.NewMockTrainConfigRepository()
-
-			userSeedResult, err := testkit.SeedUsers(userRepo, tt.userToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed users: %v", err)
-			}
-
-			_, err = testkit.SeedTrainConfigs(trainConfigRepo, userSeedResult, tt.trainConfigToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed train configs: %v", err)
-			}
-
-			var callerID uuid.UUID
-			caller, exists := userSeedResult.ByRef[tt.callerRef]
-			if !exists {
-				callerID = uuid.New()
+		t.Run(tt.testName, func(t *testing.T) {
+			fixture := newTestFixture(t)
+			input := tt.setup(fixture)
+			trainConfig, err := fixture.service.CreateTrainConfig(input)
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectedError, err)
 			} else {
-				callerID = caller.ID()
-			}
-
-			trainConfigService := NewTrainConfigService(trainConfigRepo, userRepo)
-
-			input := CreateTrainConfigInput{
-				CallerID:    callerID,
-				Name:        &tt.testConfigToCreate.Name,
-				Description: &tt.testConfigToCreate.Description,
-				Training:    tt.testConfigToCreate.Train,
-			}
-
-			output, err := trainConfigService.CreateTrainConfig(input)
-			if (err != nil) != tt.expectError {
-				t.Errorf("CreateTrainConfig() error = %v, expectError %v", err, tt.expectError)
-				return
-			}
-			if !tt.expectError {
-				// Verify that the created TrainConfig matches the input
-				if output.Name != tt.testConfigToCreate.Name || output.Description != tt.testConfigToCreate.Description {
-					t.Errorf("Created TrainConfig does not match input. Got: %+v, Want: %+v", output, tt.testConfigToCreate)
-				}
+				assert.NoError(t, err)
+				assert.NotNil(t, trainConfig)
+				assert.Equal(t, input.Name, trainConfig.Name)
+				assert.Equal(t, input.Description, trainConfig.Description)
 			}
 		})
 	}
+
 }

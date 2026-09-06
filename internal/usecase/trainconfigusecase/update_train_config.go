@@ -16,14 +16,9 @@ type UpdateTrainConfigInput struct {
 }
 
 func (s *TrainConfigService) UpdateTrainConfig(input UpdateTrainConfigInput) error {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return err
+	if input.Name == nil && input.Description == nil && input.Training == nil {
+		return &NoFieldsToUpdateError{}
 	}
-	if !exists {
-		return &UserNotFoundError{}
-	}
-
 	config, err := s.trainConfigRepository.FindByID(input.TrainConfigID)
 	if err != nil {
 		return err

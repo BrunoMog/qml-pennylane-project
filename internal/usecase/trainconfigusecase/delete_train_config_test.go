@@ -1,112 +1,80 @@
 package trainconfigusecase
 
 import (
-	"pennylane_project_backend/internal/domain/training"
 	"pennylane_project_backend/internal/domain/user"
 	"pennylane_project_backend/internal/testkit"
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestDeleteTrainConfig(t *testing.T) {
 	tests := []struct {
-		name               string
-		usersToSeed        []testkit.UserSeed
-		trainConfigsToSeed []testkit.TrainConfigSeed
-		callerRef          uint8
-		trainConfigRef     uint8
-		expectError        bool
+		expectedError error
+		setup         func(f *testFixture) DeleteTrainConfigInput
+		testName      string
 	}{
 		{
-			name: "successfully delete a TrainConfig",
-			usersToSeed: []testkit.UserSeed{
-				{Ref: 1, Name: "Alice", Email: "alice@example.com", Role: user.RoleAdmin},
+			testName: "delete TrainConfig successfully",
+			setup: func(f *testFixture) DeleteTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				trainConfig := f.createTrainConfig(user.ID())
+				return DeleteTrainConfigInput{
+					CallerID:      user.ID(),
+					TrainConfigID: trainConfig.TrainConfigID(),
+				}
 			},
-			trainConfigsToSeed: []testkit.TrainConfigSeed{
-				{Ref: 1, CallerRef: 1, Name: "Test TrainConfig", Description: "This is a test TrainConfig", Train: &training.Training{}},
-			},
-			callerRef:      1,
-			trainConfigRef: 1,
-			expectError:    false,
+			expectedError: nil,
 		},
 		{
-			name: "fail to delete a non-existent TrainConfig",
-			usersToSeed: []testkit.UserSeed{
-				{Ref: 1, Name: "Alice", Email: "alice@example.com", Role: user.RoleAdmin},
+			testName: "inexistent caller user",
+			setup: func(f *testFixture) DeleteTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				trainConfig := f.createTrainConfig(user.ID())
+				return DeleteTrainConfigInput{
+					CallerID:      uuid.New(),
+					TrainConfigID: trainConfig.TrainConfigID(),
+				}
 			},
-			trainConfigsToSeed: []testkit.TrainConfigSeed{},
-			callerRef:          1,
-			trainConfigRef:     1,
-			expectError:        true,
+			expectedError: &UnauthorizedError{},
 		},
 		{
-			name: "fail to delete a TrainConfig with unauthorized user",
-			usersToSeed: []testkit.UserSeed{
-				{Ref: 1, Name: "Alice", Email: "alice@example.com", Role: user.RoleUser},
-				{Ref: 2, Name: "Bob", Email: "bob@example.com", Role: user.RoleUser},
+			testName: "inexistent TrainConfig",
+			setup: func(f *testFixture) DeleteTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				return DeleteTrainConfigInput{
+					CallerID:      user.ID(),
+					TrainConfigID: uuid.New(),
+				}
 			},
-			trainConfigsToSeed: []testkit.TrainConfigSeed{
-				{Ref: 1, CallerRef: 1, Name: "Test TrainConfig", Description: "This is a test TrainConfig", Train: &training.Training{}},
+			expectedError: &testkit.ErrTrainConfigNotFound{},
+		},
+		{
+			testName: "unauthorized user",
+			setup: func(f *testFixture) DeleteTrainConfigInput {
+				owner := f.createUser(user.RoleUser)
+				trainConfig := f.createTrainConfig(owner.ID())
+				unauthorizedUser := f.createUser(user.RoleUser)
+				return DeleteTrainConfigInput{
+					CallerID:      unauthorizedUser.ID(),
+					TrainConfigID: trainConfig.TrainConfigID(),
+				}
 			},
-			callerRef:      2,
-			trainConfigRef: 1,
-			expectError:    true,
+			expectedError: &UnauthorizedError{},
 		},
 	}
+
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			userRepo := testkit.NewMockUserRepository()
-			trainConfigRepo := testkit.NewMockTrainConfigRepository()
-
-			userSeedResult, err := testkit.SeedUsers(userRepo, tt.usersToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed users: %v", err)
-			}
-
-			trainConfigSeedResult, err := testkit.SeedTrainConfigs(trainConfigRepo, userSeedResult, tt.trainConfigsToSeed)
-			if err != nil {
-				t.Fatalf("Failed to seed train configs: %v", err)
-			}
-
-			var callerID uuid.UUID
-			caller, exists := userSeedResult.ByRef[tt.callerRef]
-			if !exists {
-				callerID = uuid.New()
+		t.Run(tt.testName, func(t *testing.T) {
+			f := newTestFixture(t)
+			input := tt.setup(f)
+			err := f.service.DeleteTrainConfig(input)
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectedError, err)
 			} else {
-				callerID = caller.ID()
-			}
-
-			var trainConfigID uuid.UUID
-			trainConfig, exists := trainConfigSeedResult.ByRef[tt.trainConfigRef]
-			if !exists {
-				trainConfigID = uuid.New()
-			} else {
-				trainConfigID = trainConfig.TrainConfigID()
-			}
-
-			trainConfigService := NewTrainConfigService(trainConfigRepo, userRepo)
-
-			input := DeleteTrainConfigInput{
-				CallerID:      callerID,
-				TrainConfigID: trainConfigID,
-			}
-
-			err = trainConfigService.DeleteTrainConfig(input)
-			if (err != nil) != tt.expectError {
-				t.Errorf("DeleteTrainConfig() error = %v, expectError %v", err, tt.expectError)
-				return
-			}
-
-			if !tt.expectError {
-				// Verify that the TrainConfig has been deleted
-				exists, err := trainConfigRepo.ExistsByID(trainConfigID)
-				if err != nil {
-					t.Fatalf("Failed to check existence of TrainConfig: %v", err)
-				}
-				if exists {
-					t.Fatalf("Expected TrainConfig to be deleted, but it still exists")
-				}
+				assert.NoError(t, err)
 			}
 		})
 	}

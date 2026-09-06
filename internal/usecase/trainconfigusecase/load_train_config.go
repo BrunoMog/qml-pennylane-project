@@ -15,30 +15,28 @@ type LoadTrainConfigInput struct {
 }
 
 type LoadTrainConfigOutput struct {
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
-	Name        string
-	Description string
-	Training    training.Training
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	Name          string
+	Description   string
+	Training      training.Training
+	OwnerID       uuid.UUID
+	TrainConfigID uuid.UUID
 }
 
 func (s *TrainConfigService) LoadTrainConfig(input LoadTrainConfigInput) (*LoadTrainConfigOutput, error) {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return nil, err
+	if input.TrainConfigID == nil && input.TrainConfigName == nil {
+		return nil, &InvalidInputError{}
 	}
-	if !exists {
-		return nil, &UserNotFoundError{}
-	}
-
 	var config *trainconfig.TrainConfig
+	var err error
 	if input.TrainConfigID != nil {
 		config, err = s.trainConfigRepository.FindByID(*input.TrainConfigID)
 		if err != nil {
 			return nil, err
 		}
 	} else if input.TrainConfigName != nil {
-		config, err = s.trainConfigRepository.FindByName(*input.TrainConfigName)
+		config, err = s.trainConfigRepository.FindByName(input.CallerID, *input.TrainConfigName)
 		if err != nil {
 			return nil, err
 		}
@@ -51,11 +49,13 @@ func (s *TrainConfigService) LoadTrainConfig(input LoadTrainConfigInput) (*LoadT
 	}
 
 	output := &LoadTrainConfigOutput{
-		Name:        config.Name(),
-		Description: config.Description(),
-		Training:    config.Training(),
-		CreatedAt:   config.CreatedAt(),
-		UpdatedAt:   config.UpdatedAt(),
+		Name:          config.Name(),
+		Description:   config.Description(),
+		Training:      config.Training(),
+		CreatedAt:     config.CreatedAt(),
+		UpdatedAt:     config.UpdatedAt(),
+		OwnerID:       config.OwnerID(),
+		TrainConfigID: config.TrainConfigID(),
 	}
 	return output, nil
 }
@@ -73,14 +73,6 @@ type LoadAllTrainConfigsOutput struct {
 }
 
 func (s *TrainConfigService) LoadAllTrainConfigs(input LoadAllTrainConfigsInput) (*LoadAllTrainConfigsOutput, error) {
-	exists, err := s.userRepository.ExistsByID(input.CallerID)
-	if err != nil {
-		return nil, err
-	}
-	if !exists {
-		return nil, &UserNotFoundError{}
-	}
-
 	configs, err := s.trainConfigRepository.FindAllByOwnerID(input.CallerID)
 	if err != nil {
 		return nil, err
@@ -91,11 +83,13 @@ func (s *TrainConfigService) LoadAllTrainConfigs(input LoadAllTrainConfigsInput)
 	}
 	for i, config := range configs {
 		output.TrainConfigs[i] = LoadTrainConfigOutput{
-			Name:        config.Name(),
-			Description: config.Description(),
-			Training:    config.Training(),
-			CreatedAt:   config.CreatedAt(),
-			UpdatedAt:   config.UpdatedAt(),
+			Name:          config.Name(),
+			Description:   config.Description(),
+			Training:      config.Training(),
+			CreatedAt:     config.CreatedAt(),
+			UpdatedAt:     config.UpdatedAt(),
+			OwnerID:       config.OwnerID(),
+			TrainConfigID: config.TrainConfigID(),
 		}
 	}
 	return output, nil
