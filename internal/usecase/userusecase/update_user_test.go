@@ -16,7 +16,7 @@ func TestUpdateUser(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testName: "valid case: owner updates admin's name and email",
+			testName: "owner updates admin's name and email",
 			setup: func(fixture *testFixture) UpdateUserInput {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
@@ -32,7 +32,7 @@ func TestUpdateUser(t *testing.T) {
 			expectedError: nil,
 		},
 		{
-			testName: "valid case: user updates self email",
+			testName: "user updates self email",
 			setup: func(fixture *testFixture) UpdateUserInput {
 				user := fixture.createUser(user.RoleUser)
 				newEmail := "updated@example.com"

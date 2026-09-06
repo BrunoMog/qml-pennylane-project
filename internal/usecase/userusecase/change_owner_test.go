@@ -16,7 +16,7 @@ func TestChangeOwner(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testName: "valid case: owner swaps ownership with admin",
+			testName: "owner swaps ownership with admin",
 			setup: func(fixture *testFixture) ChangeOwnerInput {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)

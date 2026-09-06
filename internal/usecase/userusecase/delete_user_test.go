@@ -16,7 +16,7 @@ func TestDeleteUser(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testName: "valid case: owner deletes admin",
+			testName: "owner deletes admin",
 			setup: func(fixture *testFixture) DeleteUserInput {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)

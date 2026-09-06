@@ -22,25 +22,25 @@ func TestCreateUser(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testName:      "Create user successfully",
+			testName:      "create user successfully",
 			userName:      "John Doe",
 			userEmail:     "john.doe@example.com",
 			expectedError: nil,
 		},
 		{
-			testName:      "Create user with empty name",
+			testName:      "create user with empty name",
 			userName:      "",
 			userEmail:     "john.doe@example.com",
 			expectedError: &user.InvalidNameError{},
 		},
 		{
-			testName:      "Create user with empty email",
+			testName:      "create user with empty email",
 			userName:      "John Doe",
 			userEmail:     "",
 			expectedError: &user.InvalidEmailError{},
 		},
 		{
-			testName:      "Email already exists",
+			testName:      "email already exists",
 			userName:      "Jane Doe",
 			userEmail:     "jane.doe@example.com",
 			expectedError: &EmailAlreadyExistsError{},

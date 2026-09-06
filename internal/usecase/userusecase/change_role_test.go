@@ -16,7 +16,7 @@ func TestChangeUserRole(t *testing.T) {
 		expectedError error
 	}{
 		{
-			testName: "valid case: owner changes admin to user",
+			testName: "owner changes admin to user",
 			setup: func(fixture *testFixture) ChangeUserRoleInput {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
