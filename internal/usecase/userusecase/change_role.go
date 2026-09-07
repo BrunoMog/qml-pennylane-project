@@ -7,12 +7,16 @@ import (
 )
 
 type ChangeUserRoleInput struct {
-	Role     user.Role
+	Role     string
 	CallerID uuid.UUID
 	TargetID uuid.UUID
 }
 
 func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
+	role, err := user.ParseRole(input.Role)
+	if err != nil {
+		return err
+	}
 	caller, err := s.repository.FindByID(input.CallerID)
 	if err != nil {
 		return err
@@ -22,11 +26,11 @@ func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 		return err
 	}
 
-	if !canAssignRole(caller.Role(), target.Role(), input.Role) {
+	if !canAssignRole(caller.Role(), target.Role(), role) {
 		return &UnauthorizedError{caller.Name()}
 	}
 
-	err = target.SetRole(input.Role)
+	err = target.SetRole(role)
 	if err != nil {
 		return err
 	}

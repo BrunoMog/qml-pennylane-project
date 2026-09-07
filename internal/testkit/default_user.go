@@ -9,13 +9,15 @@ func DefaultUser() func() *user.User {
 	count := 0
 	return func() *user.User {
 		count++
-		u, err := user.NewUser(
-			"Test User "+strconv.Itoa(count),
-			"testuser"+strconv.Itoa(count)+"@example.com",
-		)
+		name, err := user.NewName("Test User " + strconv.Itoa(count))
 		if err != nil {
 			panic(err)
 		}
+		email, err := user.NewEmail("testuser" + strconv.Itoa(count) + "@example.com")
+		if err != nil {
+			panic(err)
+		}
+		u := user.NewUser(name, email)
 		return u
 	}
 }

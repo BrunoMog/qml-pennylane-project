@@ -81,6 +81,20 @@ func TestUpdateUser(t *testing.T) {
 			},
 			expectedError: &NoFieldsToUpdateError{},
 		},
+		{
+			testName: "try to update email with existing email",
+			setup: func(fixture *testFixture) UpdateUserInput {
+				owner := fixture.createUser(user.RoleOwner)
+				existingUser := fixture.createUser(user.RoleUser)
+				existingEmail := existingUser.Email().Value()
+				return UpdateUserInput{
+					CallerID: owner.ID(),
+					TargetID: owner.ID(),
+					Email:    &existingEmail,
+				}
+			},
+			expectedError: &EmailAlreadyExistsError{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -95,10 +109,10 @@ func TestUpdateUser(t *testing.T) {
 				updatedUser, err := fixture.userRepo.FindByID(input.TargetID)
 				assert.NoError(t, err)
 				if input.Name != nil {
-					assert.Equal(t, *input.Name, updatedUser.Name())
+					assert.Equal(t, *input.Name, updatedUser.Name().Value())
 				}
 				if input.Email != nil {
-					assert.Equal(t, *input.Email, updatedUser.Email())
+					assert.Equal(t, *input.Email, updatedUser.Email().Value())
 				}
 			}
 		})

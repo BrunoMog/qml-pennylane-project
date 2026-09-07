@@ -23,7 +23,7 @@ func TestChangeUserRole(t *testing.T) {
 				return ChangeUserRoleInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
-					Role:     user.RoleUser,
+					Role:     "user",
 				}
 			},
 			expectedError: nil,
@@ -35,7 +35,7 @@ func TestChangeUserRole(t *testing.T) {
 				return ChangeUserRoleInput{
 					CallerID: uuid.New(),
 					TargetID: newUser.ID(),
-					Role:     user.RoleAdmin,
+					Role:     "admin",
 				}
 			},
 			expectedError: &testkit.ErrUserNotFound{},
@@ -47,7 +47,7 @@ func TestChangeUserRole(t *testing.T) {
 				return ChangeUserRoleInput{
 					CallerID: owner.ID(),
 					TargetID: uuid.New(),
-					Role:     user.RoleAdmin,
+					Role:     "admin",
 				}
 			},
 			expectedError: &testkit.ErrUserNotFound{},
@@ -60,7 +60,7 @@ func TestChangeUserRole(t *testing.T) {
 				return ChangeUserRoleInput{
 					CallerID: admin.ID(),
 					TargetID: owner.ID(),
-					Role:     user.RoleAdmin,
+					Role:     "admin",
 				}
 			},
 			expectedError: &UnauthorizedError{},
@@ -72,7 +72,7 @@ func TestChangeUserRole(t *testing.T) {
 				return ChangeUserRoleInput{
 					CallerID: owner.ID(),
 					TargetID: owner.ID(),
-					Role:     user.RoleAdmin,
+					Role:     "admin",
 				}
 			},
 			expectedError: &UnauthorizedError{},
@@ -104,7 +104,7 @@ func TestChangeUserRole(t *testing.T) {
 				assert.NoError(t, err)
 				target, err := fixture.userRepo.FindByID(input.TargetID)
 				assert.NoError(t, err)
-				assert.Equal(t, input.Role, target.Role())
+				assert.Equal(t, input.Role, target.Role().Value())
 			}
 		})
 	}

@@ -29,7 +29,7 @@ func (s *UserService) DeleteUser(input DeleteUserInput) error {
 	}
 
 	if !canDeleteUser(caller, target) {
-		return &UnauthorizedError{name: caller.Name()}
+		return &UnauthorizedError{Name: caller.Name()}
 	}
 
 	err = s.repository.DeleteByID(input.TargetID)

@@ -1,21 +1,24 @@
 package userusecase
 
-import "fmt"
+import (
+	"fmt"
+	"pennylane_project_backend/internal/domain/user"
+)
 
 type EmailAlreadyExistsError struct {
-	email string
+	Email user.Email
 }
 
 func (e *EmailAlreadyExistsError) Error() string {
-	return fmt.Sprintf("email already exists: %s", e.email)
+	return fmt.Sprintf("email already exists: %s", e.Email.Value())
 }
 
 type UnauthorizedError struct {
-	name string
+	Name user.Name
 }
 
 func (e *UnauthorizedError) Error() string {
-	return fmt.Sprintf("unauthorized: user %s is not authorized to perform this action", e.name)
+	return fmt.Sprintf("unauthorized: user %s is not authorized to perform this action", e.Name.Value())
 }
 
 type UserNotFoundError struct {

@@ -29,17 +29,17 @@ func (r *MockUserRepository) FindByID(id uuid.UUID) (*user.User, error) {
 	return nil, &ErrUserNotFound{Message: id.String()}
 }
 
-func (r *MockUserRepository) FindByEmail(email string) (*user.User, error) {
+func (r *MockUserRepository) FindByEmail(email user.Email) (*user.User, error) {
 	for _, u := range r.users {
 		if u.Email() == email {
 			copiedUser := *u
 			return &copiedUser, nil
 		}
 	}
-	return nil, &ErrUserNotFound{Message: email}
+	return nil, &ErrUserNotFound{Message: email.Value()}
 }
 
-func (r *MockUserRepository) ExistsByEmail(email string) (bool, error) {
+func (r *MockUserRepository) ExistsByEmail(email user.Email) (bool, error) {
 	for _, u := range r.users {
 		if u.Email() == email {
 			return true, nil

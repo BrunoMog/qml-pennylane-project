@@ -22,28 +22,39 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 	if err != nil {
 		return err
 	}
-	user, err := s.repository.FindByID(input.TargetID)
+	userToUpdate, err := s.repository.FindByID(input.TargetID)
 	if err != nil {
 		return err
 	}
 
-	if !canUpdateUser(caller, user) {
+	if !canUpdateUser(caller, userToUpdate) {
 		return &UnauthorizedError{caller.Name()}
 	}
 
 	if input.Name != nil {
-		if err := user.SetName(*input.Name); err != nil {
+		name, err := user.NewName(*input.Name)
+		if err != nil {
 			return err
 		}
+		userToUpdate.SetName(name)
 	}
 
 	if input.Email != nil {
-		if err := user.SetEmail(*input.Email); err != nil {
+		email, err := user.NewEmail(*input.Email)
+		if err != nil {
 			return err
 		}
+		exists, err := s.repository.ExistsByEmail(email)
+		if err != nil {
+			return err
+		}
+		if exists {
+			return &EmailAlreadyExistsError{email}
+		}
+		userToUpdate.SetEmail(email)
 	}
 
-	return s.repository.Save(user)
+	return s.repository.Save(userToUpdate)
 }
 
 func canUpdateUser(caller, target *user.User) bool {

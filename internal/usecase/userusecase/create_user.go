@@ -9,11 +9,24 @@ import (
 type UserOutput struct {
 	Name  string
 	Email string
-	Role  user.Role
+	Role  string
 	ID    uuid.UUID
 }
 
-func (s *UserService) CreateUser(name string, email string) (*UserOutput, error) {
+type CreateUserInput struct {
+	Name  string
+	Email string
+}
+
+func (s *UserService) CreateUser(input CreateUserInput) (*UserOutput, error) {
+	name, err := user.NewName(input.Name)
+	if err != nil {
+		return nil, err
+	}
+	email, err := user.NewEmail(input.Email)
+	if err != nil {
+		return nil, err
+	}
 	exists, err := s.repository.ExistsByEmail(email)
 	if err != nil {
 		return nil, err
@@ -22,10 +35,7 @@ func (s *UserService) CreateUser(name string, email string) (*UserOutput, error)
 		return nil, &EmailAlreadyExistsError{email}
 	}
 
-	newUser, err := user.NewUser(name, email)
-	if err != nil {
-		return nil, err
-	}
+	newUser := user.NewUser(name, email)
 
 	err = s.repository.Save(newUser)
 	if err != nil {
@@ -34,9 +44,9 @@ func (s *UserService) CreateUser(name string, email string) (*UserOutput, error)
 
 	output := &UserOutput{
 		ID:    newUser.ID(),
-		Name:  newUser.Name(),
-		Email: newUser.Email(),
-		Role:  newUser.Role(),
+		Name:  newUser.Name().Value(),
+		Email: newUser.Email().Value(),
+		Role:  newUser.Role().Value(),
 	}
 
 	return output, nil

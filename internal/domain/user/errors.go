@@ -21,17 +21,19 @@ func (e *PermissionDeniedError) Error() string {
 }
 
 type InvalidNameError struct {
-	name string
+	Name   string
+	Reason string
 }
 
 func (e *InvalidNameError) Error() string {
-	return fmt.Sprintf("invalid name: %s", e.name)
+	return fmt.Sprintf("invalid name: %s - %s", e.Name, e.Reason)
 }
 
 type InvalidEmailError struct {
-	email string
+	Email  string
+	Reason string
 }
 
 func (e *InvalidEmailError) Error() string {
-	return fmt.Sprintf("invalid email: %s", e.email)
+	return fmt.Sprintf("invalid email: %s - %s", e.Email, e.Reason)
 }
