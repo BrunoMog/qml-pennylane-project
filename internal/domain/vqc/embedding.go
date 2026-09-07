@@ -1,55 +1,10 @@
 package vqc
 
-import (
-	"math"
-	"slices"
-)
-
 type Embedding interface {
 	Type() EmbeddingType
 	Qubits() []Qubit
 
 	isEmbedding()
-}
-
-type EmbeddingType string
-
-const (
-	EmbeddingTypeAngle     EmbeddingType = "angle"
-	EmbeddingTypeAmplitude EmbeddingType = "amplitude"
-)
-
-type EmbeddingRotation string
-
-const (
-	XRotation EmbeddingRotation = "x"
-	YRotation EmbeddingRotation = "y"
-	ZRotation EmbeddingRotation = "z"
-)
-
-func (e EmbeddingRotation) IsValid() bool {
-	switch e {
-	case XRotation, YRotation, ZRotation:
-		return true
-	default:
-		return false
-	}
-}
-
-type AngleEmbedding struct {
-	rotation EmbeddingRotation
-	qubits   []Qubit
-}
-
-func NewAngleEmbedding(qubits []Qubit, rotation EmbeddingRotation) (AngleEmbedding, error) {
-	if !rotation.IsValid() {
-		return AngleEmbedding{}, &InvalidRotationError{rotation}
-	}
-	if err := validateEmbeddingQubits(qubits); err != nil {
-		return AngleEmbedding{}, err
-	}
-
-	return AngleEmbedding{qubits: qubits, rotation: rotation}, nil
 }
 
 func validateEmbeddingQubits(qubits []Qubit) error {
@@ -61,52 +16,3 @@ func validateEmbeddingQubits(qubits []Qubit) error {
 	}
 	return nil
 }
-
-func (a AngleEmbedding) Type() EmbeddingType {
-	return EmbeddingTypeAngle
-}
-
-func (a AngleEmbedding) Qubits() []Qubit {
-	return slices.Clone(a.qubits)
-}
-
-func (a AngleEmbedding) Rotation() EmbeddingRotation {
-	return a.rotation
-}
-
-func (a AngleEmbedding) isEmbedding() {}
-
-type AmplitudeEmbedding struct {
-	qubits    []Qubit
-	normalize bool
-	padWith   float64
-}
-
-func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padWith float64) (AmplitudeEmbedding, error) {
-	if err := validateEmbeddingQubits(qubits); err != nil {
-		return AmplitudeEmbedding{}, err
-	}
-	if math.IsNaN(padWith) || math.IsInf(padWith, 0) {
-		return AmplitudeEmbedding{}, &InvalidPadWithError{padWith: padWith}
-	}
-
-	return AmplitudeEmbedding{qubits: qubits, normalize: normalize, padWith: padWith}, nil
-}
-
-func (a AmplitudeEmbedding) Type() EmbeddingType {
-	return EmbeddingTypeAmplitude
-}
-
-func (a AmplitudeEmbedding) Qubits() []Qubit {
-	return slices.Clone(a.qubits)
-}
-
-func (a AmplitudeEmbedding) Normalize() bool {
-	return a.normalize
-}
-
-func (a AmplitudeEmbedding) PadWith() float64 {
-	return a.padWith
-}
-
-func (a AmplitudeEmbedding) isEmbedding() {}

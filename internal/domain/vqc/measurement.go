@@ -4,21 +4,6 @@ import (
 	"slices"
 )
 
-type MeasurementType string
-
-const (
-	ExpectationMeasurement MeasurementType = "expectation"
-	ProbabilityMeasurement MeasurementType = "probability"
-)
-
-type MeasurementRotation string
-
-const (
-	XMeasurementRotation MeasurementRotation = "x"
-	YMeasurementRotation MeasurementRotation = "y"
-	ZMeasurementRotation MeasurementRotation = "z"
-)
-
 type Measurement struct {
 	measurementRotation MeasurementRotation
 	measurementType     MeasurementType
@@ -26,6 +11,7 @@ type Measurement struct {
 }
 
 func NewMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) (Measurement, error) {
+	qubits = slices.Clone(qubits)
 	err := validateMeasurement(qubits, measurementType, measurementRotation)
 	if err != nil {
 		return Measurement{}, err
@@ -47,33 +33,15 @@ func validateMeasurement(qubits []Qubit, measurementType MeasurementType, measur
 		return &DuplicateQubitError{duplicatedQubit}
 	}
 
-	if !isPermitedMeasurement(measurementType) {
+	if !isValidMeasurementType(measurementType) {
 		return &InvalidMeasurementError{measurementType}
 	}
 
-	if !isPermitedMeasurementRotation(measurementRotation) {
+	if !isValidMeasurementRotation(measurementRotation) {
 		return &InvalidMeasurementRotationError{measurementRotation}
 	}
 
 	return nil
-}
-
-func isPermitedMeasurement(measurementType MeasurementType) bool {
-	switch measurementType {
-	case ExpectationMeasurement, ProbabilityMeasurement:
-		return true
-	default:
-		return false
-	}
-}
-
-func isPermitedMeasurementRotation(measurementRotation MeasurementRotation) bool {
-	switch measurementRotation {
-	case XMeasurementRotation, YMeasurementRotation, ZMeasurementRotation:
-		return true
-	default:
-		return false
-	}
 }
 
 func (m Measurement) Qubits() []Qubit {

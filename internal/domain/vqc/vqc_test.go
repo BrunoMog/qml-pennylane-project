@@ -2,62 +2,68 @@ package vqc
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewVQC(t *testing.T) {
 	tests := []struct {
 		embedding   Embedding
 		measurement Measurement
-		name        string
+		testName    string
 		pre_layer   Layer
 		layer       Layer
 		post_layer  Layer
 		num_qubits  uint
 		num_layers  uint
-		expectErr   bool
+		expectErr   error
 	}{
 		{
-			name:        "valid VQC",
+			testName:    "valid VQC",
 			num_qubits:  2,
 			embedding:   AngleEmbedding{},
-			pre_layer:   Layer{},
-			layer:       Layer{},
-			post_layer:  Layer{},
 			measurement: Measurement{},
 			num_layers:  1,
-			expectErr:   false,
+			expectErr:   nil,
 		},
 		{
-			name:        "zero qubits",
+			testName:    "zero qubits",
 			num_qubits:  0,
 			embedding:   AngleEmbedding{},
-			pre_layer:   Layer{},
-			layer:       Layer{},
-			post_layer:  Layer{},
 			measurement: Measurement{},
 			num_layers:  1,
-			expectErr:   true,
+			expectErr:   &ZeroQubitVQCError{},
+		},
+		{
+			testName:    "nil embedding",
+			num_qubits:  2,
+			embedding:   nil,
+			measurement: Measurement{},
+			num_layers:  1,
+			expectErr:   &NilEmbeddingError{},
 		},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			input := VQCInput{
+		t.Run(tt.testName, func(t *testing.T) {
+			input := VQCBaseInput{
 				embedding:   tt.embedding,
 				measurement: tt.measurement,
-				pre_layer:   tt.pre_layer,
-				layer:       tt.layer,
-				post_layer:  tt.post_layer,
 				num_qubits:  tt.num_qubits,
 				num_layers:  tt.num_layers,
 			}
 			vqc, err := NewVQC(input)
-			if (err != nil) != tt.expectErr {
-				t.Errorf("NewVQC() error = %v, expectErr %v", err, tt.expectErr)
-				return
-			}
-			if !tt.expectErr && vqc.NumQubits() != tt.num_qubits {
-				t.Errorf("NewVQC() num_qubits = %v, want %v", vqc.NumQubits(), tt.num_qubits)
+			if tt.expectErr != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectErr, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.num_qubits, vqc.NumQubits())
+				assert.Equal(t, tt.num_layers, vqc.NumLayers())
+				assert.Equal(t, tt.embedding, vqc.Embedding())
+				assert.Equal(t, tt.pre_layer, vqc.PreLayer())
+				assert.Equal(t, tt.layer, vqc.Layer())
+				assert.Equal(t, tt.post_layer, vqc.PostLayer())
 			}
 		})
 	}

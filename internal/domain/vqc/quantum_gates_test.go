@@ -2,76 +2,165 @@ package vqc
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestNewQuantumGate(t *testing.T) {
-	gate_type := CNOTGate
-	var qubit Qubit = 1
-	control_qubit := []Qubit{2}
-
-	gate, err := NewQuantumGate(gate_type, qubit, control_qubit)
-	if err != nil {
-		t.Errorf("NewQuantumGate returned an error: %v", err)
+	tests := []struct {
+		testName      string
+		setup         func(t *testing.T) (GateType, Qubit, []Qubit)
+		expectedError error
+	}{
+		{
+			testName: "valid single-qubit gate",
+			setup: func(t *testing.T) (GateType, Qubit, []Qubit) {
+				return HGate, Qubit(0), nil
+			},
+			expectedError: nil,
+		},
+		{
+			testName: "valid two-qubit gate",
+			setup: func(t *testing.T) (GateType, Qubit, []Qubit) {
+				return CNOTGate, Qubit(1), []Qubit{Qubit(0)}
+			},
+			expectedError: nil,
+		},
+		{
+			testName: "invalid gate type",
+			setup: func(t *testing.T) (GateType, Qubit, []Qubit) {
+				return GateType("invalid_gate"), Qubit(0), nil
+			},
+			expectedError: &InvalidGateError{},
+		},
+		{
+			testName: "invalid single-qubit gate with control qubits",
+			setup: func(t *testing.T) (GateType, Qubit, []Qubit) {
+				return HGate, Qubit(0), []Qubit{Qubit(1)}
+			},
+			expectedError: &InvalidControlQubitError{},
+		},
+		{
+			testName: "invalid two-qubit gate with no control qubits",
+			setup: func(t *testing.T) (GateType, Qubit, []Qubit) {
+				return CNOTGate, Qubit(1), nil
+			},
+			expectedError: &InvalidControlQubitError{},
+		},
+		{
+			testName: "invalid two-qubit gate with multiple control qubits",
+			setup: func(t *testing.T) (GateType, Qubit, []Qubit) {
+				return CNOTGate, Qubit(1), []Qubit{Qubit(0), Qubit(2)}
+			},
+			expectedError: &InvalidControlQubitError{},
+		},
+		{
+			testName: "duplicate qubits",
+			setup: func(t *testing.T) (GateType, Qubit, []Qubit) {
+				return CNOTGate, Qubit(0), []Qubit{Qubit(0)}
+			},
+			expectedError: &DuplicateQubitError{},
+		},
 	}
 
-	if gate.gate_type != gate_type || gate.qubit != qubit || len(gate.control_qubit) != len(control_qubit) {
-		t.Errorf("NewQuantumGate returned unexpected values: got %v, want %v", gate, &QuantumGate{gate_type, control_qubit, qubit})
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			gate_type, qubit, control_qubit := tt.setup(t)
+			gate, err := NewQuantumGate(gate_type, qubit, control_qubit)
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, gate)
+				assert.Equal(t, gate_type, gate.GateType())
+				assert.Equal(t, qubit, gate.qubit)
+				assert.Equal(t, control_qubit, gate.control_qubit)
+			}
+		})
 	}
 }
 
-func TestInvalidGateType(t *testing.T) {
-	const IGate GateType = "invalid_gate"
-	gate_type := IGate
-	var qubit Qubit = 1
-	control_qubit := []Qubit{}
-
-	_, err := NewQuantumGate(gate_type, qubit, control_qubit)
-	if err == nil {
-		t.Errorf("NewQuantumGate did not return an error for invalid gate type")
-	}
-}
-
-func TestDuplicateQubit(t *testing.T) {
-	gate_type := CNOTGate
-	var qubit Qubit = 2
-	control_qubit := []Qubit{2}
-
-	_, err := NewQuantumGate(gate_type, qubit, control_qubit)
-	if err == nil {
-		t.Errorf("NewQuantumGate did not return an error for duplicate qubit index")
-	}
-}
-
-func TestInvalidControlQubit(t *testing.T) {
-	gate_type := CNOTGate
-	var qubit Qubit = 1
-	control_qubit := []Qubit{}
-
-	_, err := NewQuantumGate(gate_type, qubit, control_qubit)
-	if err == nil {
-		t.Errorf("NewQuantumGate did not return an error for invalid control qubit")
-	}
-}
-
-func TestEqual(t *testing.T) {
-	testCases := []struct {
-		name     string
+func TestQuantumGateEqual(t *testing.T) {
+	tests := []struct {
+		testName string
 		gate1    QuantumGate
 		gate2    QuantumGate
 		expected bool
 	}{
-		{"Equal gates", QuantumGate{HGate, []Qubit{}, 0}, QuantumGate{HGate, []Qubit{}, 0}, true},
-		{"Different gate types", QuantumGate{HGate, []Qubit{}, 0}, QuantumGate{XGate, []Qubit{}, 0}, false},
-		{"Different qubits", QuantumGate{HGate, []Qubit{}, 0}, QuantumGate{HGate, []Qubit{}, 1}, false},
-		{"Different control qubits", QuantumGate{CNOTGate, []Qubit{1}, 0}, QuantumGate{CNOTGate, []Qubit{2}, 0}, false},
+		{
+			testName: "equal gates",
+			gate1:    QuantumGate{gate_type: HGate, qubit: Qubit(0), control_qubit: nil},
+			gate2:    QuantumGate{gate_type: HGate, qubit: Qubit(0), control_qubit: nil},
+			expected: true,
+		},
+		{
+			testName: "different gate types",
+			gate1:    QuantumGate{gate_type: HGate, qubit: Qubit(0), control_qubit: nil},
+			gate2:    QuantumGate{gate_type: XGate, qubit: Qubit(0), control_qubit: nil},
+			expected: false,
+		},
+		{
+			testName: "different qubits",
+			gate1:    QuantumGate{gate_type: HGate, qubit: Qubit(0), control_qubit: nil},
+			gate2:    QuantumGate{gate_type: HGate, qubit: Qubit(1), control_qubit: nil},
+			expected: false,
+		},
+		{
+			testName: "different control qubits",
+			gate1:    QuantumGate{gate_type: CNOTGate, qubit: Qubit(1), control_qubit: []Qubit{Qubit(0)}},
+			gate2:    QuantumGate{gate_type: CNOTGate, qubit: Qubit(1), control_qubit: []Qubit{Qubit(2)}},
+			expected: false,
+		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
-			result := tc.gate1.Equal(tc.gate2)
-			if result != tc.expected {
-				t.Errorf("Equal() returned %v, expected %v", result, tc.expected)
-			}
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			result := tt.gate1.Equal(tt.gate2)
+			assert.Equal(t, tt.expected, result)
 		})
 	}
+}
+
+func TestHasParameters(t *testing.T) {
+	tests := []struct {
+		testName string
+		gate     QuantumGate
+		expected bool
+	}{
+		{
+			testName: "gate with no parameters",
+			gate:     QuantumGate{gate_type: HGate, qubit: Qubit(0), control_qubit: nil},
+			expected: false,
+		},
+		{
+			testName: "gate with parameters",
+			gate:     QuantumGate{gate_type: RXGate, qubit: Qubit(0), control_qubit: nil},
+			expected: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			result := tt.gate.HasParameters()
+			assert.Equal(t, tt.expected, result)
+		})
+	}
+}
+
+func TestCloneImmutability(t *testing.T) {
+	originalGate := QuantumGate{
+		gate_type:     CNOTGate,
+		qubit:         Qubit(1),
+		control_qubit: []Qubit{Qubit(0)},
+	}
+
+	clonedGate := originalGate.Clone()
+
+	// Modify the cloned gate's control qubits
+	clonedGate.control_qubit[0] = Qubit(2)
+
+	// The original gate's control qubits should remain unchanged
+	assert.Equal(t, []Qubit{Qubit(0)}, originalGate.control_qubit)
+	assert.Equal(t, []Qubit{Qubit(2)}, clonedGate.control_qubit)
 }

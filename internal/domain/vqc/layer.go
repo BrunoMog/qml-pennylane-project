@@ -1,19 +1,42 @@
 package vqc
 
-import "slices"
-
 type Layer struct {
 	gates []QuantumGate
 }
 
 func NewLayer(gates []QuantumGate) Layer {
 	return Layer{
-		gates: slices.Clone(gates),
+		gates: cloneGates(gates),
 	}
 }
 
+func cloneGates(gates []QuantumGate) []QuantumGate {
+	clonedGates := make([]QuantumGate, len(gates))
+	for i, gate := range gates {
+		clonedGates[i] = gate.Clone()
+	}
+	return clonedGates
+}
+
 func (l Layer) Gates() []QuantumGate {
-	return slices.Clone(l.gates)
+	return cloneGates(l.gates)
+}
+
+func (l Layer) NumGates() uint {
+	return uint(len(l.gates))
+}
+
+func (l Layer) HasParameterizedGates() bool {
+	for _, gate := range l.gates {
+		if gate.HasParameters() {
+			return true
+		}
+	}
+	return false
+}
+
+func (l Layer) Clone() Layer {
+	return NewLayer(l.gates)
 }
 
 func (l Layer) NumParameterizedGates() uint {
