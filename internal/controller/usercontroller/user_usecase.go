@@ -5,7 +5,7 @@ import (
 )
 
 type UserUseCase interface {
-	CreateUser(name, email string) (*userusecase.UserOutput, error)
+	CreateUser(input userusecase.CreateUserInput) (*userusecase.UserOutput, error)
 	ChangeUserRole(input userusecase.ChangeUserRoleInput) error
 	ChangeOwner(input userusecase.ChangeOwnerInput) error
 	UpdateUser(input userusecase.UpdateUserInput) error
