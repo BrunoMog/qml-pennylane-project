@@ -5,64 +5,58 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewVQCConfig(t *testing.T) {
 	tests := []struct {
-		vqc         *vqc.VQC
-		name        string
-		nameInput   string
-		description string
-		userID      uuid.UUID
-		expectErr   bool
+		testName    string
+		setup       func() (uuid.UUID, Name, Description, vqc.VQC)
+		expectError error
 	}{
 		{
-			name:        "valid VQCConfig",
-			userID:      uuid.New(),
-			nameInput:   "Test Config",
-			description: "This is a test VQC configuration.",
-			vqc:         &vqc.VQC{},
-			expectErr:   false,
+			testName: "valid VQCConfig",
+			setup: func() (uuid.UUID, Name, Description, vqc.VQC) {
+				userID := uuid.New()
+				name, err := NewName("Valid Name")
+				require.NoError(t, err)
+				description, err := NewDescription("Valid Description")
+				require.NoError(t, err)
+				vqcInstance := vqc.VQC{}
+				return userID, name, description, vqcInstance
+			},
+			expectError: nil,
 		},
 		{
-			name:        "empty name",
-			userID:      uuid.New(),
-			nameInput:   "",
-			description: "This is a test VQC configuration.",
-			vqc:         &vqc.VQC{},
-			expectErr:   true,
-		},
-		{
-			name:        "name too long",
-			userID:      uuid.New(),
-			nameInput:   "This name is way too long for the validation rules. It exceeds the maximum allowed length of 100 characters.",
-			description: "This is a test VQC configuration.",
-			vqc:         &vqc.VQC{},
-			expectErr:   true,
-		},
-		{
-			name:        "description too long",
-			userID:      uuid.New(),
-			nameInput:   "Test Config",
-			description: "050-----------------------------------------------100-----------------------------------------------150-----------------------------------------------200-----------------------------------------------250-----------------------------------------------300-----------------------------------------------350-----------------------------------------------400-----------------------------------------------450-----------------------------------------------500-----------------------------------------------X",
-			vqc:         &vqc.VQC{},
-			expectErr:   true,
-		},
-		{
-			name:        "nil VQC",
-			userID:      uuid.New(),
-			nameInput:   "Test Config",
-			description: "This is a test VQC configuration.",
-			vqc:         nil,
-			expectErr:   true,
+			testName: "invalid VQCConfig with nil userID",
+			setup: func() (uuid.UUID, Name, Description, vqc.VQC) {
+				userID := uuid.Nil
+				name, err := NewName("Valid Name")
+				require.NoError(t, err)
+				description, err := NewDescription("Valid Description")
+				require.NoError(t, err)
+				vqcInstance := vqc.VQC{}
+				return userID, name, description, vqcInstance
+			},
+			expectError: &InvalidOwnerIDError{},
 		},
 	}
-
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			_, err := NewVQCConfig(tt.userID, tt.nameInput, tt.description, tt.vqc)
-			if (err != nil) != tt.expectErr {
-				t.Errorf("NewVQCConfig() error = %v, expectErr %v", err, tt.expectErr)
+		t.Run(tt.testName, func(t *testing.T) {
+			userID, name, description, vqcInstance := tt.setup()
+			vqcConfig, err := NewVQCConfig(userID, name, description, vqcInstance)
+			if tt.expectError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectError, err)
+				assert.Nil(t, vqcConfig)
+			} else {
+				assert.NoError(t, err)
+				assert.NotNil(t, vqcConfig)
+				assert.Equal(t, userID, vqcConfig.userID)
+				assert.Equal(t, name.Value(), vqcConfig.name.Value())
+				assert.Equal(t, description.Value(), vqcConfig.description.Value())
+				assert.Equal(t, vqcInstance, vqcConfig.vqc)
 			}
 		})
 	}

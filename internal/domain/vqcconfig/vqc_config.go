@@ -7,33 +7,19 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	MaxNameLength        = 100
-	MaxDescriptionLength = 500
-)
-
 type VQCConfig struct {
 	createdAt   time.Time
 	updatedAt   time.Time
-	vqc         *vqc.VQC
-	name        string
-	description string
+	vqc         vqc.VQC
+	name        Name
+	description Description
 	userID      uuid.UUID
 	vqcID       uuid.UUID
 }
 
-func NewVQCConfig(userID uuid.UUID, name string, description string, vqc *vqc.VQC) (*VQCConfig, error) {
-	err := validateName(name)
-	if err != nil {
-		return nil, err
-	}
-	err = validateDescription(description)
-	if err != nil {
-		return nil, err
-	}
-	err = validateVQC(vqc)
-	if err != nil {
-		return nil, err
+func NewVQCConfig(userID uuid.UUID, name Name, description Description, vqc vqc.VQC) (*VQCConfig, error) {
+	if userID == uuid.Nil {
+		return nil, &InvalidOwnerIDError{}
 	}
 
 	return &VQCConfig{
@@ -47,84 +33,45 @@ func NewVQCConfig(userID uuid.UUID, name string, description string, vqc *vqc.VQ
 	}, nil
 }
 
-func validateName(name string) error {
-	if name == "" {
-		return &InvalidNameError{name}
-	}
-	if len(name) > MaxNameLength {
-		return &InvalidNameError{name}
-	}
-	return nil
-}
-
-func validateDescription(description string) error {
-	if len(description) > MaxDescriptionLength {
-		return &InvalidDescriptionError{description}
-	}
-	return nil
-}
-
-func validateVQC(vqc *vqc.VQC) error {
-	if vqc == nil {
-		return &VQCConfigMissingVQCError{}
-	}
-	return nil
-}
-
-func (vqcConfig *VQCConfig) SetName(name string) error {
-	err := validateName(name)
-	if err != nil {
-		return err
-	}
+func (vqcConfig *VQCConfig) SetName(name Name) {
 	vqcConfig.name = name
 	vqcConfig.updatedAt = time.Now()
-	return nil
 }
 
-func (vqcConfig *VQCConfig) SetDescription(description string) error {
-	err := validateDescription(description)
-	if err != nil {
-		return err
-	}
+func (vqcConfig *VQCConfig) SetDescription(description Description) {
 	vqcConfig.description = description
 	vqcConfig.updatedAt = time.Now()
-	return nil
 }
 
-func (vqcConfig *VQCConfig) SetVQC(vqc *vqc.VQC) error {
-	err := validateVQC(vqc)
-	if err != nil {
-		return err
-	}
+func (vqcConfig *VQCConfig) SetVQC(vqc vqc.VQC) {
 	vqcConfig.vqc = vqc
 	vqcConfig.updatedAt = time.Now()
-	return nil
 }
 
-func (vqcConfig VQCConfig) Name() string {
+func (vqcConfig *VQCConfig) Name() Name {
 	return vqcConfig.name
 }
 
-func (vqcConfig VQCConfig) Description() string {
+func (vqcConfig *VQCConfig) Description() Description {
 	return vqcConfig.description
 }
 
-func (vqcConfig VQCConfig) OwnerID() uuid.UUID {
+func (vqcConfig *VQCConfig) OwnerID() uuid.UUID {
 	return vqcConfig.userID
 }
 
-func (vqcConfig VQCConfig) VQCConfigID() uuid.UUID {
+func (vqcConfig *VQCConfig) VQCConfigID() uuid.UUID {
 	return vqcConfig.vqcID
 }
 
-func (vqcConfig VQCConfig) CreatedAt() time.Time {
+func (vqcConfig *VQCConfig) CreatedAt() time.Time {
 	return vqcConfig.createdAt
 }
 
-func (vqcConfig VQCConfig) UpdatedAt() time.Time {
+func (vqcConfig *VQCConfig) UpdatedAt() time.Time {
 	return vqcConfig.updatedAt
 }
 
-func (vqcConfig VQCConfig) VQC() vqc.VQC {
-	return *vqcConfig.vqc
+func (vqcConfig *VQCConfig) VQC() vqc.VQC {
+	return vqcConfig.vqc
 }

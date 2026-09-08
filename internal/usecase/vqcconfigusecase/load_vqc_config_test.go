@@ -35,7 +35,7 @@ func TestLoadVQCConfig(t *testing.T) {
 			setup: func(f *testFixture) LoadVQCConfigInput {
 				user := f.createUser(user.RoleUser)
 				vqcConfig := f.createVQCConfig(user.ID())
-				vqcConfigName := vqcConfig.Name()
+				vqcConfigName := vqcConfig.Name().Value()
 				return LoadVQCConfigInput{
 					CallerID:      user.ID(),
 					VQCConfigID:   nil,

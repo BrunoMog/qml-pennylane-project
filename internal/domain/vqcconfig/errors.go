@@ -18,8 +18,8 @@ func (e *InvalidDescriptionError) Error() string {
 	return fmt.Sprintf("Invalid description: %s", e.description)
 }
 
-type VQCConfigMissingVQCError struct{}
+type InvalidOwnerIDError struct{}
 
-func (e *VQCConfigMissingVQCError) Error() string {
-	return "VQCConfig is missing VQC"
+func (e *InvalidOwnerIDError) Error() string {
+	return "invalid owner ID"
 }

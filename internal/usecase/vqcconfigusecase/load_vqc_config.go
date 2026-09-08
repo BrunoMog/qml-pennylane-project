@@ -1,7 +1,6 @@
 package vqcconfigusecase
 
 import (
-	"pennylane_project_backend/internal/domain/vqc"
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"time"
 
@@ -19,7 +18,7 @@ type LoadVQCConfigOutput struct {
 	UpdatedAt   time.Time
 	Name        string
 	Description string
-	VQC         vqc.VQC
+	VQC         VQCOutputDTO
 	OwnerID     uuid.UUID
 	VQCConfigID uuid.UUID
 }
@@ -36,7 +35,11 @@ func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConf
 			return nil, err
 		}
 	} else if input.VQCConfigName != nil {
-		config, err = s.vqcConfigRepository.FindByName(input.CallerID, *input.VQCConfigName)
+		name, err := vqcconfig.NewName(*input.VQCConfigName)
+		if err != nil {
+			return nil, err
+		}
+		config, err = s.vqcConfigRepository.FindByName(input.CallerID, name)
 		if err != nil {
 			return nil, err
 		}
@@ -49,9 +52,9 @@ func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConf
 	}
 
 	output := &LoadVQCConfigOutput{
-		Name:        config.Name(),
-		Description: config.Description(),
-		VQC:         config.VQC(),
+		Name:        config.Name().Value(),
+		Description: config.Description().Value(),
+		VQC:         BuildVQCOutput(config.VQC()),
 		CreatedAt:   config.CreatedAt(),
 		UpdatedAt:   config.UpdatedAt(),
 		OwnerID:     config.OwnerID(),
@@ -83,9 +86,9 @@ func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) (*Loa
 	}
 	for i, config := range configs {
 		output.VQCConfigs[i] = LoadVQCConfigOutput{
-			Name:        config.Name(),
-			Description: config.Description(),
-			VQC:         config.VQC(),
+			Name:        config.Name().Value(),
+			Description: config.Description().Value(),
+			VQC:         BuildVQCOutput(config.VQC()),
 			CreatedAt:   config.CreatedAt(),
 			UpdatedAt:   config.UpdatedAt(),
 			OwnerID:     config.OwnerID(),

@@ -2,12 +2,12 @@ package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/user"
-	"pennylane_project_backend/internal/domain/vqc"
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateVQCConfig(t *testing.T) {
@@ -24,7 +24,7 @@ func TestCreateVQCConfig(t *testing.T) {
 					Name:        "Test Config",
 					Description: "This is a test VQCConfig",
 					CallerID:    user.ID(),
-					VQC:         &vqc.VQC{},
+					VQC:         validVQCInput(),
 				}
 			},
 			expectedError: nil,
@@ -36,7 +36,7 @@ func TestCreateVQCConfig(t *testing.T) {
 					Name:        "Test Config",
 					Description: "This is a test VQCConfig",
 					CallerID:    uuid.New(),
-					VQC:         &vqc.VQC{},
+					VQC:         validVQCInput(),
 				}
 			},
 			expectedError: &UserNotFoundError{},
@@ -44,30 +44,19 @@ func TestCreateVQCConfig(t *testing.T) {
 		{
 			testName: "fail to create VQCConfig due to duplicate name",
 			setup: func(f *testFixture) CreateVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				vqcconfig := f.createVQCConfig(user.ID())
-				vqcconfig.SetName("Test Config")
+				newUser := f.createUser(user.RoleUser)
+				newVQCConfig := f.createVQCConfig(newUser.ID())
+				name, err := vqcconfig.NewName("Test Config")
+				require.NoError(t, err)
+				newVQCConfig.SetName(name)
 				return CreateVQCConfigInput{
-					Name:        "Test Config",
+					Name:        name.Value(),
 					Description: "This is a test VQCConfig",
-					CallerID:    user.ID(),
-					VQC:         &vqc.VQC{},
+					CallerID:    newUser.ID(),
+					VQC:         validVQCInput(),
 				}
 			},
 			expectedError: &VQCConfigNameAlreadyExistsError{},
-		},
-		{
-			testName: "nil reference to VQC",
-			setup: func(f *testFixture) CreateVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				return CreateVQCConfigInput{
-					Name:        "Test Config",
-					Description: "This is a test VQCConfig",
-					CallerID:    user.ID(),
-					VQC:         nil,
-				}
-			},
-			expectedError: &vqcconfig.VQCConfigMissingVQCError{},
 		},
 	}
 

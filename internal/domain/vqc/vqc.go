@@ -11,32 +11,32 @@ type VQC struct {
 }
 
 type VQCBaseInput struct {
-	embedding   Embedding
-	measurement Measurement
-	num_qubits  uint
-	num_layers  uint
+	Embedding   Embedding
+	Measurement Measurement
+	NumQubits   uint
+	NumLayers   uint
 }
 
-func NewVQC(input VQCBaseInput, options ...VQCOption) (*VQC, error) {
-	if input.num_qubits == 0 {
-		return nil, &ZeroQubitVQCError{num_qubits: input.num_qubits}
+func NewVQC(input VQCBaseInput, options ...VQCOption) (VQC, error) {
+	if input.NumQubits == 0 {
+		return VQC{}, &ZeroQubitVQCError{num_qubits: input.NumQubits}
 	}
-	if input.embedding == nil {
-		return nil, &NilEmbeddingError{}
+	if input.Embedding == nil {
+		return VQC{}, &NilEmbeddingError{}
 	}
 
 	vqc := &VQC{
-		num_qubits:  input.num_qubits,
-		embedding:   input.embedding,
-		measurement: input.measurement,
-		num_layers:  input.num_layers,
+		num_qubits:  input.NumQubits,
+		embedding:   input.Embedding,
+		measurement: input.Measurement,
+		num_layers:  input.NumLayers,
 	}
 
 	for _, option := range options {
 		option.apply(vqc)
 	}
 
-	return vqc, nil
+	return *vqc, nil
 }
 
 func (v VQC) NumQubits() uint {

@@ -29,7 +29,7 @@ func (r *MockVQCConfigRepository) FindByID(id uuid.UUID) (*vqcconfig.VQCConfig, 
 	return nil, &ErrVQCConfigNotFound{}
 }
 
-func (r *MockVQCConfigRepository) FindByName(ownerID uuid.UUID, name string) (*vqcconfig.VQCConfig, error) {
+func (r *MockVQCConfigRepository) FindByName(ownerID uuid.UUID, name vqcconfig.Name) (*vqcconfig.VQCConfig, error) {
 	for _, v := range r.vqcConfigs {
 		if v.OwnerID() == ownerID && v.Name() == name {
 			copiedVQCConfig := *v
@@ -44,7 +44,7 @@ func (r *MockVQCConfigRepository) ExistsByID(id uuid.UUID) (bool, error) {
 	return exists, nil
 }
 
-func (r *MockVQCConfigRepository) ExistsByName(ownerID uuid.UUID, name string) (bool, error) {
+func (r *MockVQCConfigRepository) ExistsByName(ownerID uuid.UUID, name vqcconfig.Name) (bool, error) {
 	for _, v := range r.vqcConfigs {
 		if v.OwnerID() == ownerID && v.Name() == name {
 			return true, nil

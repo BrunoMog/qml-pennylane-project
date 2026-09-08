@@ -10,14 +10,14 @@ type QuantumGate struct {
 	qubit         Qubit
 }
 
-func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (*QuantumGate, error) {
+func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (QuantumGate, error) {
 	control_qubit = slices.Clone(control_qubit)
 	err := validateGate(gate_type, qubit, control_qubit)
 	if err != nil {
-		return nil, err
+		return QuantumGate{}, err
 	}
 
-	return &QuantumGate{
+	return QuantumGate{
 		gate_type:     gate_type,
 		qubit:         qubit,
 		control_qubit: control_qubit,

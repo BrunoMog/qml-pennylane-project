@@ -47,10 +47,10 @@ func TestNewVQC(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			input := VQCBaseInput{
-				embedding:   tt.embedding,
-				measurement: tt.measurement,
-				num_qubits:  tt.num_qubits,
-				num_layers:  tt.num_layers,
+				Embedding:   tt.embedding,
+				Measurement: tt.measurement,
+				NumQubits:   tt.num_qubits,
+				NumLayers:   tt.num_layers,
 			}
 			vqc, err := NewVQC(input)
 			if tt.expectErr != nil {

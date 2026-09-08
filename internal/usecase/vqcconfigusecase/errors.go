@@ -58,3 +58,11 @@ type NoFieldsToUpdateError struct {
 func (e *NoFieldsToUpdateError) Error() string {
 	return "No fields to update"
 }
+
+type UnreachableEmbeddingTypeError struct {
+	EmbeddingType string
+}
+
+func (e *UnreachableEmbeddingTypeError) Error() string {
+	return fmt.Sprintf("Unreachable embedding type: %s", e.EmbeddingType)
+}

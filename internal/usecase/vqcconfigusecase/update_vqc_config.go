@@ -1,7 +1,6 @@
 package vqcconfigusecase
 
 import (
-	"pennylane_project_backend/internal/domain/vqc"
 	"pennylane_project_backend/internal/domain/vqcconfig"
 
 	"github.com/google/uuid"
@@ -10,7 +9,7 @@ import (
 type UpdateVQCConfigInput struct {
 	Name        *string
 	Description *string
-	VQC         *vqc.VQC
+	VQC         *VQCInputDTO
 	CallerID    uuid.UUID
 	VQCConfigID uuid.UUID
 }
@@ -30,29 +29,32 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 	}
 
 	if input.Name != nil {
-		exists, err := s.vqcConfigRepository.ExistsByName(input.CallerID, *input.Name)
+		name, err := vqcconfig.NewName(*input.Name)
+		if err != nil {
+			return err
+		}
+		exists, err := s.vqcConfigRepository.ExistsByName(input.CallerID, name)
 		if err != nil {
 			return err
 		}
 		if exists {
 			return &VQCConfigNameAlreadyExistsError{}
 		}
-		err = config.SetName(*input.Name)
-		if err != nil {
-			return err
-		}
+		config.SetName(name)
 	}
 	if input.Description != nil {
-		err = config.SetDescription(*input.Description)
+		description, err := vqcconfig.NewDescription(*input.Description)
 		if err != nil {
 			return err
 		}
+		config.SetDescription(description)
 	}
 	if input.VQC != nil {
-		err = config.SetVQC(input.VQC)
+		vqc, err := BuildVQC(*input.VQC)
 		if err != nil {
 			return err
 		}
+		config.SetVQC(vqc)
 	}
 
 	err = s.vqcConfigRepository.Save(config)

@@ -29,3 +29,7 @@ func hasDuplicateQubits(qubits []Qubit) (Qubit, bool) {
 
 	return 0, false
 }
+
+func (q Qubit) Index() uint {
+	return uint(q)
+}

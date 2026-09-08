@@ -97,7 +97,7 @@ func TestUpdateVQCConfig(t *testing.T) {
 				user := f.createUser(user.RoleUser)
 				vqcConfig1 := f.createVQCConfig(user.ID())
 				vqcConfig2 := f.createVQCConfig(user.ID())
-				newName := vqcConfig2.Name()
+				newName := vqcConfig2.Name().Value()
 				return UpdateVQCConfigInput{
 					Name:        &newName,
 					Description: nil,
@@ -122,10 +122,10 @@ func TestUpdateVQCConfig(t *testing.T) {
 				vqcConfig, err := f.vqcConfigRepo.FindByID(input.VQCConfigID)
 				require.NoError(t, err)
 				if input.Name != nil {
-					assert.Equal(t, *input.Name, vqcConfig.Name())
+					assert.Equal(t, *input.Name, vqcConfig.Name().Value())
 				}
 				if input.Description != nil {
-					assert.Equal(t, *input.Description, vqcConfig.Description())
+					assert.Equal(t, *input.Description, vqcConfig.Description().Value())
 				}
 			}
 		})

@@ -47,3 +47,37 @@ func (f *testFixture) createVQCConfig(ownerID uuid.UUID) *vqcconfig.VQCConfig {
 	require.NoError(f.t, err)
 	return vqcConfig
 }
+
+func validVQCInput() VQCInputDTO {
+	return VQCInputDTO{
+		NumQubits: 1,
+		NumLayers: 1,
+		Embedding: EmbeddingInputDTO{
+			EmbeddingType: "angle",
+			Qubits:        []uint{0},
+			Rotation:      "x",
+		},
+		Measurement: MeasurementInputDTO{
+			MeasurementType:     "expectation",
+			MeasurementRotation: "x",
+			Qubits:              []uint{0},
+		},
+	}
+}
+
+func ValidVQCOutputDTO() VQCOutputDTO {
+	return VQCOutputDTO{
+		NumQubits: 1,
+		NumLayers: 1,
+		Embedding: EmbeddingInputDTO{
+			EmbeddingType: "angle",
+			Qubits:        []uint{0},
+			Rotation:      "x",
+		},
+		Measurement: MeasurementInputDTO{
+			MeasurementType:     "expectation",
+			MeasurementRotation: "x",
+			Qubits:              []uint{0},
+		},
+	}
+}
