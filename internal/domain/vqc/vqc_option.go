@@ -10,7 +10,7 @@ type preLayerOption struct {
 
 func (o preLayerOption) apply(v *VQC) {
 	layer := o.layer.Clone()
-	v.pre_layer = layer
+	v.preLayer = layer
 }
 
 type layerOption struct {
@@ -28,7 +28,7 @@ type postLayerOption struct {
 
 func (o postLayerOption) apply(v *VQC) {
 	layer := o.layer.Clone()
-	v.post_layer = layer
+	v.postLayer = layer
 }
 
 func WithPreLayer(layer Layer) VQCOption {

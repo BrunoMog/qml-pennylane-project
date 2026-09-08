@@ -18,6 +18,16 @@ func NewAngleEmbedding(qubits []Qubit, rotation EmbeddingRotation) (AngleEmbeddi
 	return AngleEmbedding{qubits: qubits, rotation: rotation}, nil
 }
 
+func (a AngleEmbedding) IsValid() bool {
+	if !a.rotation.IsValid() {
+		return false
+	}
+	if err := validateEmbeddingQubits(a.qubits); err != nil {
+		return false
+	}
+	return true
+}
+
 func (a AngleEmbedding) Type() EmbeddingType {
 	return EmbeddingTypeAngle
 }

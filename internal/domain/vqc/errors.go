@@ -93,11 +93,11 @@ func (e *ZeroQubitMeasurementError) Error() string {
 }
 
 type ZeroQubitVQCError struct {
-	num_qubits uint
+	numQubits uint
 }
 
 func (e *ZeroQubitVQCError) Error() string {
-	return fmt.Sprintf("VQC must have at least one qubit, got: %d", e.num_qubits)
+	return fmt.Sprintf("VQC must have at least one qubit, got: %d", e.numQubits)
 }
 
 type NilEmbeddingError struct{}

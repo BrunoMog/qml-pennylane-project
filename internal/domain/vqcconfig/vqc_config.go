@@ -21,6 +21,9 @@ func NewVQCConfig(userID uuid.UUID, name Name, description Description, vqc vqc.
 	if userID == uuid.Nil {
 		return nil, &InvalidOwnerIDError{}
 	}
+	if !vqc.IsValid() {
+		return nil, &InvalidVQCError{}
+	}
 
 	return &VQCConfig{
 		userID:      userID,

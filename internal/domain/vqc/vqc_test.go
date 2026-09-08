@@ -6,6 +6,32 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func validEmbedding() Embedding {
+	qubitZero, err := NewQubit(0, 1)
+	if err != nil {
+		panic(err)
+	}
+	qubits := []Qubit{qubitZero}
+	embedding, err := NewAngleEmbedding(qubits, XRotation)
+	if err != nil {
+		panic(err)
+	}
+	return embedding
+}
+
+func validMeasurement() Measurement {
+	qubitZero, err := NewQubit(0, 1)
+	if err != nil {
+		panic(err)
+	}
+	qubits := []Qubit{qubitZero}
+	measurement, err := NewMeasurement(qubits, ExpectationMeasurement, XMeasurementRotation)
+	if err != nil {
+		panic(err)
+	}
+	return measurement
+}
+
 func TestNewVQC(t *testing.T) {
 	tests := []struct {
 		embedding   Embedding
@@ -21,16 +47,16 @@ func TestNewVQC(t *testing.T) {
 		{
 			testName:    "valid VQC",
 			num_qubits:  2,
-			embedding:   AngleEmbedding{},
-			measurement: Measurement{},
+			embedding:   validEmbedding(),
+			measurement: validMeasurement(),
 			num_layers:  1,
 			expectErr:   nil,
 		},
 		{
 			testName:    "zero qubits",
 			num_qubits:  0,
-			embedding:   AngleEmbedding{},
-			measurement: Measurement{},
+			embedding:   validEmbedding(),
+			measurement: validMeasurement(),
 			num_layers:  1,
 			expectErr:   &ZeroQubitVQCError{},
 		},
@@ -38,9 +64,25 @@ func TestNewVQC(t *testing.T) {
 			testName:    "nil embedding",
 			num_qubits:  2,
 			embedding:   nil,
-			measurement: Measurement{},
+			measurement: validMeasurement(),
 			num_layers:  1,
 			expectErr:   &NilEmbeddingError{},
+		},
+		{
+			testName:    "invalid embedding",
+			num_qubits:  2,
+			embedding:   AngleEmbedding{},
+			measurement: validMeasurement(),
+			num_layers:  1,
+			expectErr:   &InvalidEmbeddingError{},
+		},
+		{
+			testName:    "invalid measurement",
+			num_qubits:  2,
+			embedding:   validEmbedding(),
+			measurement: Measurement{},
+			num_layers:  1,
+			expectErr:   &InvalidMeasurementError{},
 		},
 	}
 

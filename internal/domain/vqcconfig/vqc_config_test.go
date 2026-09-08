@@ -9,6 +9,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func validVQC() vqc.VQC {
+	qubitZero, err := vqc.NewQubit(0, 1)
+	if err != nil {
+		panic(err)
+	}
+	qubits := []vqc.Qubit{qubitZero}
+	embedding, err := vqc.NewAngleEmbedding(qubits, vqc.XRotation)
+	if err != nil {
+		panic(err)
+	}
+	measurement, err := vqc.NewMeasurement(qubits, vqc.ExpectationMeasurement, vqc.XMeasurementRotation)
+	if err != nil {
+		panic(err)
+	}
+	input := vqc.VQCBaseInput{
+		NumQubits:   1,
+		NumLayers:   1,
+		Embedding:   embedding,
+		Measurement: measurement,
+	}
+	vqc, err := vqc.NewVQC(input)
+	if err != nil {
+		panic(err)
+	}
+	return vqc
+}
+
 func TestNewVQCConfig(t *testing.T) {
 	tests := []struct {
 		testName    string
@@ -23,7 +50,7 @@ func TestNewVQCConfig(t *testing.T) {
 				require.NoError(t, err)
 				description, err := NewDescription("Valid Description")
 				require.NoError(t, err)
-				vqcInstance := vqc.VQC{}
+				vqcInstance := validVQC()
 				return userID, name, description, vqcInstance
 			},
 			expectError: nil,
@@ -36,10 +63,22 @@ func TestNewVQCConfig(t *testing.T) {
 				require.NoError(t, err)
 				description, err := NewDescription("Valid Description")
 				require.NoError(t, err)
-				vqcInstance := vqc.VQC{}
+				vqcInstance := validVQC()
 				return userID, name, description, vqcInstance
 			},
 			expectError: &InvalidOwnerIDError{},
+		},
+		{
+			testName: "invalid VQCConfig with invalid VQC",
+			setup: func() (uuid.UUID, Name, Description, vqc.VQC) {
+				userID := uuid.New()
+				name, err := NewName("Valid Name")
+				require.NoError(t, err)
+				description, err := NewDescription("Valid Description")
+				require.NoError(t, err)
+				return userID, name, description, vqc.VQC{}
+			},
+			expectError: &InvalidVQCError{},
 		},
 	}
 	for _, tt := range tests {

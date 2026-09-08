@@ -22,6 +22,16 @@ func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padWith float64) (Amp
 	return AmplitudeEmbedding{qubits: qubits, normalize: normalize, padWith: padWith}, nil
 }
 
+func (a AmplitudeEmbedding) IsValid() bool {
+	if err := validateEmbeddingQubits(a.qubits); err != nil {
+		return false
+	}
+	if math.IsNaN(a.padWith) || math.IsInf(a.padWith, 0) {
+		return false
+	}
+	return true
+}
+
 func (a AmplitudeEmbedding) Type() EmbeddingType {
 	return EmbeddingTypeAmplitude
 }

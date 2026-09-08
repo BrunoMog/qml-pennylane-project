@@ -23,3 +23,9 @@ type InvalidOwnerIDError struct{}
 func (e *InvalidOwnerIDError) Error() string {
 	return "invalid owner ID"
 }
+
+type InvalidVQCError struct{}
+
+func (e *InvalidVQCError) Error() string {
+	return "invalid VQC"
+}

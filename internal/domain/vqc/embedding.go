@@ -3,6 +3,7 @@ package vqc
 type Embedding interface {
 	Type() EmbeddingType
 	Qubits() []Qubit
+	IsValid() bool
 
 	isEmbedding()
 }

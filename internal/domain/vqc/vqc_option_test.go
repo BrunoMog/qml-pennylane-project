@@ -10,8 +10,8 @@ func TestWithPreLayer(t *testing.T) {
 	layer := NewLayer([]QuantumGate{{gate_type: HGate}})
 
 	inputVQC := VQCBaseInput{
-		Embedding:   AmplitudeEmbedding{},
-		Measurement: Measurement{},
+		Embedding:   validEmbedding(),
+		Measurement: validMeasurement(),
 		NumQubits:   2,
 		NumLayers:   1,
 	}
@@ -25,8 +25,8 @@ func TestWithLayer(t *testing.T) {
 	layer := NewLayer([]QuantumGate{{gate_type: XGate}})
 
 	inputVQC := VQCBaseInput{
-		Embedding:   AmplitudeEmbedding{},
-		Measurement: Measurement{},
+		Embedding:   validEmbedding(),
+		Measurement: validMeasurement(),
 		NumQubits:   2,
 		NumLayers:   1,
 	}
@@ -40,8 +40,8 @@ func TestWithPostLayer(t *testing.T) {
 	layer := NewLayer([]QuantumGate{{gate_type: CNOTGate}})
 
 	inputVQC := VQCBaseInput{
-		Embedding:   AmplitudeEmbedding{},
-		Measurement: Measurement{},
+		Embedding:   validEmbedding(),
+		Measurement: validMeasurement(),
 		NumQubits:   2,
 		NumLayers:   1,
 	}
@@ -57,8 +57,8 @@ func TestWithMultipleOptions(t *testing.T) {
 	postLayer := NewLayer([]QuantumGate{{gate_type: CNOTGate}})
 
 	inputVQC := VQCBaseInput{
-		Embedding:   AmplitudeEmbedding{},
-		Measurement: Measurement{},
+		Embedding:   validEmbedding(),
+		Measurement: validMeasurement(),
 		NumQubits:   2,
 		NumLayers:   1,
 	}

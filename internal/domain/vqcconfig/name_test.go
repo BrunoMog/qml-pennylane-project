@@ -11,43 +11,43 @@ func TestNameValidation(t *testing.T) {
 	tests := []struct {
 		testName      string
 		inputName     string
-		expextedName  string
+		expectedName  string
 		expectedError error
 	}{
 		{
 			testName:      "valid name",
 			inputName:     "Valid Name",
-			expextedName:  "Valid Name",
+			expectedName:  "Valid Name",
 			expectedError: nil,
 		},
 		{
 			testName:      "empty name",
 			inputName:     "",
-			expextedName:  "",
+			expectedName:  "",
 			expectedError: &InvalidNameError{},
 		},
 		{
 			testName:      "name with only spaces",
 			inputName:     "   ",
-			expextedName:  "",
+			expectedName:  "",
 			expectedError: &InvalidNameError{},
 		},
 		{
 			testName:      "name too short",
 			inputName:     "abc",
-			expextedName:  "",
+			expectedName:  "",
 			expectedError: &InvalidNameError{},
 		},
 		{
 			testName:      "name too long",
 			inputName:     strings.Repeat("a", MAX_NAME_LENGTH+1),
-			expextedName:  "",
+			expectedName:  "",
 			expectedError: &InvalidNameError{},
 		},
 		{
 			testName:      "name with leading and trailing spaces",
 			inputName:     "   Valid Name   ",
-			expextedName:  "Valid Name",
+			expectedName:  "Valid Name",
 			expectedError: nil,
 		},
 	}
@@ -60,7 +60,7 @@ func TestNameValidation(t *testing.T) {
 				assert.IsType(t, tt.expectedError, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expextedName, name.Value())
+				assert.Equal(t, tt.expectedName, name.Value())
 			}
 		})
 	}

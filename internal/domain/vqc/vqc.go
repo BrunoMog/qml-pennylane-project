@@ -3,11 +3,11 @@ package vqc
 type VQC struct {
 	embedding   Embedding
 	measurement Measurement
-	pre_layer   Layer
+	preLayer    Layer
 	layer       Layer
-	post_layer  Layer
-	num_qubits  uint
-	num_layers  uint
+	postLayer   Layer
+	numQubits   uint
+	numLayers   uint
 }
 
 type VQCBaseInput struct {
@@ -18,18 +18,16 @@ type VQCBaseInput struct {
 }
 
 func NewVQC(input VQCBaseInput, options ...VQCOption) (VQC, error) {
-	if input.NumQubits == 0 {
-		return VQC{}, &ZeroQubitVQCError{num_qubits: input.NumQubits}
-	}
-	if input.Embedding == nil {
-		return VQC{}, &NilEmbeddingError{}
+	err := validateVQCInput(input)
+	if err != nil {
+		return VQC{}, err
 	}
 
 	vqc := &VQC{
-		num_qubits:  input.NumQubits,
+		numQubits:   input.NumQubits,
 		embedding:   input.Embedding,
 		measurement: input.Measurement,
-		num_layers:  input.NumLayers,
+		numLayers:   input.NumLayers,
 	}
 
 	for _, option := range options {
@@ -39,12 +37,42 @@ func NewVQC(input VQCBaseInput, options ...VQCOption) (VQC, error) {
 	return *vqc, nil
 }
 
+func validateVQCInput(input VQCBaseInput) error {
+	if input.NumQubits == 0 {
+		return &ZeroQubitVQCError{numQubits: input.NumQubits}
+	}
+	if input.Embedding == nil {
+		return &NilEmbeddingError{}
+	}
+	if !input.Embedding.IsValid() {
+		return &InvalidEmbeddingError{}
+	}
+	if !input.Measurement.IsValid() {
+		return &InvalidMeasurementError{}
+	}
+	return nil
+}
+
+func (v VQC) IsValid() bool {
+	if v.numQubits == 0 {
+		return false
+	}
+	if v.embedding == nil || !v.embedding.IsValid() {
+		return false
+	}
+	if !v.measurement.IsValid() {
+		return false
+	}
+
+	return true
+}
+
 func (v VQC) NumQubits() uint {
-	return v.num_qubits
+	return v.numQubits
 }
 
 func (v VQC) NumLayers() uint {
-	return v.num_layers
+	return v.numLayers
 }
 
 func (v VQC) Embedding() Embedding {
@@ -52,7 +80,7 @@ func (v VQC) Embedding() Embedding {
 }
 
 func (v VQC) PreLayer() Layer {
-	return v.pre_layer
+	return v.preLayer
 }
 
 func (v VQC) Layer() Layer {
@@ -60,7 +88,7 @@ func (v VQC) Layer() Layer {
 }
 
 func (v VQC) PostLayer() Layer {
-	return v.post_layer
+	return v.postLayer
 }
 
 func (v VQC) Measurement() Measurement {
@@ -68,6 +96,6 @@ func (v VQC) Measurement() Measurement {
 }
 
 func (v VQC) NumParameters() uint {
-	num_parameters := v.pre_layer.NumParameterizedGates() + v.layer.NumParameterizedGates()*v.num_layers + v.post_layer.NumParameterizedGates()
+	num_parameters := v.preLayer.NumParameterizedGates() + v.layer.NumParameterizedGates()*v.numLayers + v.postLayer.NumParameterizedGates()
 	return num_parameters
 }

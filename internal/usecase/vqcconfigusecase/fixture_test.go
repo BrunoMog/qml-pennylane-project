@@ -53,12 +53,12 @@ func validVQCInput() VQCInputDTO {
 	return VQCInputDTO{
 		NumQubits: 1,
 		NumLayers: 1,
-		Embedding: EmbeddingInputDTO{
+		Embedding: EmbeddingDTO{
 			EmbeddingType: "angle",
 			Qubits:        []uint{0},
 			Rotation:      "x",
 		},
-		Measurement: MeasurementInputDTO{
+		Measurement: MeasurementDTO{
 			MeasurementType:     "expectation",
 			MeasurementRotation: "x",
 			Qubits:              []uint{0},
@@ -97,18 +97,18 @@ func ValidVQCOutputDTO() VQCOutputDTO {
 	return VQCOutputDTO{
 		NumQubits: 1,
 		NumLayers: 1,
-		Embedding: EmbeddingInputDTO{
+		Embedding: EmbeddingDTO{
 			EmbeddingType: "angle",
 			Qubits:        []uint{0},
 			Rotation:      "x",
 		},
-		Measurement: MeasurementInputDTO{
+		Measurement: MeasurementDTO{
 			MeasurementType:     "expectation",
 			MeasurementRotation: "x",
 			Qubits:              []uint{0},
 		},
-		PreLayer:  LayerInputDTO{Gates: []QuantumGateInputDTO{}},
-		Layer:     LayerInputDTO{Gates: []QuantumGateInputDTO{}},
-		PostLayer: LayerInputDTO{Gates: []QuantumGateInputDTO{}},
+		PreLayer:  LayerDTO{Gates: []QuantumGateDTO{}},
+		Layer:     LayerDTO{Gates: []QuantumGateDTO{}},
+		PostLayer: LayerDTO{Gates: []QuantumGateDTO{}},
 	}
 }

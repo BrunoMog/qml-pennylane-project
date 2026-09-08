@@ -44,6 +44,26 @@ func validateMeasurement(qubits []Qubit, measurementType MeasurementType, measur
 	return nil
 }
 
+func (m Measurement) IsValid() bool {
+	if len(m.qubits) == 0 {
+		return false
+	}
+
+	if _, duplicated := hasDuplicateQubits(m.qubits); duplicated {
+		return false
+	}
+
+	if !isValidMeasurementType(m.measurementType) {
+		return false
+	}
+
+	if !isValidMeasurementRotation(m.measurementRotation) {
+		return false
+	}
+
+	return true
+}
+
 func (m Measurement) Qubits() []Qubit {
 	return slices.Clone(m.qubits)
 }
