@@ -44,6 +44,9 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 		if err != nil {
 			return err
 		}
+		if userToUpdate.Email() == email {
+			return &EmailAlreadyUsedError{email}
+		}
 		exists, err := s.repository.ExistsByEmail(email)
 		if err != nil {
 			return err

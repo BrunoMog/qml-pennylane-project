@@ -34,7 +34,7 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 			return err
 		}
 		if config.Name() == name {
-			return &VQCConfigNameAlreadyExistsError{Name: *input.Name}
+			return &VQCConfigNameAlreadyUsedError{Name: *input.Name}
 		}
 		exists, err := s.vqcConfigRepository.ExistsByName(input.CallerID, name)
 		if err != nil {
