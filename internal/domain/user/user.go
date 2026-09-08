@@ -37,26 +37,26 @@ func (u *User) SetEmail(newEmail Email) {
 	u.email = newEmail
 }
 
-func (u User) IsAdmin() bool {
+func (u *User) IsAdmin() bool {
 	return u.role == RoleAdmin
 }
 
-func (u User) IsOwner() bool {
+func (u *User) IsOwner() bool {
 	return u.role == RoleOwner
 }
 
-func (u User) ID() uuid.UUID {
+func (u *User) ID() uuid.UUID {
 	return u.id
 }
 
-func (u User) Name() Name {
+func (u *User) Name() Name {
 	return u.name
 }
 
-func (u User) Role() Role {
+func (u *User) Role() Role {
 	return u.role
 }
 
-func (u User) Email() Email {
+func (u *User) Email() Email {
 	return u.email
 }
