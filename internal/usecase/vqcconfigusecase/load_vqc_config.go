@@ -54,7 +54,7 @@ func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConf
 	output := &LoadVQCConfigOutput{
 		Name:        config.Name().Value(),
 		Description: config.Description().Value(),
-		VQC:         BuildVQCOutput(config.VQC()),
+		VQC:         buildVQCOutput(config.VQC()),
 		CreatedAt:   config.CreatedAt(),
 		UpdatedAt:   config.UpdatedAt(),
 		OwnerID:     config.OwnerID(),
@@ -88,7 +88,7 @@ func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) (*Loa
 		output.VQCConfigs[i] = LoadVQCConfigOutput{
 			Name:        config.Name().Value(),
 			Description: config.Description().Value(),
-			VQC:         BuildVQCOutput(config.VQC()),
+			VQC:         buildVQCOutput(config.VQC()),
 			CreatedAt:   config.CreatedAt(),
 			UpdatedAt:   config.UpdatedAt(),
 			OwnerID:     config.OwnerID(),

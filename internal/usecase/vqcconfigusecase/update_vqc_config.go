@@ -50,7 +50,7 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 		config.SetDescription(description)
 	}
 	if input.VQC != nil {
-		vqc, err := BuildVQC(*input.VQC)
+		vqc, err := buildVQC(*input.VQC)
 		if err != nil {
 			return err
 		}

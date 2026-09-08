@@ -30,7 +30,7 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 	if err != nil {
 		return nil, err
 	}
-	vqc, err := BuildVQC(input.VQC)
+	vqc, err := buildVQC(input.VQC)
 	if err != nil {
 		return nil, err
 	}

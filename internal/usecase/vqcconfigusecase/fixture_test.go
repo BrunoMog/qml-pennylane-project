@@ -2,6 +2,7 @@ package vqcconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/domain/vqc"
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"pennylane_project_backend/internal/testkit"
 	"testing"
@@ -65,6 +66,33 @@ func validVQCInput() VQCInputDTO {
 	}
 }
 
+func validVQC() vqc.VQC {
+	qubitZero, err := vqc.NewQubit(0, 1)
+	if err != nil {
+		panic(err)
+	}
+	qubits := []vqc.Qubit{qubitZero}
+	embedding, err := vqc.NewAngleEmbedding(qubits, vqc.XRotation)
+	if err != nil {
+		panic(err)
+	}
+	measurement, err := vqc.NewMeasurement(qubits, vqc.ExpectationMeasurement, vqc.XMeasurementRotation)
+	if err != nil {
+		panic(err)
+	}
+	input := vqc.VQCBaseInput{
+		NumQubits:   1,
+		NumLayers:   1,
+		Embedding:   embedding,
+		Measurement: measurement,
+	}
+	vqc, err := vqc.NewVQC(input)
+	if err != nil {
+		panic(err)
+	}
+	return vqc
+}
+
 func ValidVQCOutputDTO() VQCOutputDTO {
 	return VQCOutputDTO{
 		NumQubits: 1,
@@ -79,5 +107,8 @@ func ValidVQCOutputDTO() VQCOutputDTO {
 			MeasurementRotation: "x",
 			Qubits:              []uint{0},
 		},
+		PreLayer:  LayerInputDTO{Gates: []QuantumGateInputDTO{}},
+		Layer:     LayerInputDTO{Gates: []QuantumGateInputDTO{}},
+		PostLayer: LayerInputDTO{Gates: []QuantumGateInputDTO{}},
 	}
 }

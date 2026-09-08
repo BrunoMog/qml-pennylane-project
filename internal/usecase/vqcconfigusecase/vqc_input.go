@@ -48,7 +48,7 @@ type VQCOutputDTO struct {
 	PostLayer   LayerInputDTO
 }
 
-func BuildVQC(input VQCInputDTO) (vqc.VQC, error) {
+func buildVQC(input VQCInputDTO) (vqc.VQC, error) {
 	embedding, err := buildEmbedding(input.Embedding, input.NumQubits)
 	if err != nil {
 		return vqc.VQC{}, err
@@ -191,7 +191,7 @@ func buildQuantumGate(input QuantumGateInputDTO, numQubits uint) (vqc.QuantumGat
 	return vqc.NewQuantumGate(gateType, qubit, controlQubits)
 }
 
-func BuildVQCOutput(vqcInstance vqc.VQC) VQCOutputDTO {
+func buildVQCOutput(vqcInstance vqc.VQC) VQCOutputDTO {
 	embedding := vqcInstance.Embedding()
 	measurement := vqcInstance.Measurement()
 
