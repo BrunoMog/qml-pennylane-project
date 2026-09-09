@@ -28,6 +28,29 @@ func (a AngleEmbedding) IsValid() bool {
 	return true
 }
 
+func (a AngleEmbedding) Equals(other Embedding) bool {
+	otherAngle, ok := other.(AngleEmbedding)
+	if !ok {
+		return false
+	}
+
+	if a.rotation != otherAngle.rotation {
+		return false
+	}
+
+	if len(a.qubits) != len(otherAngle.qubits) {
+		return false
+	}
+
+	for i, qubit := range a.qubits {
+		if qubit != otherAngle.qubits[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (a AngleEmbedding) Type() EmbeddingType {
 	return EmbeddingTypeAngle
 }

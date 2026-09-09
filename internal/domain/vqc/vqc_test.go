@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func validEmbedding() Embedding {
@@ -109,4 +110,29 @@ func TestNewVQC(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestEquals(t *testing.T) {
+	qubitZero, err := NewQubit(0, 1)
+	require.NoError(t, err)
+	qubits := []Qubit{qubitZero}
+	embedding, err := NewAngleEmbedding(qubits, XRotation)
+	require.NoError(t, err)
+	measurement, err := NewMeasurement(qubits, ExpectationMeasurement, XMeasurementRotation)
+	require.NoError(t, err)
+
+	vqcInput := VQCBaseInput{
+		NumQubits:   1,
+		NumLayers:   1,
+		Embedding:   embedding,
+		Measurement: measurement,
+	}
+
+	vqc1, err := NewVQC(vqcInput)
+	require.NoError(t, err)
+
+	vqc2, err := NewVQC(vqcInput)
+	require.NoError(t, err)
+
+	assert.True(t, vqc1.Equals(vqc2))
 }

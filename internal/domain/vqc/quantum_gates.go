@@ -52,7 +52,7 @@ func isValidGate(gate_type GateType) bool {
 	}
 }
 
-func (q QuantumGate) Equal(other QuantumGate) bool {
+func (q QuantumGate) Equals(other QuantumGate) bool {
 	if q.gate_type != other.gate_type || q.qubit != other.qubit {
 		return false
 	}

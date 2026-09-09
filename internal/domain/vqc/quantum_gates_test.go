@@ -116,7 +116,7 @@ func TestQuantumGateEqual(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
-			result := tt.gate1.Equal(tt.gate2)
+			result := tt.gate1.Equals(tt.gate2)
 			assert.Equal(t, tt.expected, result)
 		})
 	}

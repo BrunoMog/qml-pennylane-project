@@ -67,6 +67,32 @@ func (v VQC) IsValid() bool {
 	return true
 }
 
+func (v VQC) Equals(other VQC) bool {
+	if v.numQubits != other.numQubits {
+		return false
+	}
+	if v.numLayers != other.numLayers {
+		return false
+	}
+	if !v.embedding.Equals(other.embedding) {
+		return false
+	}
+	if !v.measurement.Equals(other.measurement) {
+		return false
+	}
+	if !v.preLayer.Equals(other.preLayer) {
+		return false
+	}
+	if !v.layer.Equals(other.layer) {
+		return false
+	}
+	if !v.postLayer.Equals(other.postLayer) {
+		return false
+	}
+
+	return true
+}
+
 func (v VQC) NumQubits() uint {
 	return v.numQubits
 }

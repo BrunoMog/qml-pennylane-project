@@ -32,6 +32,33 @@ func (a AmplitudeEmbedding) IsValid() bool {
 	return true
 }
 
+func (a AmplitudeEmbedding) Equals(other Embedding) bool {
+	otherAmplitude, ok := other.(AmplitudeEmbedding)
+	if !ok {
+		return false
+	}
+
+	if a.normalize != otherAmplitude.normalize {
+		return false
+	}
+
+	if a.padWith != otherAmplitude.padWith {
+		return false
+	}
+
+	if len(a.qubits) != len(otherAmplitude.qubits) {
+		return false
+	}
+
+	for i, qubit := range a.qubits {
+		if qubit != otherAmplitude.qubits[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (a AmplitudeEmbedding) Type() EmbeddingType {
 	return EmbeddingTypeAmplitude
 }

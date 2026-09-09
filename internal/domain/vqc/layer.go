@@ -39,6 +39,20 @@ func (l Layer) Clone() Layer {
 	return NewLayer(l.gates)
 }
 
+func (l Layer) Equals(other Layer) bool {
+	if len(l.gates) != len(other.gates) {
+		return false
+	}
+
+	for i, gate := range l.gates {
+		if !gate.Equals(other.gates[i]) {
+			return false
+		}
+
+	}
+	return true
+}
+
 func (l Layer) NumParameterizedGates() uint {
 	count := uint(0)
 	for _, gate := range l.gates {

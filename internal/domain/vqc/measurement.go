@@ -64,6 +64,28 @@ func (m Measurement) IsValid() bool {
 	return true
 }
 
+func (m Measurement) Equals(other Measurement) bool {
+	if m.measurementType != other.measurementType {
+		return false
+	}
+
+	if m.measurementRotation != other.measurementRotation {
+		return false
+	}
+
+	if len(m.qubits) != len(other.qubits) {
+		return false
+	}
+
+	for i, qubit := range m.qubits {
+		if qubit != other.qubits[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
 func (m Measurement) Qubits() []Qubit {
 	return slices.Clone(m.qubits)
 }

@@ -4,6 +4,7 @@ type Embedding interface {
 	Type() EmbeddingType
 	Qubits() []Qubit
 	IsValid() bool
+	Equals(other Embedding) bool
 
 	isEmbedding()
 }
