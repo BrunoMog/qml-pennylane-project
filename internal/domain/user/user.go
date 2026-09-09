@@ -1,7 +1,7 @@
 package user
 
 import (
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type User struct {
