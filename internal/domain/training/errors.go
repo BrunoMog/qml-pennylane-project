@@ -195,3 +195,20 @@ type IncompatibleMetricError struct {
 func (e *IncompatibleMetricError) Error() string {
 	return fmt.Sprintf("evaluation metric '%s' is not compatible with learning task '%s'", e.Metric, e.Task)
 }
+
+type InvalidOptimizerNameError struct {
+	OptimizerName string
+}
+
+func (e *InvalidOptimizerNameError) Error() string {
+	return fmt.Sprintf("Invalid optimizer name: '%s'. Valid options are: adam, rmsprop, nesterov_momentum, gradient_descent.", e.OptimizerName)
+}
+
+type IncompatibleEarlyStoppingError struct {
+	Task          LearningTask
+	EarlyStopping EarlyStopping
+}
+
+func (e *IncompatibleEarlyStoppingError) Error() string {
+	return fmt.Sprintf("early stopping validation metric '%s' is not compatible with learning task '%s'", e.EarlyStopping.ValidationMetric(), e.Task)
+}

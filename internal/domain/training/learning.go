@@ -1,42 +1,64 @@
 package training
 
+import "strings"
+
 type LearningType string
 
 const (
-	SupervisedLearning LearningType = "supervised"
+	LearningTypeSupervised LearningType = "supervised"
 )
 
-func (lt LearningType) IsValid() bool {
+func (lt LearningType) isValid() bool {
 	switch lt {
-	case SupervisedLearning:
+	case LearningTypeSupervised:
 		return true
 	default:
 		return false
+	}
+}
+
+func ParseLearningType(lt string) (LearningType, error) {
+	switch strings.ToLower(strings.TrimSpace(lt)) {
+	case "supervised":
+		return LearningTypeSupervised, nil
+	default:
+		return "", &InvalidLearningTypeError{learningType: LearningType(lt)}
 	}
 }
 
 type LearningTask string
 
 const (
-	BinaryClassification LearningTask = "classification"
-	Regression           LearningTask = "regression"
+	LearningTaskBinaryClassification LearningTask = "classification"
+	LearningTaskRegression           LearningTask = "regression"
 )
 
-func (tt LearningTask) IsValid() bool {
+func (tt LearningTask) isValid() bool {
 	switch tt {
-	case BinaryClassification, Regression:
+	case LearningTaskBinaryClassification, LearningTaskRegression:
 		return true
 	default:
 		return false
 	}
 }
 
+func ParseLearningTask(tt string) (LearningTask, error) {
+	switch strings.ToLower(strings.TrimSpace(tt)) {
+	case "classification":
+		return LearningTaskBinaryClassification, nil
+	case "regression":
+		return LearningTaskRegression, nil
+	default:
+		return "", &InvalidLearningTaskError{learningTask: LearningTask(tt)}
+	}
+}
+
 var taskCostFunctionCompatibility = map[LearningTask]map[CostFunction]bool{
-	BinaryClassification: {
+	LearningTaskBinaryClassification: {
 		CostFunctionBinaryCrossEntropy: true,
-		CostFunctionMeanSquaredError:   true,
+		CostFunctionMSE:                true,
 	},
-	Regression: {
+	LearningTaskRegression: {
 		CostFunctionMSE:  true,
 		CostFunctionRMSE: true,
 		CostFunctionMAE:  true,
@@ -44,13 +66,13 @@ var taskCostFunctionCompatibility = map[LearningTask]map[CostFunction]bool{
 }
 
 var taskMetricCompatibility = map[LearningTask]map[EvalMetric]bool{
-	BinaryClassification: {
+	LearningTaskBinaryClassification: {
 		EvalMetricAccuracy:  true,
 		EvalMetricF1Score:   true,
 		EvalMetricPrecision: true,
 		EvalMetricRecall:    true,
 	},
-	Regression: {
+	LearningTaskRegression: {
 		EvalMetricRMSE: true,
 		EvalMetricMAE:  true,
 	},

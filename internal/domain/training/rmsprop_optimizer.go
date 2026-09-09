@@ -28,7 +28,7 @@ func (o RMSPropOptimizer) Name() OptimizerName {
 	return OptimizerNameRMSProp
 }
 
-func (o RMSPropOptimizer) Equal(other Optimizer) bool {
+func (o RMSPropOptimizer) Equals(other Optimizer) bool {
 	if otherRMSProp, ok := other.(RMSPropOptimizer); ok {
 		return o.learningRate == otherRMSProp.LearningRate() &&
 			o.decay == otherRMSProp.Decay() &&

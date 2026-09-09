@@ -15,7 +15,7 @@ type EarlyStoppingInput struct {
 }
 
 func NewEarlyStopping(input EarlyStoppingInput) (EarlyStopping, error) {
-	if !input.IsValid() {
+	if !input.isValid() {
 		return EarlyStopping{}, &ErrInvalidEarlyStopping{}
 	}
 
@@ -28,7 +28,7 @@ func NewEarlyStopping(input EarlyStoppingInput) (EarlyStopping, error) {
 	return stopping, nil
 }
 
-func (esc EarlyStoppingInput) IsValid() bool {
+func (esc EarlyStoppingInput) isValid() bool {
 	if !esc.Enabled {
 		return true
 	}
@@ -38,7 +38,7 @@ func (esc EarlyStoppingInput) IsValid() bool {
 	if !isFiniteFloat64(esc.MinDelta) || esc.MinDelta < 0 {
 		return false
 	}
-	if !esc.ValidationMetric.IsValid() {
+	if !esc.ValidationMetric.isValid() {
 		return false
 	}
 

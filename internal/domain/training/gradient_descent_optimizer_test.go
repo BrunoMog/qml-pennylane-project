@@ -3,32 +3,29 @@ package training
 import (
 	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGradientDescentOptimizer_IsValid(t *testing.T) {
 	testCases := []struct {
-		name         string
-		learningRate float64
-		expected     bool
+		testName      string
+		learningRate  float64
+		expectedError error
 	}{
-		{name: "Valid learning rate", learningRate: 0.01, expected: true},
-		{name: "Invalid learning rate (negative)", learningRate: -0.01, expected: false},
-		{name: "Invalid learning rate (zero)", learningRate: 0.0, expected: false},
-		{name: "Invalid learning rate (NaN)", learningRate: math.NaN(), expected: false},
-		{name: "Invalid learning rate (Inf)", learningRate: math.Inf(1), expected: false},
+		{testName: "Valid learning rate", learningRate: 0.01, expectedError: nil},
+		{testName: "Invalid learning rate (negative)", learningRate: -0.01, expectedError: &InvalidLearningRateError{}},
+		{testName: "Invalid learning rate (zero)", learningRate: 0.0, expectedError: &InvalidLearningRateError{}},
+		{testName: "Invalid learning rate (NaN)", learningRate: math.NaN(), expectedError: &InvalidLearningRateError{}},
+		{testName: "Invalid learning rate (Inf)", learningRate: math.Inf(1), expectedError: &InvalidLearningRateError{}},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.name, func(t *testing.T) {
+		t.Run(tc.testName, func(t *testing.T) {
 			optimizer, err := NewGradientDescentOptimizer(tc.learningRate)
-			if err != nil && tc.expected {
-				t.Errorf("Expected valid optimizer, but got error: %v", err)
-			}
-			if err == nil && !tc.expected {
-				t.Errorf("Expected error for invalid learning rate, but got valid optimizer")
-			}
-			if err == nil && optimizer.LearningRate() != tc.learningRate {
-				t.Errorf("Expected learning rate %f, but got %f", tc.learningRate, optimizer.LearningRate())
+			assert.IsType(t, tc.expectedError, err)
+			if err == nil {
+				assert.Equal(t, tc.learningRate, optimizer.LearningRate())
 			}
 		})
 	}

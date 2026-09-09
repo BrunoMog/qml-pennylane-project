@@ -23,7 +23,7 @@ func (o NesterovMomentumOptimizer) Name() OptimizerName {
 	return OptimizerNameNesterovMomentum
 }
 
-func (o NesterovMomentumOptimizer) Equal(other Optimizer) bool {
+func (o NesterovMomentumOptimizer) Equals(other Optimizer) bool {
 	if otherNesterov, ok := other.(NesterovMomentumOptimizer); ok {
 		return o.learningRate == otherNesterov.LearningRate() &&
 			o.momentum == otherNesterov.Momentum()

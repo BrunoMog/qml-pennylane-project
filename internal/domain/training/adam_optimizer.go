@@ -33,7 +33,7 @@ func (o AdamOptimizer) Name() OptimizerName {
 	return OptimizerNameAdam
 }
 
-func (o AdamOptimizer) Equal(other Optimizer) bool {
+func (o AdamOptimizer) Equals(other Optimizer) bool {
 	if otherAdam, ok := other.(AdamOptimizer); ok {
 		return o.learningRate == otherAdam.LearningRate() &&
 			o.beta1 == otherAdam.Beta1() &&

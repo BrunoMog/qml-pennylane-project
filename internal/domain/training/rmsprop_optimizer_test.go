@@ -3,39 +3,41 @@ package training
 import (
 	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestRMSPropOptimizer_IsValid(t *testing.T) {
 	testCases := []struct {
-		name         string
-		learningRate float64
-		decay        float64
-		epsilon      float64
-		expected     bool
+		name          string
+		learningRate  float64
+		decay         float64
+		epsilon       float64
+		expectedError error
 	}{
-		{name: "Valid parameters", learningRate: 0.01, decay: 0.9, epsilon: 1e-8, expected: true},
-		{name: "Invalid learning rate (negative)", learningRate: -0.01, decay: 0.9, epsilon: 1e-8, expected: false},
-		{name: "Invalid decay (negative)", learningRate: 0.01, decay: -0.9, epsilon: 1e-8, expected: false},
-		{name: "Invalid epsilon (negative)", learningRate: 0.01, decay: 0.9, epsilon: -1e-8, expected: false},
-		{name: "Invalid learning rate NaN", learningRate: math.NaN(), decay: 0.9, epsilon: 1e-8, expected: false},
-		{name: "Invalid decay NaN", learningRate: 0.01, decay: math.NaN(), epsilon: 1e-8, expected: false},
-		{name: "Invalid epsilon NaN", learningRate: 0.01, decay: 0.9, epsilon: math.NaN(), expected: false},
-		{name: "Invalid learning rate Inf", learningRate: math.Inf(1), decay: 0.9, epsilon: 1e-8, expected: false},
-		{name: "Invalid decay Inf", learningRate: 0.01, decay: math.Inf(1), epsilon: 1e-8, expected: false},
-		{name: "Invalid epsilon Inf", learningRate: 0.01, decay: 0.9, epsilon: math.Inf(1), expected: false},
+		{name: "Valid parameters", learningRate: 0.01, decay: 0.9, epsilon: 1e-8, expectedError: nil},
+		{name: "Invalid learning rate (negative)", learningRate: -0.01, decay: 0.9, epsilon: 1e-8, expectedError: &InvalidLearningRateError{}},
+		{name: "Invalid decay (negative)", learningRate: 0.01, decay: -0.9, epsilon: 1e-8, expectedError: &InvalidDecayError{}},
+		{name: "Invalid epsilon (negative)", learningRate: 0.01, decay: 0.9, epsilon: -1e-8, expectedError: &InvalidEpsilonError{}},
+		{name: "Invalid learning rate NaN", learningRate: math.NaN(), decay: 0.9, epsilon: 1e-8, expectedError: &InvalidLearningRateError{}},
+		{name: "Invalid decay NaN", learningRate: 0.01, decay: math.NaN(), epsilon: 1e-8, expectedError: &InvalidDecayError{}},
+		{name: "Invalid epsilon NaN", learningRate: 0.01, decay: 0.9, epsilon: math.NaN(), expectedError: &InvalidEpsilonError{}},
+		{name: "Invalid learning rate Inf", learningRate: math.Inf(1), decay: 0.9, epsilon: 1e-8, expectedError: &InvalidLearningRateError{}},
+		{name: "Invalid decay Inf", learningRate: 0.01, decay: math.Inf(1), epsilon: 1e-8, expectedError: &InvalidDecayError{}},
+		{name: "Invalid epsilon Inf", learningRate: 0.01, decay: 0.9, epsilon: math.Inf(1), expectedError: &InvalidEpsilonError{}},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			optimizer, err := NewRMSPropOptimizer(tc.learningRate, tc.decay, tc.epsilon)
-			if err != nil && tc.expected {
-				t.Errorf("Expected valid optimizer, but got error: %v", err)
-			}
-			if err == nil && !tc.expected {
-				t.Errorf("Expected error for invalid parameters, but got valid optimizer")
-			}
-			if err == nil && (optimizer.LearningRate() != tc.learningRate || optimizer.Decay() != tc.decay || optimizer.Epsilon() != tc.epsilon) {
-				t.Errorf("Expected learning rate %f, decay %f, and epsilon %f, but got learning rate %f, decay %f, and epsilon %f", tc.learningRate, tc.decay, tc.epsilon, optimizer.LearningRate(), optimizer.Decay(), optimizer.Epsilon())
+			if tc.expectedError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tc.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.learningRate, optimizer.LearningRate())
+				assert.Equal(t, tc.decay, optimizer.Decay())
+				assert.Equal(t, tc.epsilon, optimizer.Epsilon())
 			}
 		})
 	}

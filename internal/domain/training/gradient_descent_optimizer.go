@@ -18,7 +18,7 @@ func (o GradientDescentOptimizer) Name() OptimizerName {
 	return OptimizerNameGradientDescent
 }
 
-func (o GradientDescentOptimizer) Equal(other Optimizer) bool {
+func (o GradientDescentOptimizer) Equals(other Optimizer) bool {
 	if otherGD, ok := other.(GradientDescentOptimizer); ok {
 		return o.learningRate == otherGD.LearningRate()
 	}

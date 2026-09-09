@@ -39,13 +39,14 @@ type TrainingInput struct {
 	BatchSize         uint
 }
 
-func NewTraining(input TrainingInput) (*Training, error) {
+func NewTraining(input TrainingInput) (Training, error) {
+	input.EvaluationMetrics = slices.Clone(input.EvaluationMetrics)
 	err := validateInput(input)
 	if err != nil {
-		return nil, err
+		return Training{}, err
 	}
 
-	return &Training{
+	return Training{
 		learningType:      input.LearningType,
 		learningTask:      input.LearningTask,
 		costFunction:      input.CostFunction,
@@ -78,6 +79,11 @@ func validateInput(input TrainingInput) error {
 		return err
 	}
 
+	err = validateEarlyStoppingFunctionCompatibility(input.EarlyStopping, input.LearningTask)
+	if err != nil {
+		return err
+	}
+
 	if input.RandomSeed < 0 {
 		return &InvalidSeedError{seed: input.RandomSeed}
 	}
@@ -103,10 +109,10 @@ func validateInput(input TrainingInput) error {
 }
 
 func validateLearningSettings(learningType LearningType, learningTask LearningTask) error {
-	if !learningType.IsValid() {
+	if !learningType.isValid() {
 		return &InvalidLearningTypeError{learningType: learningType}
 	}
-	if !learningTask.IsValid() {
+	if !learningTask.isValid() {
 		return &InvalidLearningTaskError{learningTask: learningTask}
 	}
 
@@ -114,18 +120,18 @@ func validateLearningSettings(learningType LearningType, learningTask LearningTa
 }
 
 func validateFunctions(costFunction CostFunction, evaluationMetrics []EvalMetric) error {
-	if !costFunction.IsValid() {
+	if !costFunction.isValid() {
 		return &InvalidCostFunctionError{costFunction: costFunction}
-	}
-
-	for _, metric := range evaluationMetrics {
-		if !metric.IsValid() {
-			return &InvalidEvalMetricError{evaluationMetric: metric}
-		}
 	}
 
 	if len(evaluationMetrics) == 0 {
 		return &InvalidEvalMetricError{evaluationMetric: ""}
+	}
+
+	for _, metric := range evaluationMetrics {
+		if !metric.isValid() {
+			return &InvalidEvalMetricError{evaluationMetric: metric}
+		}
 	}
 
 	return nil
@@ -138,6 +144,16 @@ func validateFunctionsCompatibility(learningTask LearningTask, costFunction Cost
 	for _, metric := range evaluationMetrics {
 		if !learningTask.IsEvalMetricCompatible(metric) {
 			return &IncompatibleMetricError{Task: learningTask, Metric: metric}
+		}
+	}
+
+	return nil
+}
+
+func validateEarlyStoppingFunctionCompatibility(earlyStopping EarlyStopping, learningTask LearningTask) error {
+	if earlyStopping.Enabled() {
+		if !learningTask.IsEvalMetricCompatible(earlyStopping.ValidationMetric()) {
+			return &IncompatibleEarlyStoppingError{Task: learningTask, EarlyStopping: earlyStopping}
 		}
 	}
 
@@ -167,6 +183,68 @@ func validateDataSplit(trainRatio, validationRatio, testRatio float64) error {
 	}
 
 	return nil
+}
+
+func (t Training) IsValid() bool {
+	err := validateInput(TrainingInput{
+		Optimizer:         t.optimizer,
+		LearningTask:      t.learningTask,
+		CostFunction:      t.costFunction,
+		LearningType:      t.learningType,
+		EvaluationMetrics: slices.Clone(t.evaluationMetrics),
+		EarlyStopping:     t.earlyStopping,
+		CrossValidation:   t.crossValidation,
+		TrainRatio:        t.trainRatio,
+		ValidationRatio:   t.validationRatio,
+		TestRatio:         t.testRatio,
+		RandomSeed:        t.randomSeed,
+		MaxEpochs:         t.maxEpochs,
+		BatchSize:         t.batchSize,
+	})
+	return err == nil
+}
+
+func (t Training) Equals(other Training) bool {
+	if !t.optimizer.Equals(other.optimizer) {
+		return false
+	}
+	if t.learningTask != other.learningTask {
+		return false
+	}
+	if t.costFunction != other.costFunction {
+		return false
+	}
+	if t.learningType != other.learningType {
+		return false
+	}
+	if !slices.Equal(t.evaluationMetrics, other.evaluationMetrics) {
+		return false
+	}
+	if t.earlyStopping != other.earlyStopping {
+		return false
+	}
+	if t.crossValidation != other.crossValidation {
+		return false
+	}
+	if t.trainRatio != other.trainRatio {
+		return false
+	}
+	if t.validationRatio != other.validationRatio {
+		return false
+	}
+	if t.testRatio != other.testRatio {
+		return false
+	}
+	if t.randomSeed != other.randomSeed {
+		return false
+	}
+	if t.maxEpochs != other.maxEpochs {
+		return false
+	}
+	if t.batchSize != other.batchSize {
+		return false
+	}
+	return true
 }
 
 func (t Training) Optimizer() Optimizer {

@@ -11,7 +11,7 @@ type CrossValidationInput struct {
 }
 
 func NewCrossValidationConfig(input CrossValidationInput) (CrossValidation, error) {
-	if !input.IsValid() {
+	if !input.isValid() {
 		return CrossValidation{}, &ErrInvalidCrossValidationConfig{}
 	}
 
@@ -22,7 +22,7 @@ func NewCrossValidationConfig(input CrossValidationInput) (CrossValidation, erro
 	return config, nil
 }
 
-func (cvc CrossValidationInput) IsValid() bool {
+func (cvc CrossValidationInput) isValid() bool {
 	if !cvc.Enabled {
 		return true
 	}

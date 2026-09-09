@@ -3,45 +3,37 @@ package training
 import (
 	"math"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestEarlyStoppingConfig_IsValid(t *testing.T) {
 	testCases := []struct {
 		name     string
 		config   EarlyStoppingInput
-		expected bool
+		expected error
 	}{
-		{name: "Early stopping disabled", config: EarlyStoppingInput{Enabled: false, Patience: 0, MinDelta: 0.0, ValidationMetric: EvalMetric("accuracy")}, expected: true},
-		{name: "Valid early stopping", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: 0.01, ValidationMetric: EvalMetric("accuracy")}, expected: true},
-		{name: "Invalid early stopping (patience <= 0)", config: EarlyStoppingInput{Enabled: true, Patience: 0, MinDelta: 0.01, ValidationMetric: EvalMetric("accuracy")}, expected: false},
-		{name: "Invalid early stopping (minDelta < 0)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: -0.01, ValidationMetric: EvalMetric("accuracy")}, expected: false},
-		{name: "Invalid early stopping (invalid validation metric)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: 0.01, ValidationMetric: EvalMetric("invalid")}, expected: false},
-		{name: "Invalid early stopping (minDelta is NaN)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: math.NaN(), ValidationMetric: EvalMetric("accuracy")}, expected: false},
-		{name: "Invalid early stopping (minDelta is Inf)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: math.Inf(1), ValidationMetric: EvalMetric("accuracy")}, expected: false},
+		{name: "Early stopping disabled", config: EarlyStoppingInput{Enabled: false, Patience: 0, MinDelta: 0.0, ValidationMetric: EvalMetric("accuracy")}, expected: nil},
+		{name: "Valid early stopping", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: 0.01, ValidationMetric: EvalMetric("accuracy")}, expected: nil},
+		{name: "Invalid early stopping (patience <= 0)", config: EarlyStoppingInput{Enabled: true, Patience: 0, MinDelta: 0.01, ValidationMetric: EvalMetric("accuracy")}, expected: &ErrInvalidEarlyStopping{}},
+		{name: "Invalid early stopping (minDelta < 0)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: -0.01, ValidationMetric: EvalMetric("accuracy")}, expected: &ErrInvalidEarlyStopping{}},
+		{name: "Invalid early stopping (invalid validation metric)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: 0.01, ValidationMetric: EvalMetric("invalid")}, expected: &ErrInvalidEarlyStopping{}},
+		{name: "Invalid early stopping (minDelta is NaN)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: math.NaN(), ValidationMetric: EvalMetric("accuracy")}, expected: &ErrInvalidEarlyStopping{}},
+		{name: "Invalid early stopping (minDelta is Inf)", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: math.Inf(1), ValidationMetric: EvalMetric("accuracy")}, expected: &ErrInvalidEarlyStopping{}},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			config, err := NewEarlyStopping(tc.config)
-			if err != nil && tc.expected {
-				t.Errorf("Expected no error, but got %v", err)
-			}
-			if err == nil && !tc.expected {
-				t.Errorf("Expected error, but got none")
-			}
-			if err == nil && tc.expected {
-				if config.Enabled() != tc.config.Enabled {
-					t.Errorf("Expected Enabled to be %v, but got %v", tc.config.Enabled, config.Enabled())
-				}
-				if config.Patience() != tc.config.Patience {
-					t.Errorf("Expected Patience to be %d, but got %d", tc.config.Patience, config.Patience())
-				}
-				if config.MinDelta() != tc.config.MinDelta {
-					t.Errorf("Expected MinDelta to be %f, but got %f", tc.config.MinDelta, config.MinDelta())
-				}
-				if config.validationMetric != tc.config.ValidationMetric {
-					t.Errorf("Expected ValidationMetric to be %v, but got %v", tc.config.ValidationMetric, config.validationMetric)
-				}
+			if tc.expected == nil {
+				assert.NoError(t, err)
+				assert.Equal(t, tc.config.Enabled, config.Enabled())
+				assert.Equal(t, tc.config.Patience, config.Patience())
+				assert.Equal(t, tc.config.MinDelta, config.MinDelta())
+				assert.Equal(t, tc.config.ValidationMetric, config.ValidationMetric())
+			} else {
+				assert.Error(t, err)
+				assert.IsType(t, tc.expected, err)
 			}
 		})
 	}
