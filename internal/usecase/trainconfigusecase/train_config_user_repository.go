@@ -1,7 +1,7 @@
 package trainconfigusecase
 
 import (
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UserRepository interface {

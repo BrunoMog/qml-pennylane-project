@@ -5,7 +5,7 @@ import (
 	"pennylane_project_backend/internal/domain/training"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type CreateTrainConfigInput struct {

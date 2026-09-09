@@ -4,7 +4,7 @@ import (
 	"pennylane_project_backend/internal/domain/trainconfig"
 	"pennylane_project_backend/internal/domain/training"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UpdateTrainConfigInput struct {

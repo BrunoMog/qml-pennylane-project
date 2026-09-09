@@ -6,7 +6,8 @@ import (
 	"pennylane_project_backend/internal/testkit"
 	"testing"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/stretchr/testify/require"
 )
 
