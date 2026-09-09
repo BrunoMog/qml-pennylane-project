@@ -5,7 +5,7 @@ import (
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"strconv"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 func DefaultVQCConfig() func(ownerID uuid.UUID) *vqcconfig.VQCConfig {
@@ -24,7 +24,7 @@ func DefaultVQCConfig() func(ownerID uuid.UUID) *vqcconfig.VQCConfig {
 			ownerID,
 			name,
 			description,
-			ValidVQC(uint(count)),
+			ValidVQC(uint(count)+2),
 		)
 		if err != nil {
 			panic(err)

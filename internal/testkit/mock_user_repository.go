@@ -3,7 +3,7 @@ package testkit
 import (
 	"pennylane_project_backend/internal/domain/user"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type MockUserRepository struct {

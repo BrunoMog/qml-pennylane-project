@@ -3,7 +3,7 @@ package testkit
 import (
 	"pennylane_project_backend/internal/domain/vqcconfig"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type MockVQCConfigRepository struct {
@@ -31,7 +31,7 @@ func (r *MockVQCConfigRepository) FindByID(id uuid.UUID) (*vqcconfig.VQCConfig, 
 
 func (r *MockVQCConfigRepository) FindByName(ownerID uuid.UUID, name vqcconfig.Name) (*vqcconfig.VQCConfig, error) {
 	for _, v := range r.vqcConfigs {
-		if v.OwnerID() == ownerID && v.Name() == name {
+		if v.OwnerID() == ownerID && v.Name().Equals(name) {
 			copiedVQCConfig := *v
 			return &copiedVQCConfig, nil
 		}
@@ -46,7 +46,7 @@ func (r *MockVQCConfigRepository) ExistsByID(id uuid.UUID) (bool, error) {
 
 func (r *MockVQCConfigRepository) ExistsByName(ownerID uuid.UUID, name vqcconfig.Name) (bool, error) {
 	for _, v := range r.vqcConfigs {
-		if v.OwnerID() == ownerID && v.Name() == name {
+		if v.OwnerID() == ownerID && v.Name().Equals(name) {
 			return true, nil
 		}
 	}

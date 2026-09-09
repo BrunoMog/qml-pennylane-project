@@ -5,7 +5,7 @@ import (
 	"pennylane_project_backend/internal/domain/training"
 	"strconv"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 func DefaultTrainConfig() func(ownerID uuid.UUID) *trainconfig.TrainConfig {
