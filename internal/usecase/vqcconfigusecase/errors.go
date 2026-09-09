@@ -66,11 +66,3 @@ type UnreachableEmbeddingTypeError struct {
 func (e *UnreachableEmbeddingTypeError) Error() string {
 	return fmt.Sprintf("Unreachable embedding type: %s", e.EmbeddingType)
 }
-
-type VQCConfigNameAlreadyUsedError struct {
-	Name string
-}
-
-func (e *VQCConfigNameAlreadyUsedError) Error() string {
-	return fmt.Sprintf("VQC config name '%s' is already used by the same config", e.Name)
-}

@@ -6,17 +6,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBuildVQC(t *testing.T) {
-	vqcInputDTO := validVQCInput()
+func TestBuildVQCDTOToVQC(t *testing.T) {
+	vqcDTO := ValidVQCDTO()
 	vqc := validVQC()
-	vqcBuilded, err := buildVQC(vqcInputDTO)
+	vqcBuilded, err := buildVQCDTOToVQC(vqcDTO)
 	assert.NoError(t, err)
 	assert.Equal(t, vqc, vqcBuilded)
 }
 
-func TestBuildVQCOutput(t *testing.T) {
-	vqcOutputDTO := ValidVQCOutputDTO()
+func TestBuildVQCToVQCDTO(t *testing.T) {
+	vqcOutputDTO := ValidVQCDTO()
 	vqc := validVQC()
-	vqcOutputDTOBuilded := buildVQCOutput(vqc)
+	vqcOutputDTOBuilded := buildVQCToVQCDTO(vqc)
 	assert.Equal(t, vqcOutputDTO, vqcOutputDTOBuilded)
 }

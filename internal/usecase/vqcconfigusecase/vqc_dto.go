@@ -28,7 +28,7 @@ type LayerDTO struct {
 	Gates []QuantumGateDTO
 }
 
-type VQCInputDTO struct {
+type VQCDTO struct {
 	NumQubits   uint
 	NumLayers   uint
 	Embedding   EmbeddingDTO
@@ -38,17 +38,7 @@ type VQCInputDTO struct {
 	PostLayer   LayerDTO
 }
 
-type VQCOutputDTO struct {
-	NumQubits   uint
-	NumLayers   uint
-	Embedding   EmbeddingDTO
-	Measurement MeasurementDTO
-	PreLayer    LayerDTO
-	Layer       LayerDTO
-	PostLayer   LayerDTO
-}
-
-func buildVQC(input VQCInputDTO) (vqc.VQC, error) {
+func buildVQCDTOToVQC(input VQCDTO) (vqc.VQC, error) {
 	embedding, err := buildEmbedding(input.Embedding, input.NumQubits)
 	if err != nil {
 		return vqc.VQC{}, err
@@ -191,7 +181,7 @@ func buildQuantumGate(input QuantumGateDTO, numQubits uint) (vqc.QuantumGate, er
 	return vqc.NewQuantumGate(gateType, qubit, controlQubits)
 }
 
-func buildVQCOutput(vqcInstance vqc.VQC) VQCOutputDTO {
+func buildVQCToVQCDTO(vqcInstance vqc.VQC) VQCDTO {
 	embedding := vqcInstance.Embedding()
 	measurement := vqcInstance.Measurement()
 
@@ -199,13 +189,13 @@ func buildVQCOutput(vqcInstance vqc.VQC) VQCOutputDTO {
 	layer := vqcInstance.Layer()
 	postLayer := vqcInstance.PostLayer()
 
-	embeddingOutput := buildEmbeddingOutput(embedding)
-	measurementOutput := buildMeasurementOutput(measurement)
-	preLayerOutput := buildLayerOutput(preLayer)
-	layerOutput := buildLayerOutput(layer)
-	postLayerOutput := buildLayerOutput(postLayer)
+	embeddingOutput := buildEmbeddingDTO(embedding)
+	measurementOutput := buildMeasurementDTO(measurement)
+	preLayerOutput := buildLayerDTO(preLayer)
+	layerOutput := buildLayerDTO(layer)
+	postLayerOutput := buildLayerDTO(postLayer)
 
-	return VQCOutputDTO{
+	return VQCDTO{
 		NumQubits:   vqcInstance.NumQubits(),
 		NumLayers:   vqcInstance.NumLayers(),
 		Embedding:   embeddingOutput,
@@ -216,22 +206,22 @@ func buildVQCOutput(vqcInstance vqc.VQC) VQCOutputDTO {
 	}
 }
 
-func buildEmbeddingOutput(embedding vqc.Embedding) EmbeddingDTO {
+func buildEmbeddingDTO(embedding vqc.Embedding) EmbeddingDTO {
 	qubits := make([]uint, len(embedding.Qubits()))
 	for i, qubit := range embedding.Qubits() {
 		qubits[i] = qubit.Index()
 	}
 	switch embedding.Type() {
 	case vqc.EmbeddingTypeAngle:
-		return buildAngleEmbeddingOutput(embedding, qubits)
+		return buildAngleEmbeddingDTO(embedding, qubits)
 	case vqc.EmbeddingTypeAmplitude:
-		return buildAmplitudeEmbeddingOutput(embedding, qubits)
+		return buildAmplitudeEmbeddingDTO(embedding, qubits)
 	default:
 		return EmbeddingDTO{}
 	}
 }
 
-func buildAngleEmbeddingOutput(embedding vqc.Embedding, qubits []uint) EmbeddingDTO {
+func buildAngleEmbeddingDTO(embedding vqc.Embedding, qubits []uint) EmbeddingDTO {
 	angleEmbedding, ok := embedding.(vqc.AngleEmbedding)
 	if !ok {
 		return EmbeddingDTO{}
@@ -243,7 +233,7 @@ func buildAngleEmbeddingOutput(embedding vqc.Embedding, qubits []uint) Embedding
 	}
 }
 
-func buildAmplitudeEmbeddingOutput(embedding vqc.Embedding, qubits []uint) EmbeddingDTO {
+func buildAmplitudeEmbeddingDTO(embedding vqc.Embedding, qubits []uint) EmbeddingDTO {
 	amplitudeEmbedding, ok := embedding.(vqc.AmplitudeEmbedding)
 	if !ok {
 		return EmbeddingDTO{}
@@ -256,7 +246,7 @@ func buildAmplitudeEmbeddingOutput(embedding vqc.Embedding, qubits []uint) Embed
 	}
 }
 
-func buildMeasurementOutput(measurement vqc.Measurement) MeasurementDTO {
+func buildMeasurementDTO(measurement vqc.Measurement) MeasurementDTO {
 	qubits := make([]uint, len(measurement.Qubits()))
 	for i, qubit := range measurement.Qubits() {
 		qubits[i] = qubit.Index()
@@ -268,17 +258,17 @@ func buildMeasurementOutput(measurement vqc.Measurement) MeasurementDTO {
 	}
 }
 
-func buildLayerOutput(layer vqc.Layer) LayerDTO {
+func buildLayerDTO(layer vqc.Layer) LayerDTO {
 	gates := make([]QuantumGateDTO, len(layer.Gates()))
 	for i, gate := range layer.Gates() {
-		gates[i] = buildQuantumGateOutput(gate)
+		gates[i] = buildQuantumGateDTO(gate)
 	}
 	return LayerDTO{
 		Gates: gates,
 	}
 }
 
-func buildQuantumGateOutput(gate vqc.QuantumGate) QuantumGateDTO {
+func buildQuantumGateDTO(gate vqc.QuantumGate) QuantumGateDTO {
 	controlQubits := make([]uint, len(gate.ControlQubits()))
 	for i, qubit := range gate.ControlQubits() {
 		controlQubits[i] = qubit.Index()

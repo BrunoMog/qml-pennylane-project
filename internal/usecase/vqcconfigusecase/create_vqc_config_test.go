@@ -5,7 +5,8 @@ import (
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"testing"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +25,7 @@ func TestCreateVQCConfig(t *testing.T) {
 					Name:        "Test Config",
 					Description: "This is a test VQCConfig",
 					CallerID:    user.ID(),
-					VQC:         validVQCInput(),
+					VQCDTO:      ValidVQCDTO(),
 				}
 			},
 			expectedError: nil,
@@ -36,7 +37,7 @@ func TestCreateVQCConfig(t *testing.T) {
 					Name:        "Test Config",
 					Description: "This is a test VQCConfig",
 					CallerID:    uuid.New(),
-					VQC:         validVQCInput(),
+					VQCDTO:      ValidVQCDTO(),
 				}
 			},
 			expectedError: &UserNotFoundError{},
@@ -53,7 +54,7 @@ func TestCreateVQCConfig(t *testing.T) {
 					Name:        name.Value(),
 					Description: "This is a test VQCConfig",
 					CallerID:    newUser.ID(),
-					VQC:         validVQCInput(),
+					VQCDTO:      ValidVQCDTO(),
 				}
 			},
 			expectedError: &VQCConfigNameAlreadyExistsError{},

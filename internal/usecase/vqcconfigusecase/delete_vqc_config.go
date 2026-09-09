@@ -1,7 +1,7 @@
 package vqcconfigusecase
 
 import (
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type DeleteVQCConfigInput struct {

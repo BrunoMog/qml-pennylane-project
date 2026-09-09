@@ -3,7 +3,7 @@ package vqcconfigusecase
 import (
 	"pennylane_project_backend/internal/domain/vqcconfig"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type VQCConfigRepository interface {

@@ -4,7 +4,7 @@ import (
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type LoadVQCConfigInput struct {
@@ -18,7 +18,7 @@ type LoadVQCConfigOutput struct {
 	UpdatedAt   time.Time
 	Name        string
 	Description string
-	VQC         VQCOutputDTO
+	VQCDTO      VQCDTO
 	OwnerID     uuid.UUID
 	VQCConfigID uuid.UUID
 }
@@ -54,7 +54,7 @@ func (s *VQCConfigService) LoadVQCConfig(input LoadVQCConfigInput) (*LoadVQCConf
 	output := &LoadVQCConfigOutput{
 		Name:        config.Name().Value(),
 		Description: config.Description().Value(),
-		VQC:         buildVQCOutput(config.VQC()),
+		VQCDTO:      buildVQCToVQCDTO(config.VQC()),
 		CreatedAt:   config.CreatedAt(),
 		UpdatedAt:   config.UpdatedAt(),
 		OwnerID:     config.OwnerID(),
@@ -88,7 +88,7 @@ func (s *VQCConfigService) LoadAllVQCConfigs(input LoadAllVQCConfigsInput) (*Loa
 		output.VQCConfigs[i] = LoadVQCConfigOutput{
 			Name:        config.Name().Value(),
 			Description: config.Description().Value(),
-			VQC:         buildVQCOutput(config.VQC()),
+			VQCDTO:      buildVQCToVQCDTO(config.VQC()),
 			CreatedAt:   config.CreatedAt(),
 			UpdatedAt:   config.UpdatedAt(),
 			OwnerID:     config.OwnerID(),

@@ -3,9 +3,11 @@ package vqcconfigusecase
 import (
 	"pennylane_project_backend/internal/domain/user"
 	"pennylane_project_backend/internal/testkit"
+	"strings"
 	"testing"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -23,11 +25,13 @@ func TestUpdateVQCConfig(t *testing.T) {
 				vqcConfig := f.createVQCConfig(user.ID())
 				newName := "Updated Config Name"
 				newDescription := "Updated Description"
+				vqc := ValidVQCDTO()
 				return UpdateVQCConfigInput{
 					Name:        &newName,
 					Description: &newDescription,
 					CallerID:    user.ID(),
 					VQCConfigID: vqcConfig.VQCConfigID(),
+					VQCDTO:      &vqc,
 				}
 			},
 			expectedError: nil,
@@ -106,6 +110,38 @@ func TestUpdateVQCConfig(t *testing.T) {
 				}
 			},
 			expectedError: &VQCConfigNameAlreadyExistsError{},
+		},
+		{
+			testName: "cosmetic update name",
+			setup: func(f *testFixture) UpdateVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(user.ID())
+				name := strings.ToUpper(vqcConfig.Name().Value())
+				return UpdateVQCConfigInput{
+					Name:        &name,
+					CallerID:    user.ID(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}
+			},
+			expectedError: nil,
+		},
+		{
+			testName: "idepotent update",
+			setup: func(f *testFixture) UpdateVQCConfigInput {
+				user := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(user.ID())
+				name := vqcConfig.Name().Value()
+				description := vqcConfig.Description().Value()
+				vqcDTO := buildVQCToVQCDTO(vqcConfig.VQC())
+				return UpdateVQCConfigInput{
+					Name:        &name,
+					Description: &description,
+					VQCDTO:      &vqcDTO,
+					CallerID:    user.ID(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}
+			},
+			expectedError: nil,
 		},
 	}
 

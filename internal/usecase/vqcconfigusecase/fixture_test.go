@@ -7,7 +7,8 @@ import (
 	"pennylane_project_backend/internal/testkit"
 	"testing"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -16,6 +17,8 @@ type testFixture struct {
 	service       *VQCConfigService
 	userRepo      *testkit.MockUserRepository
 	vqcConfigRepo *testkit.MockVQCConfigRepository
+	makeUser      func() *user.User
+	makeVQCConfig func(ownerID uuid.UUID) *vqcconfig.VQCConfig
 }
 
 func newTestFixture(t *testing.T) *testFixture {
@@ -23,18 +26,21 @@ func newTestFixture(t *testing.T) *testFixture {
 	userRepo := testkit.NewMockUserRepository()
 	vqcConfigRepo := testkit.NewMockVQCConfigRepository()
 	service := NewVQCConfigService(vqcConfigRepo, userRepo)
+	makeUser := testkit.DefaultUser()
+	makeVQCConfig := testkit.DefaultVQCConfig()
 
 	return &testFixture{
 		t:             t,
 		service:       service,
 		userRepo:      userRepo,
 		vqcConfigRepo: vqcConfigRepo,
+		makeUser:      makeUser,
+		makeVQCConfig: makeVQCConfig,
 	}
 }
 
 func (f *testFixture) createUser(role user.Role) *user.User {
-	makeUser := testkit.DefaultUser()
-	user := makeUser()
+	user := f.makeUser()
 	user.SetRole(role)
 	err := f.userRepo.Save(user)
 	require.NoError(f.t, err)
@@ -42,28 +48,10 @@ func (f *testFixture) createUser(role user.Role) *user.User {
 }
 
 func (f *testFixture) createVQCConfig(ownerID uuid.UUID) *vqcconfig.VQCConfig {
-	makeVQCConfig := testkit.DefaultVQCConfig()
-	vqcConfig := makeVQCConfig(ownerID)
+	vqcConfig := f.makeVQCConfig(ownerID)
 	err := f.vqcConfigRepo.Save(vqcConfig)
 	require.NoError(f.t, err)
 	return vqcConfig
-}
-
-func validVQCInput() VQCInputDTO {
-	return VQCInputDTO{
-		NumQubits: 1,
-		NumLayers: 1,
-		Embedding: EmbeddingDTO{
-			EmbeddingType: "angle",
-			Qubits:        []uint{0},
-			Rotation:      "x",
-		},
-		Measurement: MeasurementDTO{
-			MeasurementType:     "expectation",
-			MeasurementRotation: "x",
-			Qubits:              []uint{0},
-		},
-	}
 }
 
 func validVQC() vqc.VQC {
@@ -93,8 +81,8 @@ func validVQC() vqc.VQC {
 	return vqc
 }
 
-func ValidVQCOutputDTO() VQCOutputDTO {
-	return VQCOutputDTO{
+func ValidVQCDTO() VQCDTO {
+	return VQCDTO{
 		NumQubits: 1,
 		NumLayers: 1,
 		Embedding: EmbeddingDTO{

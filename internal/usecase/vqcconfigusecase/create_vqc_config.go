@@ -4,11 +4,11 @@ import (
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type CreateVQCConfigInput struct {
-	VQC         VQCInputDTO
+	VQCDTO      VQCDTO
 	Name        string
 	Description string
 	CallerID    uuid.UUID
@@ -30,7 +30,7 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 	if err != nil {
 		return nil, err
 	}
-	vqc, err := buildVQC(input.VQC)
+	vqc, err := buildVQCDTOToVQC(input.VQCDTO)
 	if err != nil {
 		return nil, err
 	}

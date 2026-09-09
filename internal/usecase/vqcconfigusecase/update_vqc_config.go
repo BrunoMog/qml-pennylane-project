@@ -3,19 +3,19 @@ package vqcconfigusecase
 import (
 	"pennylane_project_backend/internal/domain/vqcconfig"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UpdateVQCConfigInput struct {
 	Name        *string
 	Description *string
-	VQC         *VQCInputDTO
+	VQCDTO      *VQCDTO
 	CallerID    uuid.UUID
 	VQCConfigID uuid.UUID
 }
 
 func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
-	if input.Name == nil && input.Description == nil && input.VQC == nil {
+	if input.Name == nil && input.Description == nil && input.VQCDTO == nil {
 		return &NoFieldsToUpdateError{}
 	}
 
@@ -28,41 +28,56 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 		return &UnauthorizedError{}
 	}
 
+	var needToSave bool
+
 	if input.Name != nil {
 		name, err := vqcconfig.NewName(*input.Name)
 		if err != nil {
 			return err
 		}
-		if config.Name() == name {
-			return &VQCConfigNameAlreadyUsedError{Name: *input.Name}
+
+		if config.Name().Value() != name.Value() {
+			if !name.Equals(config.Name()) {
+				exists, err := s.vqcConfigRepository.ExistsByName(input.CallerID, name)
+				if err != nil {
+					return err
+				}
+				if exists {
+					return &VQCConfigNameAlreadyExistsError{}
+				}
+			}
+			config.SetName(name)
+			needToSave = true
 		}
-		exists, err := s.vqcConfigRepository.ExistsByName(input.CallerID, name)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return &VQCConfigNameAlreadyExistsError{}
-		}
-		config.SetName(name)
 	}
+
 	if input.Description != nil {
 		description, err := vqcconfig.NewDescription(*input.Description)
 		if err != nil {
 			return err
 		}
-		config.SetDescription(description)
+		if config.Description() != description {
+			needToSave = true
+			config.SetDescription(description)
+		}
 	}
-	if input.VQC != nil {
-		vqc, err := buildVQC(*input.VQC)
+
+	if input.VQCDTO != nil {
+		vqc, err := buildVQCDTOToVQC(*input.VQCDTO)
 		if err != nil {
 			return err
 		}
-		config.SetVQC(vqc)
+		if !config.VQC().Equals(vqc) {
+			needToSave = true
+			config.SetVQC(vqc)
+		}
 	}
 
-	err = s.vqcConfigRepository.Save(config)
-	if err != nil {
-		return err
+	if needToSave {
+		err = s.vqcConfigRepository.Save(config)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
