@@ -3,7 +3,7 @@ package userusecase
 import (
 	"pennylane_project_backend/internal/domain/user"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UpdateUserInput struct {
@@ -31,12 +31,17 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 		return &UnauthorizedError{caller.Name()}
 	}
 
+	var needToSave bool
+
 	if input.Name != nil {
 		name, err := user.NewName(*input.Name)
 		if err != nil {
 			return err
 		}
-		userToUpdate.SetName(name)
+		if userToUpdate.Name() != name {
+			userToUpdate.SetName(name)
+			needToSave = true
+		}
 	}
 
 	if input.Email != nil {
@@ -44,20 +49,24 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 		if err != nil {
 			return err
 		}
-		if userToUpdate.Email() == email {
-			return &EmailAlreadyUsedError{email}
+		if userToUpdate.Email() != email {
+			exists, err := s.repository.ExistsByEmail(email)
+			if err != nil {
+				return err
+			}
+			if exists {
+				return &EmailAlreadyExistsError{email}
+			}
+			userToUpdate.SetEmail(email)
+			needToSave = true
 		}
-		exists, err := s.repository.ExistsByEmail(email)
-		if err != nil {
-			return err
-		}
-		if exists {
-			return &EmailAlreadyExistsError{email}
-		}
-		userToUpdate.SetEmail(email)
 	}
 
-	return s.repository.Save(userToUpdate)
+	if needToSave {
+		return s.repository.Save(userToUpdate)
+	}
+
+	return nil
 }
 
 func canUpdateUser(caller, target *user.User) bool {

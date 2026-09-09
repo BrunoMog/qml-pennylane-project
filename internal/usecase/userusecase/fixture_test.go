@@ -12,23 +12,25 @@ type testFixture struct {
 	t        *testing.T
 	service  *UserService
 	userRepo *testkit.MockUserRepository
+	makeUser func() *user.User
 }
 
 func newTestFixture(t *testing.T) *testFixture {
 	t.Helper()
 	userRepo := testkit.NewMockUserRepository()
 	service := NewUserService(userRepo)
+	makeUser := testkit.DefaultUser()
 
 	return &testFixture{
 		t:        t,
 		service:  service,
 		userRepo: userRepo,
+		makeUser: makeUser,
 	}
 }
 
 func (f *testFixture) createUser(role user.Role) *user.User {
-	makeUser := testkit.DefaultUser()
-	user := makeUser()
+	user := f.makeUser()
 	user.SetRole(role)
 	err := f.userRepo.Save(user)
 	require.NoError(f.t, err)

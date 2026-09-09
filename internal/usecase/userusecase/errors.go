@@ -34,11 +34,3 @@ type NoFieldsToUpdateError struct {
 func (e *NoFieldsToUpdateError) Error() string {
 	return "no fields to update"
 }
-
-type EmailAlreadyUsedError struct {
-	Email user.Email
-}
-
-func (e *EmailAlreadyUsedError) Error() string {
-	return fmt.Sprintf("email already used: %s", e.Email.Value())
-}

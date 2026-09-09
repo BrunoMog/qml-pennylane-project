@@ -5,7 +5,8 @@ import (
 	"pennylane_project_backend/internal/testkit"
 	"testing"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -94,6 +95,35 @@ func TestUpdateUser(t *testing.T) {
 				}
 			},
 			expectedError: &EmailAlreadyExistsError{},
+		},
+		{
+			testName: "unauthorized user tries to update another user",
+			setup: func(fixture *testFixture) UpdateUserInput {
+				user1 := fixture.createUser(user.RoleUser)
+				user2 := fixture.createUser(user.RoleUser)
+				newName := "Updated Name"
+				return UpdateUserInput{
+					CallerID: user1.ID(),
+					TargetID: user2.ID(),
+					Name:     &newName,
+				}
+			},
+			expectedError: &UnauthorizedError{},
+		},
+		{
+			testName: "idepotent update (same name and email)",
+			setup: func(fixture *testFixture) UpdateUserInput {
+				user := fixture.createUser(user.RoleUser)
+				name := user.Name().Value()
+				email := user.Email().Value()
+				return UpdateUserInput{
+					CallerID: user.ID(),
+					TargetID: user.ID(),
+					Name:     &name,
+					Email:    &email,
+				}
+			},
+			expectedError: nil,
 		},
 	}
 
