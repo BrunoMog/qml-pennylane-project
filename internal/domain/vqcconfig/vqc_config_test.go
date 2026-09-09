@@ -4,7 +4,8 @@ import (
 	"pennylane_project_backend/internal/domain/vqc"
 	"testing"
 
-	"github.com/google/uuid"
+	"uuid"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -58,7 +59,7 @@ func TestNewVQCConfig(t *testing.T) {
 		{
 			testName: "invalid VQCConfig with nil userID",
 			setup: func() (uuid.UUID, Name, Description, vqc.VQC) {
-				userID := uuid.Nil
+				userID := uuid.Nil()
 				name, err := NewName("Valid Name")
 				require.NoError(t, err)
 				description, err := NewDescription("Valid Description")

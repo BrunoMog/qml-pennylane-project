@@ -4,7 +4,7 @@ import (
 	"pennylane_project_backend/internal/domain/vqc"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type VQCConfig struct {
@@ -18,7 +18,7 @@ type VQCConfig struct {
 }
 
 func NewVQCConfig(userID uuid.UUID, name Name, description Description, vqc vqc.VQC) (*VQCConfig, error) {
-	if userID == uuid.Nil {
+	if userID == uuid.Nil() {
 		return nil, &InvalidOwnerIDError{}
 	}
 	if !vqc.IsValid() {

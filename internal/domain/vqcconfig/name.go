@@ -29,6 +29,10 @@ func validateName(name string) error {
 	return nil
 }
 
+func (n Name) Equals(other Name) bool {
+	return strings.EqualFold(n.value, other.value)
+}
+
 func (n Name) Value() string {
 	return n.value
 }
