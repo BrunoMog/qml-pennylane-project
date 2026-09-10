@@ -5,37 +5,37 @@ import (
 )
 
 type QuantumGate struct {
-	gate_type     GateType
-	control_qubit []Qubit
-	qubit         Qubit
+	gateType     GateType
+	controlQubit []Qubit
+	qubit        Qubit
 }
 
-func NewQuantumGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) (QuantumGate, error) {
-	control_qubit = slices.Clone(control_qubit)
-	err := validateGate(gate_type, qubit, control_qubit)
+func NewQuantumGate(gateType GateType, qubit Qubit, controlQubit []Qubit) (QuantumGate, error) {
+	controlQubit = slices.Clone(controlQubit)
+	err := validateGate(gateType, qubit, controlQubit)
 	if err != nil {
 		return QuantumGate{}, err
 	}
 
 	return QuantumGate{
-		gate_type:     gate_type,
-		qubit:         qubit,
-		control_qubit: control_qubit,
+		gateType:     gateType,
+		qubit:        qubit,
+		controlQubit: controlQubit,
 	}, nil
 }
 
-func validateGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) error {
-	if !isValidGate(gate_type) {
-		return &InvalidGateError{gate_type}
+func validateGate(gateType GateType, qubit Qubit, controlQubit []Qubit) error {
+	if !isValidGate(gateType) {
+		return &InvalidGateError{gateType}
 	}
 
-	if slices.Contains(singleQubitGates, gate_type) && len(control_qubit) > 0 {
-		return &InvalidControlQubitError{control_qubit}
-	} else if slices.Contains(twoQubitGates, gate_type) && len(control_qubit) != 1 {
-		return &InvalidControlQubitError{control_qubit}
+	if slices.Contains(singleQubitGates, gateType) && len(controlQubit) > 0 {
+		return &InvalidControlQubitError{controlQubit}
+	} else if slices.Contains(twoQubitGates, gateType) && len(controlQubit) != 1 {
+		return &InvalidControlQubitError{controlQubit}
 	}
 
-	allQubits := append([]Qubit{qubit}, control_qubit...)
+	allQubits := append([]Qubit{qubit}, controlQubit...)
 	if duplicatedQubit, duplicated := hasDuplicateQubits(allQubits); duplicated {
 		return &DuplicateQubitError{duplicatedQubit}
 	}
@@ -43,8 +43,8 @@ func validateGate(gate_type GateType, qubit Qubit, control_qubit []Qubit) error 
 	return nil
 }
 
-func isValidGate(gate_type GateType) bool {
-	switch gate_type {
+func isValidGate(gateType GateType) bool {
+	switch gateType {
 	case HGate, XGate, YGate, ZGate, RXGate, RYGate, RZGate, CNOTGate:
 		return true
 	default:
@@ -53,11 +53,11 @@ func isValidGate(gate_type GateType) bool {
 }
 
 func (q QuantumGate) Equals(other QuantumGate) bool {
-	if q.gate_type != other.gate_type || q.qubit != other.qubit {
+	if q.gateType != other.gateType || q.qubit != other.qubit {
 		return false
 	}
 
-	if !slices.Equal(q.control_qubit, other.control_qubit) {
+	if !slices.Equal(q.controlQubit, other.controlQubit) {
 		return false
 	}
 
@@ -65,7 +65,7 @@ func (q QuantumGate) Equals(other QuantumGate) bool {
 }
 
 func (q QuantumGate) HasParameters() bool {
-	switch q.gate_type {
+	switch q.gateType {
 	case RXGate, RYGate, RZGate:
 		return true
 	default:
@@ -75,14 +75,14 @@ func (q QuantumGate) HasParameters() bool {
 
 func (q QuantumGate) Clone() QuantumGate {
 	return QuantumGate{
-		gate_type:     q.gate_type,
-		qubit:         q.qubit,
-		control_qubit: slices.Clone(q.control_qubit),
+		gateType:     q.gateType,
+		qubit:        q.qubit,
+		controlQubit: slices.Clone(q.controlQubit),
 	}
 }
 
 func (q QuantumGate) GateType() GateType {
-	return q.gate_type
+	return q.gateType
 }
 
 func (q QuantumGate) Qubit() Qubit {
@@ -90,5 +90,5 @@ func (q QuantumGate) Qubit() Qubit {
 }
 
 func (q QuantumGate) ControlQubits() []Qubit {
-	return slices.Clone(q.control_qubit)
+	return slices.Clone(q.controlQubit)
 }

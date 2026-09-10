@@ -51,17 +51,17 @@ func TestLayerGetNumParameterizedGates(t *testing.T) {
 		},
 		{
 			testName:               "Non-parameterized gates only",
-			gates:                  []QuantumGate{{gate_type: HGate}, {gate_type: XGate}, {gate_type: CNOTGate}},
+			gates:                  []QuantumGate{{gateType: HGate}, {gateType: XGate}, {gateType: CNOTGate}},
 			expectedParameterCount: 0,
 		},
 		{
 			testName:               "Parameterized gates only",
-			gates:                  []QuantumGate{{gate_type: RXGate}, {gate_type: RYGate}, {gate_type: RZGate}},
+			gates:                  []QuantumGate{{gateType: RXGate}, {gateType: RYGate}, {gateType: RZGate}},
 			expectedParameterCount: 3,
 		},
 		{
 			testName:               "Mixed parameterized and non-parameterized gates",
-			gates:                  []QuantumGate{{gate_type: HGate}, {gate_type: RXGate}, {gate_type: XGate}, {gate_type: RYGate}},
+			gates:                  []QuantumGate{{gateType: HGate}, {gateType: RXGate}, {gateType: XGate}, {gateType: RYGate}},
 			expectedParameterCount: 2,
 		},
 	}
@@ -77,8 +77,8 @@ func TestLayerGetNumParameterizedGates(t *testing.T) {
 
 func TestCloneLayer(t *testing.T) {
 	originalGates := []QuantumGate{
-		{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
-		{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
+		{gateType: HGate, qubit: Qubit(0), controlQubit: []Qubit{}},
+		{gateType: XGate, qubit: Qubit(1), controlQubit: []Qubit{}},
 	}
 
 	layer := NewLayer(originalGates)
@@ -86,51 +86,51 @@ func TestCloneLayer(t *testing.T) {
 
 	// Modify the original layer's gates
 	layerGates := layer.Gates()
-	layerGates[0].gate_type = YGate
-	layerGates = append(layerGates, QuantumGate{gate_type: RXGate, qubit: Qubit(2), control_qubit: []Qubit{}})
+	layerGates[0].gateType = YGate
+	layerGates = append(layerGates, QuantumGate{gateType: RXGate, qubit: Qubit(2), controlQubit: []Qubit{}})
 
 	// Check that the cloned layer's gates remain unchanged
 	clonedGates := clonedLayer.Gates()
-	assert.Equal(t, HGate, clonedGates[0].gate_type, "Cloned layer was affected by modification of original layer")
+	assert.Equal(t, HGate, clonedGates[0].gateType, "Cloned layer was affected by modification of original layer")
 	assert.Equal(t, 2, len(clonedGates), "Cloned layer size was affected by modification of original layer")
 }
 
 func TestLayerImmutability(t *testing.T) {
 	originalGates := []QuantumGate{
-		{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{}},
-		{gate_type: XGate, qubit: Qubit(1), control_qubit: []Qubit{}},
+		{gateType: HGate, qubit: Qubit(0), controlQubit: []Qubit{}},
+		{gateType: XGate, qubit: Qubit(1), controlQubit: []Qubit{}},
 	}
 
 	layer := NewLayer(originalGates)
 
 	// Modify original gates slice
-	originalGates[0].gate_type = YGate
-	originalGates = append(originalGates, QuantumGate{gate_type: RXGate, qubit: Qubit(2), control_qubit: []Qubit{}})
-	assert.Equal(t, HGate, layer.Gates()[0].gate_type, "Layer was affected by modification of original input slice")
+	originalGates[0].gateType = YGate
+	originalGates = append(originalGates, QuantumGate{gateType: RXGate, qubit: Qubit(2), controlQubit: []Qubit{}})
+	assert.Equal(t, HGate, layer.Gates()[0].gateType, "Layer was affected by modification of original input slice")
 	assert.Equal(t, 2, len(layer.Gates()), "Layer size was affected by modification of original input slice")
 
 	layerGates := layer.Gates()
 	// Modify the returned gates slice
-	layerGates[1].gate_type = ZGate
-	layerGates = append(layerGates, QuantumGate{gate_type: RYGate, qubit: Qubit(3), control_qubit: []Qubit{}})
-	assert.Equal(t, XGate, layer.Gates()[1].gate_type, "Layer was affected by modification of returned slice")
+	layerGates[1].gateType = ZGate
+	layerGates = append(layerGates, QuantumGate{gateType: RYGate, qubit: Qubit(3), controlQubit: []Qubit{}})
+	assert.Equal(t, XGate, layer.Gates()[1].gateType, "Layer was affected by modification of returned slice")
 	assert.Equal(t, 2, len(layer.Gates()), "Layer size was affected by modification of returned slice")
 
 }
 
 func TestLayerDeepImmutability(t *testing.T) {
 	originalGates := []QuantumGate{
-		{gate_type: HGate, qubit: Qubit(0), control_qubit: []Qubit{Qubit(1)}},
+		{gateType: HGate, qubit: Qubit(0), controlQubit: []Qubit{Qubit(1)}},
 	}
 
 	layer := NewLayer(originalGates)
 
-	// Modify the control_qubit slice of the original gate
-	originalGates[0].control_qubit[0] = Qubit(2)
-	assert.Equal(t, Qubit(1), layer.Gates()[0].control_qubit[0], "Layer was affected by modification of original gate's control_qubit slice")
+	// Modify the controlQubit slice of the original gate
+	originalGates[0].controlQubit[0] = Qubit(2)
+	assert.Equal(t, Qubit(1), layer.Gates()[0].controlQubit[0], "Layer was affected by modification of original gate's controlQubit slice")
 
 	layerGates := layer.Gates()
-	// Modify the control_qubit slice of the returned gate
-	layerGates[0].control_qubit[0] = Qubit(3)
-	assert.Equal(t, Qubit(1), layer.Gates()[0].control_qubit[0], "Layer was affected by modification of returned gate's control_qubit slice")
+	// Modify the controlQubit slice of the returned gate
+	layerGates[0].controlQubit[0] = Qubit(3)
+	assert.Equal(t, Qubit(1), layer.Gates()[0].controlQubit[0], "Layer was affected by modification of returned gate's controlQubit slice")
 }

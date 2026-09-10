@@ -14,7 +14,7 @@ func (e EmbeddingType) Value() string {
 }
 
 func ParseEmbeddingType(embeddingTypeStr string) (EmbeddingType, error) {
-	switch strings.ToLower(embeddingTypeStr) {
+	switch strings.ToLower(strings.TrimSpace(embeddingTypeStr)) {
 	case "angle":
 		return EmbeddingTypeAngle, nil
 	case "amplitude":

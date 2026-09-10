@@ -23,7 +23,7 @@ func isValidMeasurementType(measurementType MeasurementType) bool {
 }
 
 func ParseMeasurementType(measurementTypeStr string) (MeasurementType, error) {
-	switch strings.ToLower(measurementTypeStr) {
+	switch strings.ToLower(strings.TrimSpace(measurementTypeStr)) {
 	case "expectation":
 		return ExpectationMeasurement, nil
 	case "probability":
