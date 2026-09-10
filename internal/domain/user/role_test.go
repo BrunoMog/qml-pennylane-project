@@ -8,10 +8,10 @@ import (
 
 func TestParseRole(t *testing.T) {
 	tests := []struct {
+		expectedError error
 		testName      string
 		inputRole     string
 		expectedRole  Role
-		expectedError error
 	}{
 		{
 			testName:      "valid role: user",

@@ -8,10 +8,10 @@ import (
 
 func TestNewEmail(t *testing.T) {
 	tests := []struct {
+		expectedError error
 		testName      string
 		inputEmail    string
 		expectedEmail string
-		expectedError error
 	}{
 		{
 			testName:      "valid email",

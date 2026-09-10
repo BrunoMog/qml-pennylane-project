@@ -39,10 +39,10 @@ func TestUserCreation(t *testing.T) {
 
 func TestSetRole(t *testing.T) {
 	tests := []struct {
-		testName    string
-		setup       func() *User
-		newRole     Role
 		expectedErr error
+		setup       func() *User
+		testName    string
+		newRole     Role
 	}{
 		{
 			testName: "set role to admin",
@@ -82,8 +82,8 @@ func TestSetRole(t *testing.T) {
 
 func TestIsAdmin(t *testing.T) {
 	tests := []struct {
-		testName        string
 		setup           func() *User
+		testName        string
 		expectedIsAdmin bool
 	}{
 		{
@@ -117,8 +117,8 @@ func TestIsAdmin(t *testing.T) {
 
 func TestIsOwner(t *testing.T) {
 	tests := []struct {
-		testName        string
 		setup           func() *User
+		testName        string
 		expectedIsOwner bool
 	}{
 		{
