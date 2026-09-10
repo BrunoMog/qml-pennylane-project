@@ -31,3 +31,10 @@ type NoFieldsToUpdateError struct{}
 func (e *NoFieldsToUpdateError) Error() string {
 	return "no fields to update"
 }
+
+type UnreachableOptimizerNameError struct {
+}
+
+func (e *UnreachableOptimizerNameError) Error() string {
+	return "unreachable optimizer name"
+}

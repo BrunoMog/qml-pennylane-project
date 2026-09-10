@@ -2,7 +2,6 @@ package trainconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/trainconfig"
-	"pennylane_project_backend/internal/domain/training"
 	"time"
 
 	"uuid"
@@ -19,7 +18,7 @@ type LoadTrainConfigOutput struct {
 	UpdatedAt     time.Time
 	Name          string
 	Description   string
-	Training      training.Training
+	TrainingDTO   TrainingDTO
 	OwnerID       uuid.UUID
 	TrainConfigID uuid.UUID
 }
@@ -36,7 +35,11 @@ func (s *TrainConfigService) LoadTrainConfig(input LoadTrainConfigInput) (*LoadT
 			return nil, err
 		}
 	} else if input.TrainConfigName != nil {
-		config, err = s.trainConfigRepository.FindByName(input.CallerID, *input.TrainConfigName)
+		name, err := trainconfig.NewName(*input.TrainConfigName)
+		if err != nil {
+			return nil, err
+		}
+		config, err = s.trainConfigRepository.FindByName(input.CallerID, name)
 		if err != nil {
 			return nil, err
 		}
@@ -49,9 +52,9 @@ func (s *TrainConfigService) LoadTrainConfig(input LoadTrainConfigInput) (*LoadT
 	}
 
 	output := &LoadTrainConfigOutput{
-		Name:          config.Name(),
-		Description:   config.Description(),
-		Training:      config.Training(),
+		Name:          config.Name().Value(),
+		Description:   config.Description().Value(),
+		TrainingDTO:   buildTrainingDTOFromTraining(config.Training()),
 		CreatedAt:     config.CreatedAt(),
 		UpdatedAt:     config.UpdatedAt(),
 		OwnerID:       config.OwnerID(),
@@ -83,9 +86,9 @@ func (s *TrainConfigService) LoadAllTrainConfigs(input LoadAllTrainConfigsInput)
 	}
 	for i, config := range configs {
 		output.TrainConfigs[i] = LoadTrainConfigOutput{
-			Name:          config.Name(),
-			Description:   config.Description(),
-			Training:      config.Training(),
+			Name:          config.Name().Value(),
+			Description:   config.Description().Value(),
+			TrainingDTO:   buildTrainingDTOFromTraining(config.Training()),
 			CreatedAt:     config.CreatedAt(),
 			UpdatedAt:     config.UpdatedAt(),
 			OwnerID:       config.OwnerID(),

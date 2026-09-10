@@ -36,7 +36,7 @@ func TestLoadTrainConfig(t *testing.T) {
 			setup: func(f *testFixture) LoadTrainConfigInput {
 				user := f.createUser(user.RoleUser)
 				trainConfig := f.createTrainConfig(user.ID())
-				trainConfigName := trainConfig.Name()
+				trainConfigName := trainConfig.Name().Value()
 				return LoadTrainConfigInput{
 					CallerID:        user.ID(),
 					TrainConfigID:   nil,

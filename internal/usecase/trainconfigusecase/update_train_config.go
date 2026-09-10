@@ -2,7 +2,6 @@ package trainconfigusecase
 
 import (
 	"pennylane_project_backend/internal/domain/trainconfig"
-	"pennylane_project_backend/internal/domain/training"
 
 	"uuid"
 )
@@ -10,13 +9,13 @@ import (
 type UpdateTrainConfigInput struct {
 	Name          *string
 	Description   *string
-	Training      *training.Training
+	TrainingDTO   *TrainingDTO
 	CallerID      uuid.UUID
 	TrainConfigID uuid.UUID
 }
 
 func (s *TrainConfigService) UpdateTrainConfig(input UpdateTrainConfigInput) error {
-	if input.Name == nil && input.Description == nil && input.Training == nil {
+	if input.Name == nil && input.Description == nil && input.TrainingDTO == nil {
 		return &NoFieldsToUpdateError{}
 	}
 	config, err := s.trainConfigRepository.FindByID(input.TrainConfigID)
@@ -28,35 +27,59 @@ func (s *TrainConfigService) UpdateTrainConfig(input UpdateTrainConfigInput) err
 		return &UnauthorizedError{}
 	}
 
+	var needToSave bool
+
 	if input.Name != nil {
-		exits, err := s.trainConfigRepository.ExistsByName(input.CallerID, *input.Name)
+		name, err := trainconfig.NewName(*input.Name)
 		if err != nil {
 			return err
 		}
-		if exits {
-			return &TrainConfigNameAlreadyExistsError{}
-		}
-		err = config.SetName(*input.Name)
-		if err != nil {
-			return err
-		}
-	}
-	if input.Description != nil {
-		err = config.SetDescription(*input.Description)
-		if err != nil {
-			return err
-		}
-	}
-	if input.Training != nil {
-		err = config.SetTraining(input.Training)
-		if err != nil {
-			return err
+
+		if config.Name().Value() != name.Value() {
+			if !name.Equals(config.Name()) {
+				exists, err := s.trainConfigRepository.ExistsByName(input.CallerID, name)
+				if err != nil {
+					return err
+				}
+				if exists {
+					return &TrainConfigNameAlreadyExistsError{}
+				}
+			}
+			config.SetName(name)
+			needToSave = true
 		}
 	}
 
-	err = s.trainConfigRepository.Save(config)
-	if err != nil {
-		return err
+	if input.Description != nil {
+		description, err := trainconfig.NewDescription(*input.Description)
+		if err != nil {
+			return err
+		}
+		if config.Description() != description {
+			config.SetDescription(description)
+			needToSave = true
+		}
+	}
+
+	if input.TrainingDTO != nil {
+		training, err := buildTrainingFromDTO(*input.TrainingDTO)
+		if err != nil {
+			return err
+		}
+		if !config.Training().Equals(training) {
+			err = config.SetTraining(training)
+			if err != nil {
+				return err
+			}
+			needToSave = true
+		}
+	}
+
+	if needToSave {
+		err = s.trainConfigRepository.Save(config)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

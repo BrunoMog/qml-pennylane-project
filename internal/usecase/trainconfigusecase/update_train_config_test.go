@@ -3,6 +3,7 @@ package trainconfigusecase
 import (
 	"pennylane_project_backend/internal/domain/user"
 	"pennylane_project_backend/internal/testkit"
+	"strings"
 	"testing"
 
 	"uuid"
@@ -24,11 +25,13 @@ func TestUpdateTrainConfig(t *testing.T) {
 				trainConfig := f.createTrainConfig(user.ID())
 				newName := "Updated Name"
 				newDescription := "Updated Description"
+				newTrainingDTO := validTrainDTO()
 				return UpdateTrainConfigInput{
 					CallerID:      user.ID(),
 					TrainConfigID: trainConfig.TrainConfigID(),
 					Name:          &newName,
 					Description:   &newDescription,
+					TrainingDTO:   &newTrainingDTO,
 				}
 			},
 			expectedError: nil,
@@ -98,7 +101,7 @@ func TestUpdateTrainConfig(t *testing.T) {
 				user := f.createUser(user.RoleUser)
 				trainConfig1 := f.createTrainConfig(user.ID())
 				trainConfig2 := f.createTrainConfig(user.ID())
-				newName := trainConfig2.Name()
+				newName := trainConfig2.Name().Value()
 				return UpdateTrainConfigInput{
 					CallerID:      user.ID(),
 					TrainConfigID: trainConfig1.TrainConfigID(),
@@ -107,6 +110,39 @@ func TestUpdateTrainConfig(t *testing.T) {
 				}
 			},
 			expectedError: &TrainConfigNameAlreadyExistsError{},
+		},
+		{
+			testName: "cosmetic update name",
+			setup: func(f *testFixture) UpdateTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				trainConfig := f.createTrainConfig(user.ID())
+				name := strings.ToUpper(trainConfig.Name().Value())
+				return UpdateTrainConfigInput{
+					CallerID:      user.ID(),
+					TrainConfigID: trainConfig.TrainConfigID(),
+					Name:          &name,
+					Description:   nil,
+				}
+			},
+			expectedError: nil,
+		},
+		{
+			testName: "idepotent update with same name and description and training",
+			setup: func(f *testFixture) UpdateTrainConfigInput {
+				user := f.createUser(user.RoleUser)
+				trainConfig := f.createTrainConfig(user.ID())
+				name := trainConfig.Name().Value()
+				description := trainConfig.Description().Value()
+				trainingDTO := buildTrainingDTOFromTraining(trainConfig.Training())
+				return UpdateTrainConfigInput{
+					CallerID:      user.ID(),
+					TrainConfigID: trainConfig.TrainConfigID(),
+					Name:          &name,
+					Description:   &description,
+					TrainingDTO:   &trainingDTO,
+				}
+			},
+			expectedError: nil,
 		},
 	}
 
@@ -124,10 +160,15 @@ func TestUpdateTrainConfig(t *testing.T) {
 				updatedTrainConfig, err := f.trainConfigRepo.FindByID(input.TrainConfigID)
 				require.NoError(t, err)
 				if input.Name != nil {
-					assert.Equal(t, *input.Name, updatedTrainConfig.Name())
+					assert.Equal(t, *input.Name, updatedTrainConfig.Name().Value())
 				}
 				if input.Description != nil {
-					assert.Equal(t, *input.Description, updatedTrainConfig.Description())
+					assert.Equal(t, *input.Description, updatedTrainConfig.Description().Value())
+				}
+				if input.TrainingDTO != nil {
+					expectedTraining, err := buildTrainingFromDTO(*input.TrainingDTO)
+					require.NoError(t, err)
+					assert.True(t, expectedTraining.Equals(updatedTrainConfig.Training()))
 				}
 				assert.Equal(t, input.CallerID, updatedTrainConfig.OwnerID())
 				assert.Equal(t, input.TrainConfigID, updatedTrainConfig.TrainConfigID())
