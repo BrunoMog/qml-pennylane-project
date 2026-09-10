@@ -4,36 +4,25 @@ import (
 	"pennylane_project_backend/internal/domain/training"
 	"time"
 
-	"github.com/google/uuid"
-)
-
-const (
-	MaxNameLength        = 100
-	MaxDescriptionLength = 500
+	"uuid"
 )
 
 type TrainConfig struct {
 	createdAt     time.Time
 	updatedAt     time.Time
-	training      *training.Training
-	name          string
-	description   string
+	name          Name
+	description   Description
+	training      training.Training
 	ownerID       uuid.UUID
 	trainConfigID uuid.UUID
 }
 
-func NewTrainConfig(ownerID uuid.UUID, name string, description string, tr *training.Training) (*TrainConfig, error) {
-	err := validateName(name)
-	if err != nil {
-		return nil, err
+func NewTrainConfig(ownerID uuid.UUID, name Name, description Description, tr training.Training) (*TrainConfig, error) {
+	if !tr.IsValid() {
+		return nil, &InvalidTrainingError{}
 	}
-	err = validateDescription(description)
-	if err != nil {
-		return nil, err
-	}
-	err = validateTraining(tr)
-	if err != nil {
-		return nil, err
+	if ownerID == uuid.Nil() {
+		return nil, &InvalidOwnerIDError{}
 	}
 
 	return &TrainConfig{
@@ -47,84 +36,49 @@ func NewTrainConfig(ownerID uuid.UUID, name string, description string, tr *trai
 	}, nil
 }
 
-func validateName(name string) error {
-	if len(name) == 0 {
-		return &InvalidNameError{name}
-	}
-	if len(name) > MaxNameLength {
-		return &InvalidNameError{name}
-	}
-	return nil
-}
-
-func validateDescription(description string) error {
-	if len(description) > MaxDescriptionLength {
-		return &InvalidDescriptionError{description}
-	}
-	return nil
-}
-
-func validateTraining(tr *training.Training) error {
-	if tr == nil {
-		return &TrainingMissingError{}
-	}
-	return nil
-}
-
-func (tc *TrainConfig) SetName(name string) error {
-	err := validateName(name)
-	if err != nil {
-		return err
-	}
+func (tc *TrainConfig) SetName(name Name) {
 	tc.name = name
 	tc.updatedAt = time.Now()
-	return nil
 }
 
-func (tc *TrainConfig) SetDescription(description string) error {
-	err := validateDescription(description)
-	if err != nil {
-		return err
-	}
+func (tc *TrainConfig) SetDescription(description Description) {
 	tc.description = description
 	tc.updatedAt = time.Now()
-	return nil
 }
 
-func (tc *TrainConfig) SetTraining(tr *training.Training) error {
-	err := validateTraining(tr)
-	if err != nil {
-		return err
+func (tc *TrainConfig) SetTraining(tr training.Training) error {
+	if !tr.IsValid() {
+		return &InvalidTrainingError{}
 	}
 	tc.training = tr
 	tc.updatedAt = time.Now()
 	return nil
 }
 
-func (tc TrainConfig) Name() string {
+func (tc *TrainConfig) Name() Name {
 	return tc.name
 }
 
-func (tc TrainConfig) Description() string {
+func (tc *TrainConfig) Description() Description {
 	return tc.description
 }
 
-func (tc TrainConfig) Training() training.Training {
-	return *tc.training
+func (tc *TrainConfig) Training() training.Training {
+	return tc.training
 }
 
-func (tc TrainConfig) OwnerID() uuid.UUID {
+func (tc *TrainConfig) OwnerID() uuid.UUID {
 	return tc.ownerID
 }
 
-func (tc TrainConfig) TrainConfigID() uuid.UUID {
+func (tc *TrainConfig) TrainConfigID() uuid.UUID {
 	return tc.trainConfigID
 }
 
-func (tc TrainConfig) CreatedAt() time.Time {
+func (tc *TrainConfig) CreatedAt() time.Time {
 	return tc.createdAt
 }
 
-func (tc TrainConfig) UpdatedAt() time.Time {
+func (tc *TrainConfig) UpdatedAt() time.Time {
 	return tc.updatedAt
 }

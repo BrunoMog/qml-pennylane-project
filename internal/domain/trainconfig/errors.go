@@ -20,8 +20,14 @@ func (e *InvalidDescriptionError) Error() string {
 	return fmt.Sprintf("invalid description: %s", e.description)
 }
 
-type TrainingMissingError struct{}
+type InvalidTrainingError struct{}
 
-func (e *TrainingMissingError) Error() string {
-	return "training is required"
+func (e *InvalidTrainingError) Error() string {
+	return "invalid training"
+}
+
+type InvalidOwnerIDError struct{}
+
+func (e *InvalidOwnerIDError) Error() string {
+	return "invalid owner ID"
 }
