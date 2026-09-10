@@ -8,10 +8,10 @@ import (
 
 func TestParseEmbeddingType(t *testing.T) {
 	testCases := []struct {
+		expectErr error
 		testName  string
 		input     string
 		expected  EmbeddingType
-		expectErr error
 	}{
 		{testName: "Valid angle embedding type", input: "angle", expected: EmbeddingTypeAngle, expectErr: nil},
 		{testName: "Valid amplitude embedding type", input: "amplitude", expected: EmbeddingTypeAmplitude, expectErr: nil},

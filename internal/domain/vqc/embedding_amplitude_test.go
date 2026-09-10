@@ -9,11 +9,11 @@ import (
 
 func TestNewAmplitudeEmbedding(t *testing.T) {
 	testCases := []struct {
+		expectErr error
 		testName  string
 		qubits    []Qubit
 		padwith   float64
 		normalize bool
-		expectErr error
 	}{
 		{testName: "Valid amplitude embedding", qubits: []Qubit{0, 1}, normalize: true, padwith: 0.0, expectErr: nil},
 		{testName: "Duplicate qubit index", qubits: []Qubit{0, 1, 1}, padwith: 0.0, normalize: true, expectErr: &DuplicateQubitError{}},

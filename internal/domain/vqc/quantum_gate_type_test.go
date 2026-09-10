@@ -8,24 +8,24 @@ import (
 
 func TestParseGateType(t *testing.T) {
 	tests := []struct {
-		name          string
+		expectedError error
+		testName      string
 		input         string
 		expectedGate  GateType
-		expectedError error
 	}{
-		{"Valid H gate", "h", HGate, nil},
-		{"Valid X gate", "x", XGate, nil},
-		{"Valid Y gate", "y", YGate, nil},
-		{"Valid Z gate", "z", ZGate, nil},
-		{"Valid RX gate", "rx", RXGate, nil},
-		{"Valid RY gate", "ry", RYGate, nil},
-		{"Valid RZ gate", "rz", RZGate, nil},
-		{"Valid CNOT gate", "cnot", CNOTGate, nil},
-		{"Invalid gate type", "invalid_gate", "", &InvalidParseGateTypeError{}},
+		{testName: "Valid H gate", input: "h", expectedGate: HGate, expectedError: nil},
+		{testName: "Valid X gate", input: "x", expectedGate: XGate, expectedError: nil},
+		{testName: "Valid Y gate", input: "y", expectedGate: YGate, expectedError: nil},
+		{testName: "Valid Z gate", input: "z", expectedGate: ZGate, expectedError: nil},
+		{testName: "Valid RX gate", input: "rx", expectedGate: RXGate, expectedError: nil},
+		{testName: "Valid RY gate", input: "ry", expectedGate: RYGate, expectedError: nil},
+		{testName: "Valid RZ gate", input: "rz", expectedGate: RZGate, expectedError: nil},
+		{testName: "Valid CNOT gate", input: "cnot", expectedGate: CNOTGate, expectedError: nil},
+		{testName: "Invalid gate type", input: "invalid_gate", expectedGate: "", expectedError: &InvalidParseGateTypeError{}},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.testName, func(t *testing.T) {
 			gateType, err := ParseGateType(tt.input)
 			if tt.expectedError != nil {
 				assert.Error(t, err)

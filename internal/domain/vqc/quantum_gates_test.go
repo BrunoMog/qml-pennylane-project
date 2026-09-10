@@ -8,9 +8,9 @@ import (
 
 func TestNewQuantumGate(t *testing.T) {
 	tests := []struct {
-		testName      string
-		setup         func(t *testing.T) (GateType, Qubit, []Qubit)
 		expectedError error
+		setup         func(t *testing.T) (GateType, Qubit, []Qubit)
+		testName      string
 	}{
 		{
 			testName: "valid single-qubit gate",

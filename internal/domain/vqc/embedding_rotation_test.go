@@ -28,10 +28,10 @@ func TestIsValid(t *testing.T) {
 
 func TestParseEmbeddingRotation(t *testing.T) {
 	testCases := []struct {
+		expectErr error
 		testName  string
 		input     string
 		expected  EmbeddingRotation
-		expectErr error
 	}{
 		{testName: "Valid X rotation", input: "x", expected: XRotation, expectErr: nil},
 		{testName: "Valid Y rotation", input: "y", expected: YRotation, expectErr: nil},

@@ -36,14 +36,14 @@ func validMeasurement() Measurement {
 func TestNewVQC(t *testing.T) {
 	tests := []struct {
 		embedding   Embedding
-		measurement Measurement
+		expectErr   error
 		testName    string
+		measurement Measurement
 		pre_layer   Layer
 		layer       Layer
 		post_layer  Layer
 		num_qubits  uint
 		num_layers  uint
-		expectErr   error
 	}{
 		{
 			testName:    "valid VQC",

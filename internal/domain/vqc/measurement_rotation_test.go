@@ -8,19 +8,19 @@ import (
 
 func TestParseMeasurementRotation(t *testing.T) {
 	tests := []struct {
-		name             string
+		expectedError    error
+		testName         string
 		input            string
 		expectedRotation MeasurementRotation
-		expectedError    error
 	}{
-		{"Valid X rotation", "x", XMeasurementRotation, nil},
-		{"Valid Y rotation", "y", YMeasurementRotation, nil},
-		{"Valid Z rotation", "z", ZMeasurementRotation, nil},
-		{"Invalid rotation", "invalid_rotation", "", &InvalidParseMeasurementRotationError{}},
+		{testName: "Valid X rotation", input: "x", expectedRotation: XMeasurementRotation, expectedError: nil},
+		{testName: "Valid Y rotation", input: "y", expectedRotation: YMeasurementRotation, expectedError: nil},
+		{testName: "Valid Z rotation", input: "z", expectedRotation: ZMeasurementRotation, expectedError: nil},
+		{testName: "Invalid rotation", input: "invalid_rotation", expectedRotation: "", expectedError: &InvalidParseMeasurementRotationError{}},
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.testName, func(t *testing.T) {
 			rotation, err := ParseMeasurementRotation(tt.input)
 			if tt.expectedError != nil {
 				assert.Error(t, err)

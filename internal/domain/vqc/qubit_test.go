@@ -32,13 +32,13 @@ func TestDuplicateQubits(t *testing.T) {
 
 func TestNewQubit(t *testing.T) {
 	testCases := []struct {
+		expectErr error
 		testName  string
 		index     uint
 		numQubits uint
-		expectErr error
 	}{
-		{"Valid qubit", 1, 3, nil},
-		{"Invalid qubit (out of range)", 3, 3, &InvalidQubitError{}},
+		{testName: "Valid qubit", index: 1, numQubits: 3, expectErr: nil},
+		{testName: "Invalid qubit (out of range)", index: 3, numQubits: 3, expectErr: &InvalidQubitError{}},
 	}
 
 	for _, tc := range testCases {

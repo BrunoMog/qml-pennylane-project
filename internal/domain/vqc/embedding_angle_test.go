@@ -8,10 +8,10 @@ import (
 
 func TestNewAngleEmbedding(t *testing.T) {
 	testCases := []struct {
+		expectErr error
 		testName  string
 		rotation  EmbeddingRotation
 		qubits    []Qubit
-		expectErr error
 	}{
 		{testName: "Valid angle embedding", qubits: []Qubit{0, 1}, rotation: XRotation, expectErr: nil},
 		{testName: "Invalid rotation", qubits: []Qubit{0, 1}, rotation: EmbeddingRotation("invalid_rotation"), expectErr: &InvalidRotationError{}},

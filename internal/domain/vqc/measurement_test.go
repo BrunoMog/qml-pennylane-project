@@ -9,11 +9,11 @@ import (
 
 func TestNewMeasurement(t *testing.T) {
 	testCases := []struct {
+		expectErr            error
 		testName             string
 		measurement_type     MeasurementType
 		measurement_rotation MeasurementRotation
 		qubits               []Qubit
-		expectErr            error
 	}{
 		{testName: "Valid measurement", qubits: []Qubit{0, 1}, measurement_type: ExpectationMeasurement, measurement_rotation: XMeasurementRotation, expectErr: nil},
 		{testName: "zero qubits", qubits: []Qubit{}, measurement_type: ExpectationMeasurement, measurement_rotation: XMeasurementRotation, expectErr: &ZeroQubitMeasurementError{}},
