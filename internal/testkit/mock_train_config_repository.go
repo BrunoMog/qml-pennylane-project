@@ -29,9 +29,9 @@ func (m *MockTrainConfigRepository) FindByID(trainConfigID uuid.UUID) (*traincon
 	return nil, &ErrTrainConfigNotFound{}
 }
 
-func (m *MockTrainConfigRepository) FindByName(ownerID uuid.UUID, name string) (*trainconfig.TrainConfig, error) {
+func (m *MockTrainConfigRepository) FindByName(ownerID uuid.UUID, name trainconfig.Name) (*trainconfig.TrainConfig, error) {
 	for _, v := range m.trainConfigs {
-		if v.OwnerID() == ownerID && v.Name() == name {
+		if v.OwnerID() == ownerID && v.Name().Equals(name) {
 			copiedTrainConfig := *v
 			return &copiedTrainConfig, nil
 		}
@@ -44,9 +44,9 @@ func (m *MockTrainConfigRepository) ExistsByID(trainConfigID uuid.UUID) (bool, e
 	return exists, nil
 }
 
-func (m *MockTrainConfigRepository) ExistsByName(ownerID uuid.UUID, name string) (bool, error) {
+func (m *MockTrainConfigRepository) ExistsByName(ownerID uuid.UUID, name trainconfig.Name) (bool, error) {
 	for _, v := range m.trainConfigs {
-		if v.OwnerID() == ownerID && v.Name() == name {
+		if v.OwnerID() == ownerID && v.Name().Equals(name) {
 			return true, nil
 		}
 	}
