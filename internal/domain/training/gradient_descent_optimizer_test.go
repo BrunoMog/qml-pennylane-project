@@ -9,9 +9,9 @@ import (
 
 func TestGradientDescentOptimizer_IsValid(t *testing.T) {
 	testCases := []struct {
+		expectedError error
 		testName      string
 		learningRate  float64
-		expectedError error
 	}{
 		{testName: "Valid learning rate", learningRate: 0.01, expectedError: nil},
 		{testName: "Invalid learning rate (negative)", learningRate: -0.01, expectedError: &InvalidLearningRateError{}},

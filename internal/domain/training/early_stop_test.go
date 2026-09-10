@@ -9,9 +9,9 @@ import (
 
 func TestEarlyStoppingConfig_IsValid(t *testing.T) {
 	testCases := []struct {
+		expected error
 		name     string
 		config   EarlyStoppingInput
-		expected error
 	}{
 		{name: "Early stopping disabled", config: EarlyStoppingInput{Enabled: false, Patience: 0, MinDelta: 0.0, ValidationMetric: EvalMetric("accuracy")}, expected: nil},
 		{name: "Valid early stopping", config: EarlyStoppingInput{Enabled: true, Patience: 5, MinDelta: 0.01, ValidationMetric: EvalMetric("accuracy")}, expected: nil},

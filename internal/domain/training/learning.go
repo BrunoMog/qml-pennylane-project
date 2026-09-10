@@ -8,6 +8,10 @@ const (
 	LearningTypeSupervised LearningType = "supervised"
 )
 
+func (lt LearningType) Value() string {
+	return string(lt)
+}
+
 func (lt LearningType) isValid() bool {
 	switch lt {
 	case LearningTypeSupervised:
@@ -29,9 +33,13 @@ func ParseLearningType(lt string) (LearningType, error) {
 type LearningTask string
 
 const (
-	LearningTaskBinaryClassification LearningTask = "classification"
+	LearningTaskBinaryClassification LearningTask = "binary_classification"
 	LearningTaskRegression           LearningTask = "regression"
 )
+
+func (tt LearningTask) Value() string {
+	return string(tt)
+}
 
 func (tt LearningTask) isValid() bool {
 	switch tt {
@@ -44,7 +52,7 @@ func (tt LearningTask) isValid() bool {
 
 func ParseLearningTask(tt string) (LearningTask, error) {
 	switch strings.ToLower(strings.TrimSpace(tt)) {
-	case "classification":
+	case "binary_classification":
 		return LearningTaskBinaryClassification, nil
 	case "regression":
 		return LearningTaskRegression, nil

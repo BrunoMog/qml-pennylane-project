@@ -8,9 +8,9 @@ import (
 
 func TestCrossValidationConfig_IsValid(t *testing.T) {
 	testCases := []struct {
+		expected error
 		name     string
 		config   CrossValidationInput
-		expected error
 	}{
 		{name: "Cross-validation disabled", config: CrossValidationInput{Enabled: false, Folds: 0}, expected: nil},
 		{name: "Valid cross-validation", config: CrossValidationInput{Enabled: true, Folds: 5}, expected: nil},
@@ -19,7 +19,7 @@ func TestCrossValidationConfig_IsValid(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			config, err := NewCrossValidationConfig(tc.config)
+			config, err := NewCrossValidation(tc.config)
 			if tc.expected == nil {
 				assert.NoError(t, err)
 				assert.Equal(t, tc.config.Enabled, config.Enabled())

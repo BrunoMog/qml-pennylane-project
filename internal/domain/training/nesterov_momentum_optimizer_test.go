@@ -9,10 +9,10 @@ import (
 
 func TestNesterovMomentumOptimizer_IsValid(t *testing.T) {
 	testCases := []struct {
+		expectedError error
 		name          string
 		learningRate  float64
 		momentum      float64
-		expectedError error
 	}{
 		{name: "Valid learning rate and momentum", learningRate: 0.01, momentum: 0.9, expectedError: nil},
 		{name: "Invalid learning rate (negative)", learningRate: -0.01, momentum: 0.9, expectedError: &InvalidLearningRateError{}},

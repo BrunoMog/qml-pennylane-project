@@ -5,7 +5,7 @@ import (
 	"slices"
 )
 
-const EPSILON = 1e-9
+const epsilon = 1e-9
 
 type Training struct {
 	optimizer         Optimizer
@@ -40,7 +40,6 @@ type TrainingInput struct {
 }
 
 func NewTraining(input TrainingInput) (Training, error) {
-	input.EvaluationMetrics = slices.Clone(input.EvaluationMetrics)
 	err := validateInput(input)
 	if err != nil {
 		return Training{}, err
@@ -174,7 +173,7 @@ func validateDataSplit(trainRatio, validationRatio, testRatio float64) error {
 	}
 
 	total := trainRatio + validationRatio + testRatio
-	if math.Abs(total-1.0) > EPSILON {
+	if math.Abs(total-1.0) > epsilon {
 		return &InvalidDataSplitError{
 			trainRatio:      trainRatio,
 			validationRatio: validationRatio,

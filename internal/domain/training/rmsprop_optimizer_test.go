@@ -9,11 +9,11 @@ import (
 
 func TestRMSPropOptimizer_IsValid(t *testing.T) {
 	testCases := []struct {
+		expectedError error
 		name          string
 		learningRate  float64
 		decay         float64
 		epsilon       float64
-		expectedError error
 	}{
 		{name: "Valid parameters", learningRate: 0.01, decay: 0.9, epsilon: 1e-8, expectedError: nil},
 		{name: "Invalid learning rate (negative)", learningRate: -0.01, decay: 0.9, epsilon: 1e-8, expectedError: &InvalidLearningRateError{}},

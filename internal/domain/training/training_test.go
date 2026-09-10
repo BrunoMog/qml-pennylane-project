@@ -38,9 +38,9 @@ func validTrainingInput(t *testing.T) TrainingInput {
 
 func TestNewTraining(t *testing.T) {
 	tests := []struct {
-		testName      string
-		setupInput    func(t *testing.T) TrainingInput
 		expectedError error
+		setupInput    func(t *testing.T) TrainingInput
+		testName      string
 	}{
 		{
 			testName: "Valid input",

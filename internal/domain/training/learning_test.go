@@ -8,15 +8,15 @@ import (
 
 func TestParseLearningType(t *testing.T) {
 	testCases := []struct {
+		expectedErr error
 		testName    string
 		input       string
 		expected    LearningType
-		expectedErr error
 	}{
-		{"Valid learning type: supervised", "supervised", LearningTypeSupervised, nil},
-		{"Invalid learning type", "invalid_learning_type", "", &InvalidLearningTypeError{learningType: LearningType("invalid_learning_type")}},
-		{"Valid learning type with leading/trailing spaces", "  supervised  ", LearningTypeSupervised, nil},
-		{"Valid learning type with mixed case", "SuPeRvIsEd", LearningTypeSupervised, nil},
+		{testName: "Valid learning type: supervised", input: "supervised", expected: LearningTypeSupervised, expectedErr: nil},
+		{testName: "Invalid learning type", input: "invalid_learning_type", expected: "", expectedErr: &InvalidLearningTypeError{learningType: LearningType("invalid_learning_type")}},
+		{testName: "Valid learning type with leading/trailing spaces", input: "  supervised  ", expected: LearningTypeSupervised, expectedErr: nil},
+		{testName: "Valid learning type with mixed case", input: "SuPeRvIsEd", expected: LearningTypeSupervised, expectedErr: nil},
 	}
 
 	for _, tc := range testCases {
@@ -53,16 +53,16 @@ func TestIsValidLearningType(t *testing.T) {
 
 func TestParseLearningTask(t *testing.T) {
 	testCases := []struct {
+		expectedErr error
 		testName    string
 		input       string
 		expected    LearningTask
-		expectedErr error
 	}{
-		{"Valid learning task: classification", "classification", LearningTaskBinaryClassification, nil},
-		{"Valid learning task: regression", "regression", LearningTaskRegression, nil},
-		{"Invalid learning task", "invalid_learning_task", "", &InvalidLearningTaskError{learningTask: LearningTask("invalid_learning_task")}},
-		{"Valid learning task with leading/trailing spaces", "  classification  ", LearningTaskBinaryClassification, nil},
-		{"Valid learning task with mixed case", "ClAsSiFiCaTiOn", LearningTaskBinaryClassification, nil},
+		{testName: "Valid learning task: binary_classification", input: "binary_classification", expected: LearningTaskBinaryClassification, expectedErr: nil},
+		{testName: "Valid learning task: regression", input: "regression", expected: LearningTaskRegression, expectedErr: nil},
+		{testName: "Invalid learning task", input: "invalid_learning_task", expected: "", expectedErr: &InvalidLearningTaskError{learningTask: LearningTask("invalid_learning_task")}},
+		{testName: "Valid learning task with leading/trailing spaces", input: "  binary_classification  ", expected: LearningTaskBinaryClassification, expectedErr: nil},
+		{testName: "Valid learning task with mixed case", input: "BiNaRy_ClAsSiFiCaTiOn", expected: LearningTaskBinaryClassification, expectedErr: nil},
 	}
 
 	for _, tc := range testCases {
@@ -85,7 +85,7 @@ func TestIsValidLearningTask(t *testing.T) {
 		input    LearningTask
 		expected bool
 	}{
-		{"Valid learning task: classification", LearningTaskBinaryClassification, true},
+		{"Valid learning task: binary_classification", LearningTaskBinaryClassification, true},
 		{"Valid learning task: regression", LearningTaskRegression, true},
 		{"Invalid learning task", LearningTask("invalid_learning_task"), false},
 	}

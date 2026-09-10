@@ -10,7 +10,7 @@ type CrossValidationInput struct {
 	Folds   int
 }
 
-func NewCrossValidationConfig(input CrossValidationInput) (CrossValidation, error) {
+func NewCrossValidation(input CrossValidationInput) (CrossValidation, error) {
 	if !input.isValid() {
 		return CrossValidation{}, &ErrInvalidCrossValidationConfig{}
 	}

@@ -18,6 +18,10 @@ const (
 	OptimizerNameGradientDescent  OptimizerName = "gradient_descent"
 )
 
+func (o OptimizerName) Value() string {
+	return string(o)
+}
+
 func ParseOptimizerName(optName string) (OptimizerName, error) {
 	switch strings.ToLower(strings.TrimSpace(optName)) {
 	case "adam":

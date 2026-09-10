@@ -13,6 +13,10 @@ const (
 	CostFunctionMAE                CostFunction = "mae"
 )
 
+func (cf CostFunction) Value() string {
+	return string(cf)
+}
+
 func (cf CostFunction) isValid() bool {
 	switch cf {
 	case CostFunctionBinaryCrossEntropy,
@@ -48,6 +52,10 @@ const (
 	EvalMetricRMSE      EvalMetric = "rmse"
 	EvalMetricMAE       EvalMetric = "mae"
 )
+
+func (em EvalMetric) Value() string {
+	return string(em)
+}
 
 func (em EvalMetric) isValid() bool {
 	switch em {

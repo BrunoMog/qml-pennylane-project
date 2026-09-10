@@ -9,12 +9,12 @@ import (
 
 func TestNewAdamOptimizer(t *testing.T) {
 	testCases := []struct {
+		expectErr    error
 		name         string
 		learningRate float64
 		beta1        float64
 		beta2        float64
 		epsilon      float64
-		expectErr    error
 	}{
 		{name: "Valid parameters", learningRate: 0.001, beta1: 0.9, beta2: 0.999, epsilon: 1e-8, expectErr: nil},
 		{name: "Invalid learning rate", learningRate: -0.001, beta1: 0.9, beta2: 0.999, epsilon: 1e-8, expectErr: &InvalidLearningRateError{}},
