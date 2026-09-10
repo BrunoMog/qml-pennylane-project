@@ -63,13 +63,16 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 	}
 
 	if input.VQCDTO != nil {
-		vqc, err := buildVQCDTOToVQC(*input.VQCDTO)
+		vqc, err := buildVQCFromDTO(*input.VQCDTO)
 		if err != nil {
 			return err
 		}
 		if !config.VQC().Equals(vqc) {
 			needToSave = true
-			config.SetVQC(vqc)
+			err = config.SetVQC(vqc)
+			if err != nil {
+				return err
+			}
 		}
 	}
 

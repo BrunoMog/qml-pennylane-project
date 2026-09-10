@@ -77,7 +77,7 @@ func TestCreateVQCConfig(t *testing.T) {
 				assert.NotNil(t, output)
 				assert.Equal(t, input.Name, output.Name)
 				assert.Equal(t, input.Description, output.Description)
-				assert.NotZero(t, output.VQCId)
+				assert.NotZero(t, output.VQCConfigID)
 				assert.NotZero(t, output.CreatedAt)
 			}
 		})

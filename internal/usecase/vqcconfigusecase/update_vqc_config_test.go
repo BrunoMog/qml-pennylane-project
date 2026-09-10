@@ -132,7 +132,7 @@ func TestUpdateVQCConfig(t *testing.T) {
 				vqcConfig := f.createVQCConfig(user.ID())
 				name := vqcConfig.Name().Value()
 				description := vqcConfig.Description().Value()
-				vqcDTO := buildVQCToVQCDTO(vqcConfig.VQC())
+				vqcDTO := buildVQCDTOFromVQC(vqcConfig.VQC())
 				return UpdateVQCConfigInput{
 					Name:        &name,
 					Description: &description,

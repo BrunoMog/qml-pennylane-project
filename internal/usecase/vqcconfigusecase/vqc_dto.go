@@ -6,10 +6,10 @@ import (
 
 type EmbeddingDTO struct {
 	EmbeddingType string
-	Qubits        []uint
 	Rotation      string
-	Normalize     bool
+	Qubits        []uint
 	PadWith       float64
+	Normalize     bool
 }
 
 type MeasurementDTO struct {
@@ -20,8 +20,8 @@ type MeasurementDTO struct {
 
 type QuantumGateDTO struct {
 	GateType string
-	Qubit    uint
 	Controls []uint
+	Qubit    uint
 }
 
 type LayerDTO struct {
@@ -29,16 +29,16 @@ type LayerDTO struct {
 }
 
 type VQCDTO struct {
-	NumQubits   uint
-	NumLayers   uint
-	Embedding   EmbeddingDTO
 	Measurement MeasurementDTO
 	PreLayer    LayerDTO
 	Layer       LayerDTO
 	PostLayer   LayerDTO
+	Embedding   EmbeddingDTO
+	NumQubits   uint
+	NumLayers   uint
 }
 
-func buildVQCDTOToVQC(input VQCDTO) (vqc.VQC, error) {
+func buildVQCFromDTO(input VQCDTO) (vqc.VQC, error) {
 	embedding, err := buildEmbedding(input.Embedding, input.NumQubits)
 	if err != nil {
 		return vqc.VQC{}, err
@@ -181,7 +181,7 @@ func buildQuantumGate(input QuantumGateDTO, numQubits uint) (vqc.QuantumGate, er
 	return vqc.NewQuantumGate(gateType, qubit, controlQubits)
 }
 
-func buildVQCToVQCDTO(vqcInstance vqc.VQC) VQCDTO {
+func buildVQCDTOFromVQC(vqcInstance vqc.VQC) VQCDTO {
 	embedding := vqcInstance.Embedding()
 	measurement := vqcInstance.Measurement()
 

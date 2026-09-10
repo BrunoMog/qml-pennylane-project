@@ -8,9 +8,9 @@ import (
 )
 
 type CreateVQCConfigInput struct {
-	VQCDTO      VQCDTO
 	Name        string
 	Description string
+	VQCDTO      VQCDTO
 	CallerID    uuid.UUID
 }
 
@@ -18,7 +18,7 @@ type CreateVQCConfigOutput struct {
 	CreatedAt   time.Time
 	Name        string
 	Description string
-	VQCId       uuid.UUID
+	VQCConfigID uuid.UUID
 }
 
 func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateVQCConfigOutput, error) {
@@ -30,7 +30,7 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 	if err != nil {
 		return nil, err
 	}
-	vqc, err := buildVQCDTOToVQC(input.VQCDTO)
+	vqc, err := buildVQCFromDTO(input.VQCDTO)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 	output := &CreateVQCConfigOutput{
 		Name:        newConfig.Name().Value(),
 		Description: newConfig.Description().Value(),
-		VQCId:       newConfig.VQCConfigID(),
+		VQCConfigID: newConfig.VQCConfigID(),
 		CreatedAt:   newConfig.CreatedAt(),
 	}
 	return output, nil
