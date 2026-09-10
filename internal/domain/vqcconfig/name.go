@@ -3,8 +3,8 @@ package vqcconfig
 import "strings"
 
 const (
-	MAX_NAME_LENGTH = 100
-	MIN_NAME_LENGTH = 4
+	maxNameLength = 100
+	minNameLength = 4
 )
 
 type Name struct {
@@ -23,7 +23,7 @@ func validateName(name string) error {
 	if name == "" {
 		return &InvalidNameError{name}
 	}
-	if len(name) < MIN_NAME_LENGTH || len(name) > MAX_NAME_LENGTH {
+	if len(name) < minNameLength || len(name) > maxNameLength {
 		return &InvalidNameError{name}
 	}
 	return nil

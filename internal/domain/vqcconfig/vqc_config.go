@@ -14,7 +14,7 @@ type VQCConfig struct {
 	name        Name
 	description Description
 	userID      uuid.UUID
-	vqcID       uuid.UUID
+	vqcConfigID uuid.UUID
 }
 
 func NewVQCConfig(userID uuid.UUID, name Name, description Description, vqc vqc.VQC) (*VQCConfig, error) {
@@ -27,7 +27,7 @@ func NewVQCConfig(userID uuid.UUID, name Name, description Description, vqc vqc.
 
 	return &VQCConfig{
 		userID:      userID,
-		vqcID:       uuid.New(),
+		vqcConfigID: uuid.New(),
 		name:        name,
 		description: description,
 		vqc:         vqc,
@@ -46,9 +46,13 @@ func (vqcConfig *VQCConfig) SetDescription(description Description) {
 	vqcConfig.updatedAt = time.Now()
 }
 
-func (vqcConfig *VQCConfig) SetVQC(vqc vqc.VQC) {
+func (vqcConfig *VQCConfig) SetVQC(vqc vqc.VQC) error {
+	if !vqc.IsValid() {
+		return &InvalidVQCError{}
+	}
 	vqcConfig.vqc = vqc
 	vqcConfig.updatedAt = time.Now()
+	return nil
 }
 
 func (vqcConfig *VQCConfig) Name() Name {
@@ -64,7 +68,7 @@ func (vqcConfig *VQCConfig) OwnerID() uuid.UUID {
 }
 
 func (vqcConfig *VQCConfig) VQCConfigID() uuid.UUID {
-	return vqcConfig.vqcID
+	return vqcConfig.vqcConfigID
 }
 
 func (vqcConfig *VQCConfig) CreatedAt() time.Time {

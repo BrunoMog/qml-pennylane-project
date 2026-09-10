@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNameValidation(t *testing.T) {
@@ -40,7 +41,7 @@ func TestNameValidation(t *testing.T) {
 		},
 		{
 			testName:      "name too long",
-			inputName:     strings.Repeat("a", MAX_NAME_LENGTH+1),
+			inputName:     strings.Repeat("a", maxNameLength+1),
 			expectedName:  "",
 			expectedError: &InvalidNameError{},
 		},
@@ -62,6 +63,44 @@ func TestNameValidation(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedName, name.Value())
 			}
+		})
+	}
+}
+
+func TestEqualsName(t *testing.T) {
+	tests := []struct {
+		testName string
+		setup    func() (Name, Name)
+		expected bool
+	}{
+		{
+			testName: "equal names",
+			setup: func() (Name, Name) {
+				name1, err := NewName("Valid Name")
+				require.NoError(t, err)
+				name2, err := NewName("Valid Name")
+				require.NoError(t, err)
+				return name1, name2
+			},
+			expected: true,
+		},
+		{
+			testName: "different names",
+			setup: func() (Name, Name) {
+				name1, err := NewName("Name One")
+				require.NoError(t, err)
+				name2, err := NewName("Name Two")
+				require.NoError(t, err)
+				return name1, name2
+			},
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			name1, name2 := tt.setup()
+			assert.Equal(t, tt.expected, name1.Equals(name2))
 		})
 	}
 }

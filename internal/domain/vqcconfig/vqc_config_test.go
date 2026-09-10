@@ -101,3 +101,58 @@ func TestNewVQCConfig(t *testing.T) {
 		})
 	}
 }
+
+func TestSetVQC(t *testing.T) {
+	tests := []struct {
+		testName    string
+		setup       func() *VQCConfig
+		newVQC      vqc.VQC
+		expectError error
+	}{
+		{
+			testName: "valid SetVQC",
+			setup: func() *VQCConfig {
+				userID := uuid.New()
+				name, err := NewName("Valid Name")
+				require.NoError(t, err)
+				description, err := NewDescription("Valid Description")
+				require.NoError(t, err)
+				vqcInstance := validVQC()
+				vqcConfig, err := NewVQCConfig(userID, name, description, vqcInstance)
+				require.NoError(t, err)
+				return vqcConfig
+			},
+			newVQC:      validVQC(),
+			expectError: nil,
+		},
+		{
+			testName: "invalid SetVQC with invalid VQC",
+			setup: func() *VQCConfig {
+				userID := uuid.New()
+				name, err := NewName("Valid Name")
+				require.NoError(t, err)
+				description, err := NewDescription("Valid Description")
+				require.NoError(t, err)
+				vqcInstance := validVQC()
+				vqcConfig, err := NewVQCConfig(userID, name, description, vqcInstance)
+				require.NoError(t, err)
+				return vqcConfig
+			},
+			newVQC:      vqc.VQC{},
+			expectError: &InvalidVQCError{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			vqcConfig := tt.setup()
+			err := vqcConfig.SetVQC(tt.newVQC)
+			if tt.expectError != nil {
+				assert.Error(t, err)
+				assert.IsType(t, tt.expectError, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.newVQC, vqcConfig.vqc)
+			}
+		})
+	}
+}
