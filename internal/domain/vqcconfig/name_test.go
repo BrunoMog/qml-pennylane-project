@@ -10,10 +10,10 @@ import (
 
 func TestNameValidation(t *testing.T) {
 	tests := []struct {
+		expectedError error
 		testName      string
 		inputName     string
 		expectedName  string
-		expectedError error
 	}{
 		{
 			testName:      "valid name",
@@ -69,8 +69,8 @@ func TestNameValidation(t *testing.T) {
 
 func TestEqualsName(t *testing.T) {
 	tests := []struct {
-		testName string
 		setup    func() (Name, Name)
+		testName string
 		expected bool
 	}{
 		{

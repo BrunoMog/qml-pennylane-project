@@ -39,9 +39,9 @@ func validVQC() vqc.VQC {
 
 func TestNewVQCConfig(t *testing.T) {
 	tests := []struct {
-		testName    string
-		setup       func() (uuid.UUID, Name, Description, vqc.VQC)
 		expectError error
+		setup       func() (uuid.UUID, Name, Description, vqc.VQC)
+		testName    string
 	}{
 		{
 			testName: "valid VQCConfig",
@@ -104,10 +104,10 @@ func TestNewVQCConfig(t *testing.T) {
 
 func TestSetVQC(t *testing.T) {
 	tests := []struct {
-		testName    string
-		setup       func() *VQCConfig
-		newVQC      vqc.VQC
 		expectError error
+		setup       func() *VQCConfig
+		testName    string
+		newVQC      vqc.VQC
 	}{
 		{
 			testName: "valid SetVQC",

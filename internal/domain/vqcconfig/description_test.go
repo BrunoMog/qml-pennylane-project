@@ -9,9 +9,9 @@ import (
 
 func TestDescriptionValidation(t *testing.T) {
 	tests := []struct {
+		expectedError    error
 		testName         string
 		inputDescription string
-		expectedError    error
 	}{
 		{
 			testName:         "valid description",

@@ -10,9 +10,9 @@ import (
 type VQCConfig struct {
 	createdAt   time.Time
 	updatedAt   time.Time
-	vqc         vqc.VQC
 	name        Name
 	description Description
+	vqc         vqc.VQC
 	userID      uuid.UUID
 	vqcConfigID uuid.UUID
 }
