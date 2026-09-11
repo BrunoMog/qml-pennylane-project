@@ -25,3 +25,21 @@ type TrainingConfigNotFoundError struct{}
 func (e *TrainingConfigNotFoundError) Error() string {
 	return fmt.Sprintf("training config not found")
 }
+
+type InvalidInputError struct{}
+
+func (e *InvalidInputError) Error() string {
+	return fmt.Sprintf("invalid input")
+}
+
+type NoFieldsToUpdateError struct{}
+
+func (e *NoFieldsToUpdateError) Error() string {
+	return fmt.Sprintf("no fields to update")
+}
+
+type ExperimentNameAlreadyExistsError struct{}
+
+func (e *ExperimentNameAlreadyExistsError) Error() string {
+	return fmt.Sprintf("experiment name already exists")
+}

@@ -4,7 +4,7 @@ import (
 	"pennylane_project_backend/internal/domain/experiment"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type CreateExperimentInput struct {
@@ -23,6 +23,16 @@ type CreateExperimentOutput struct {
 }
 
 func (s *ExperimentService) CreateExperiment(input CreateExperimentInput) (*CreateExperimentOutput, error) {
+	name, err := experiment.NewName(input.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	description, err := experiment.NewDescription(input.Description)
+	if err != nil {
+		return nil, err
+	}
+
 	userExists, err := s.userRepository.ExistsByID(input.CallerID)
 	if err != nil {
 		return nil, err
@@ -47,9 +57,17 @@ func (s *ExperimentService) CreateExperiment(input CreateExperimentInput) (*Crea
 		return nil, &UnauthorizedError{}
 	}
 
+	experimentNameExists, err := s.experimentRepository.ExistsByName(input.CallerID, name)
+	if err != nil {
+		return nil, err
+	}
+	if experimentNameExists {
+		return nil, &ExperimentNameAlreadyExistsError{}
+	}
+
 	experimentInput := experiment.ExperimentInput{
-		Name:          input.Name,
-		Description:   input.Description,
+		Name:          name,
+		Description:   description,
 		OwnerID:       input.CallerID,
 		TrainConfigID: input.TrainConfigID,
 		VQCConfigID:   input.VQCConfigID,
@@ -66,8 +84,8 @@ func (s *ExperimentService) CreateExperiment(input CreateExperimentInput) (*Crea
 	}
 
 	output := &CreateExperimentOutput{
-		Name:         experiment.Name(),
-		Description:  experiment.Description(),
+		Name:         experiment.Name().Value(),
+		Description:  experiment.Description().Value(),
 		ExperimentID: experiment.ExperimentID(),
 		CreatedAt:    experiment.CreatedAt(),
 	}

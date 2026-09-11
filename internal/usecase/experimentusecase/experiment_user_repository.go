@@ -1,7 +1,7 @@
 package experimentusecase
 
 import (
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UserRepository interface {
