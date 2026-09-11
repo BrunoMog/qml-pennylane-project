@@ -2,25 +2,33 @@ package testkit
 
 import (
 	"pennylane_project_backend/internal/domain/experiment"
-
-	"github.com/google/uuid"
+	"strconv"
+	"uuid"
 )
 
-func DefaultExperiment() func(ownerID uuid.UUID, vqcConfigID uuid.UUID, trainConfigID uuid.UUID) experiment.Experiment {
+func DefaultExperiment() func(ownerID uuid.UUID, vqcConfigID uuid.UUID, trainConfigID uuid.UUID) *experiment.Experiment {
 	count := 0
-	return func(ownerID uuid.UUID, vqcConfigID uuid.UUID, trainConfigID uuid.UUID) experiment.Experiment {
+	return func(ownerID uuid.UUID, vqcConfigID uuid.UUID, trainConfigID uuid.UUID) *experiment.Experiment {
 		count++
+		name, err := experiment.NewName("Test Experiment " + strconv.Itoa(count))
+		if err != nil {
+			panic(err)
+		}
+		description, err := experiment.NewDescription("Test Experiment Description " + strconv.Itoa(count))
+		if err != nil {
+			panic(err)
+		}
 		input := experiment.ExperimentInput{
 			OwnerID:       ownerID,
 			VQCConfigID:   vqcConfigID,
 			TrainConfigID: trainConfigID,
-			Name:          "Test Experiment " + string(rune(count)),
-			Description:   "Test Experiment Description " + string(rune(count)),
+			Name:          name,
+			Description:   description,
 		}
 		exp, err := experiment.NewExperiment(input)
 		if err != nil {
 			panic(err)
 		}
-		return *exp
+		return exp
 	}
 }

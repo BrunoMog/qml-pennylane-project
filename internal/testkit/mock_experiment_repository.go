@@ -3,7 +3,7 @@ package testkit
 import (
 	"pennylane_project_backend/internal/domain/experiment"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type MockExperimentRepository struct {
@@ -29,9 +29,9 @@ func (m *MockExperimentRepository) FindByID(experimentID uuid.UUID) (*experiment
 	return nil, &ErrExperimentNotFound{}
 }
 
-func (m *MockExperimentRepository) FindByName(ownerID uuid.UUID, name string) (*experiment.Experiment, error) {
+func (m *MockExperimentRepository) FindByName(ownerID uuid.UUID, name experiment.Name) (*experiment.Experiment, error) {
 	for _, v := range m.experiments {
-		if v.OwnerID() == ownerID && v.Name() == name {
+		if v.OwnerID() == ownerID && v.Name().Equals(name) {
 			copiedExperiment := *v
 			return &copiedExperiment, nil
 		}
@@ -44,9 +44,9 @@ func (m *MockExperimentRepository) ExistsByID(experimentID uuid.UUID) (bool, err
 	return exists, nil
 }
 
-func (m *MockExperimentRepository) ExistsByName(ownerID uuid.UUID, name string) (bool, error) {
+func (m *MockExperimentRepository) ExistsByName(ownerID uuid.UUID, name experiment.Name) (bool, error) {
 	for _, v := range m.experiments {
-		if v.OwnerID() == ownerID && v.Name() == name {
+		if v.OwnerID() == ownerID && v.Name().Equals(name) {
 			return true, nil
 		}
 	}
@@ -70,6 +70,13 @@ func (m *MockExperimentRepository) DeleteByID(experimentID uuid.UUID) error {
 		return nil
 	}
 	return &ErrExperimentNotFound{}
+}
+
+func (m *MockExperimentRepository) CheckOwnership(ownerID, experimentID uuid.UUID) (bool, error) {
+	if experiment, ok := m.experiments[experimentID]; ok {
+		return experiment.OwnerID() == ownerID, nil
+	}
+	return false, &ErrExperimentNotFound{}
 }
 
 func (m *MockExperimentRepository) DeleteAllByOwnerID(ownerID uuid.UUID) error {
