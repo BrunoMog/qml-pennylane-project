@@ -3,19 +3,14 @@ package experiment
 import (
 	"time"
 
-	"github.com/google/uuid"
-)
-
-const (
-	MaxNameLength        = 50
-	MaxDescriptionLength = 200
+	"uuid"
 )
 
 type Experiment struct {
 	createdAt     time.Time
 	updatedAt     time.Time
-	name          string
-	description   string
+	name          Name
+	description   Description
 	experimentID  uuid.UUID
 	ownerID       uuid.UUID
 	trainConfigID uuid.UUID
@@ -23,27 +18,21 @@ type Experiment struct {
 }
 
 type ExperimentInput struct {
-	Name          string
-	Description   string
+	Name          Name
+	Description   Description
 	OwnerID       uuid.UUID
 	TrainConfigID uuid.UUID
 	VQCConfigID   uuid.UUID
 }
 
 func NewExperiment(input ExperimentInput) (*Experiment, error) {
-	if err := validateName(input.Name); err != nil {
-		return nil, err
-	}
-	if err := validateDescription(input.Description); err != nil {
-		return nil, err
-	}
-	if input.OwnerID == uuid.Nil {
+	if input.OwnerID == uuid.Nil() {
 		return nil, &InvalidOwnerIDError{}
 	}
-	if input.TrainConfigID == uuid.Nil {
+	if input.TrainConfigID == uuid.Nil() {
 		return nil, &InvalidTrainConfigIDError{}
 	}
-	if input.VQCConfigID == uuid.Nil {
+	if input.VQCConfigID == uuid.Nil() {
 		return nil, &InvalidVQCConfigIDError{}
 	}
 
@@ -59,39 +48,14 @@ func NewExperiment(input ExperimentInput) (*Experiment, error) {
 	}, nil
 }
 
-func validateName(name string) error {
-	if name == "" {
-		return &InvalidNameError{name}
-	}
-	if len(name) > MaxNameLength {
-		return &InvalidNameError{name}
-	}
-	return nil
-}
-
-func validateDescription(description string) error {
-	if len(description) > MaxDescriptionLength {
-		return &InvalidDescriptionError{description}
-	}
-	return nil
-}
-
-func (e *Experiment) SetName(newName string) error {
-	if err := validateName(newName); err != nil {
-		return err
-	}
+func (e *Experiment) SetName(newName Name) {
 	e.name = newName
 	e.updatedAt = time.Now()
-	return nil
 }
 
-func (e *Experiment) SetDescription(newDescription string) error {
-	if err := validateDescription(newDescription); err != nil {
-		return err
-	}
+func (e *Experiment) SetDescription(newDescription Description) {
 	e.description = newDescription
 	e.updatedAt = time.Now()
-	return nil
 }
 
 func (e *Experiment) SetTrainConfigID(newTrainConfigID uuid.UUID) {
@@ -104,11 +68,11 @@ func (e *Experiment) SetVQCConfigID(newVQCConfigID uuid.UUID) {
 	e.updatedAt = time.Now()
 }
 
-func (e *Experiment) Name() string {
+func (e *Experiment) Name() Name {
 	return e.name
 }
 
-func (e *Experiment) Description() string {
+func (e *Experiment) Description() Description {
 	return e.description
 }
 
