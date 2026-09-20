@@ -18,7 +18,7 @@ type UnauthorizedError struct {
 }
 
 func (e *UnauthorizedError) Error() string {
-	return fmt.Sprintf("unauthorized: user %s is not authorized to perform this action", e.Name.Value())
+	return fmt.Sprintf("unauthorized: user %s is not authorized to perform this action", e.Name)
 }
 
 type UserNotFoundError struct {

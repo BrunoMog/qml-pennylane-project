@@ -44,7 +44,7 @@ func (s *UserService) CreateUser(input CreateUserInput) (*UserOutput, error) {
 
 	output := &UserOutput{
 		ID:    newUser.ID(),
-		Name:  newUser.Name().Value(),
+		Name:  newUser.Name().String(),
 		Email: newUser.Email().Value(),
 		Role:  newUser.Role().Value(),
 	}

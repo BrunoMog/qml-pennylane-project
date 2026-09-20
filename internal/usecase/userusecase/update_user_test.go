@@ -114,7 +114,7 @@ func TestUpdateUser(t *testing.T) {
 			testName: "idepotent update (same name and email)",
 			setup: func(fixture *testFixture) UpdateUserInput {
 				user := fixture.createUser(user.RoleUser)
-				name := user.Name().Value()
+				name := user.Name().String()
 				email := user.Email().Value()
 				return UpdateUserInput{
 					CallerID: user.ID(),
@@ -139,7 +139,7 @@ func TestUpdateUser(t *testing.T) {
 				updatedUser, err := fixture.userRepo.FindByID(input.TargetID)
 				assert.NoError(t, err)
 				if input.Name != nil {
-					assert.Equal(t, *input.Name, updatedUser.Name().Value())
+					assert.Equal(t, *input.Name, updatedUser.Name().String())
 				}
 				if input.Email != nil {
 					assert.Equal(t, *input.Email, updatedUser.Email().Value())

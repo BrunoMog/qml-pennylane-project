@@ -3,70 +3,74 @@ package user
 import (
 	"testing"
 
+	"strings"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestNewName(t *testing.T) {
-	tests := []struct {
-		expectedError error
-		testName      string
-		inputName     string
-		expectedName  string
-	}{
-		{
-			testName:      "valid name",
-			inputName:     "John Doe",
-			expectedName:  "John Doe",
-			expectedError: nil,
-		},
-		{
-			testName:      "empty name",
-			inputName:     "",
-			expectedName:  "",
-			expectedError: &InvalidNameError{},
-		},
-		{
-			testName:      "name with spaces",
-			inputName:     "   ",
-			expectedName:  "",
-			expectedError: &InvalidNameError{},
-		},
-		{
-			testName:      "name with special characters",
-			inputName:     "John@Doe!",
-			expectedName:  "John@Doe!",
-			expectedError: nil,
-		},
-		{
-			testName:      "name with leading and trailing spaces",
-			inputName:     "  John Doe  ",
-			expectedName:  "John Doe",
-			expectedError: nil,
-		},
-		{
-			testName:      "too short name",
-			inputName:     "J",
-			expectedName:  "",
-			expectedError: &InvalidNameError{},
-		},
-		{
-			testName:      "too long name",
-			inputName:     "This is a very long name that exceeds the maximum allowed length for a name in this system",
-			expectedName:  "",
-			expectedError: &InvalidNameError{},
-		},
-	}
+	t.Run("valid name cases", func(t *testing.T) {
+		validNames := []string{
+			"John Doe",
+			"Mary-Jane",
+			"O'Connor",
+			"Jean-Luc Picard",
+			"Anne Marie",
+			"José María",
+			"李小龙",
+			"Иван Иванович",
+			"محمد علي",
+			"Renée O'Connor",
+			"Anaïs Nin",
+			"Chloë Sevigny",
+			"Zoë Kravitz",
+			strings.Repeat("a", maxNameLength),
+			"abc",
+		}
 
-	for _, tt := range tests {
-		t.Run(tt.testName, func(t *testing.T) {
-			name, err := NewName(tt.inputName)
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.IsType(t, tt.expectedError, err)
-			} else {
+		for _, name := range validNames {
+			t.Run(name, func(t *testing.T) {
+				n, err := NewName(name)
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedName, name.Value())
-			}
-		})
-	}
+				assert.Equal(t, name, n.String())
+			})
+		}
+	})
+
+	t.Run("invalid name cases", func(t *testing.T) {
+		invalidNames := []string{
+			"",
+			"   ",
+			"Jo",
+			"This is a very long name that exceeds the maximum allowed length for a name in this system",
+			"John@Doe!",
+			strings.Repeat("a", maxNameLength+1),
+		}
+
+		for _, name := range invalidNames {
+			t.Run(name, func(t *testing.T) {
+				n, err := NewName(name)
+				assert.Error(t, err)
+				assert.IsType(t, &InvalidNameError{}, err)
+				assert.Equal(t, "", n.String())
+			})
+		}
+	})
+
+	t.Run("extreme cases", func(t *testing.T) {
+		extremeNames := []string{
+			strings.Repeat("a", 100000),
+			strings.Repeat("a", 4000000),
+			strings.Repeat("a", 10000000),
+		}
+
+		for _, name := range extremeNames {
+			t.Run(name, func(t *testing.T) {
+				n, err := NewName(name)
+				assert.Error(t, err)
+				assert.IsType(t, &InvalidNameError{}, err)
+				assert.Equal(t, "", n.String())
+			})
+		}
+	})
 }

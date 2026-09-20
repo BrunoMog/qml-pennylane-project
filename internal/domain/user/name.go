@@ -3,6 +3,8 @@ package user
 import (
 	"fmt"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 )
 
 type Name struct {
@@ -10,8 +12,8 @@ type Name struct {
 }
 
 const (
-	MAX_NAME_LENGTH = 50
-	MIN_NAME_LENGTH = 3
+	maxNameLength = 50
+	minNameLength = 3
 )
 
 func NewName(value string) (Name, error) {
@@ -22,16 +24,30 @@ func NewName(value string) (Name, error) {
 	return Name{value: value}, nil
 }
 
-func (n Name) Value() string {
+func (n Name) String() string {
 	return n.value
 }
 
 func validateName(name string) error {
-	if name == "" {
-		return &InvalidNameError{name, "name cannot be empty"}
+	runeCount := utf8.RuneCountInString(name)
+	if runeCount < minNameLength || runeCount > maxNameLength {
+		return &InvalidNameError{name, fmt.Sprintf("name must be between %d and %d characters", minNameLength, maxNameLength)}
 	}
-	if len(name) < MIN_NAME_LENGTH || len(name) > MAX_NAME_LENGTH {
-		return &InvalidNameError{name, fmt.Sprintf("name must be between %d and %d characters", MIN_NAME_LENGTH, MAX_NAME_LENGTH)}
+	for _, r := range name {
+		if !validateNameRune(r) {
+			return &InvalidNameError{name, fmt.Sprintf("name contains invalid character: %c", r)}
+		}
 	}
+
 	return nil
+}
+
+func validateNameRune(r rune) bool {
+	if unicode.IsLetter(r) {
+		return true
+	}
+	if r == '-' || r == '\'' || r == ' ' {
+		return true
+	}
+	return false
 }
