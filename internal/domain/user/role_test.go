@@ -1,143 +1,116 @@
 package user
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseRole(t *testing.T) {
-	tests := []struct {
-		expectedError error
-		testName      string
-		inputRole     string
-		expectedRole  Role
-	}{
-		{
-			testName:      "valid role: user",
-			inputRole:     "user",
-			expectedRole:  RoleUser,
-			expectedError: nil,
-		},
-		{
-			testName:      "valid role: admin",
-			inputRole:     "admin",
-			expectedRole:  RoleAdmin,
-			expectedError: nil,
-		},
-		{
-			testName:      "invalid role",
-			inputRole:     "invalid_role",
-			expectedRole:  "",
-			expectedError: &InvalidRoleError{},
-		},
-		{
-			testName:      "empty role",
-			inputRole:     "",
-			expectedRole:  "",
-			expectedError: &InvalidRoleError{},
-		},
-		{
-			testName:      "role with spaces",
-			inputRole:     "  user ",
-			expectedRole:  RoleUser,
-			expectedError: nil,
-		},
-		{
-			testName:      "role with mixed case",
-			inputRole:     "AdMiN",
-			expectedRole:  RoleAdmin,
-			expectedError: nil,
-		},
-	}
 
-	for _, tt := range tests {
-		t.Run(tt.testName, func(t *testing.T) {
-			role, err := ParseRole(tt.inputRole)
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.IsType(t, tt.expectedError, err)
-			} else {
+	t.Run("valid role cases", func(t *testing.T) {
+		validRoles := []struct {
+			testName     string
+			inputRole    string
+			expectedRole Role
+		}{
+			{"owner role", "owner", RoleOwner},
+			{"admin role", "admin", RoleAdmin},
+			{"user role", "user", RoleUser},
+			{"guest role", "guest", RoleGuest},
+			{"role with trailing spaces", "  user  ", RoleUser}, // with spaces
+			{"role with mixed case", "AdMIn", RoleAdmin},        // mixed case
+		}
+
+		for _, testCase := range validRoles {
+			t.Run(testCase.testName, func(t *testing.T) {
+				role, err := ParseRole(testCase.inputRole)
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedRole, role)
-			}
-		})
-	}
+				assert.Equal(t, testCase.expectedRole, role)
+			})
+		}
+	})
+
+	t.Run("invalid role cases", func(t *testing.T) {
+		invalidRoles := []struct {
+			testName string
+			input    string
+		}{
+			{"invalid role", "invalid_role"},
+			{"empty role", ""},
+			{"superuser role", "superuser"},
+			{"manager role", "manager"},
+			{"numeric role", "123"},
+		}
+
+		for _, testCase := range invalidRoles {
+			t.Run(testCase.testName, func(t *testing.T) {
+				role, err := ParseRole(testCase.input)
+				assert.Error(t, err)
+				assert.Equal(t, ErrInvalidParseRole, err)
+				assert.Equal(t, "", role.String())
+			})
+		}
+	})
+
+	t.Run("extreme role cases", func(t *testing.T) {
+		extremeRoles := []struct {
+			testName string
+			input    string
+		}{
+			{"100,000 characters", strings.Repeat("a", 100000)},
+			{"4,000,000 characters", strings.Repeat("a", 4000000)},
+			{"10,000,000 characters", strings.Repeat("a", 10000000)},
+		}
+
+		for _, testCase := range extremeRoles {
+			t.Run(testCase.testName, func(t *testing.T) {
+				parsedRole, err := ParseRole(testCase.input)
+				assert.Error(t, err)
+				assert.IsType(t, ErrInvalidParseRole, err)
+				assert.Empty(t, parsedRole.String())
+			})
+		}
+	})
 }
 
 func TestIsValidRole(t *testing.T) {
-	tests := []struct {
-		testName     string
-		inputRole    Role
-		expectedBool bool
-	}{
-		{
-			testName:     "valid role user",
-			inputRole:    RoleUser,
-			expectedBool: true,
-		},
-		{
-			testName:     "valid role admin",
-			inputRole:    RoleAdmin,
-			expectedBool: true,
-		},
-		{
-			testName:     "valid role owner",
-			inputRole:    RoleOwner,
-			expectedBool: true,
-		},
-		{
-			testName:     "valid role guest",
-			inputRole:    RoleGuest,
-			expectedBool: true,
-		},
-		{
-			testName:     "invalid role",
-			inputRole:    Role("invalid_role"),
-			expectedBool: false,
-		},
-	}
 
-	for _, tt := range tests {
-		t.Run(tt.testName, func(t *testing.T) {
-			result := tt.inputRole.IsValidRole()
-			assert.Equal(t, tt.expectedBool, result)
-		})
-	}
-}
+	t.Run("correctly validates valid role cases", func(t *testing.T) {
+		validRoles := []struct {
+			testName string
+			role     Role
+		}{
+			{"owner role", RoleOwner},
+			{"admin role", RoleAdmin},
+			{"user role", RoleUser},
+			{"guest role", RoleGuest},
+		}
 
-func TestRoleValue(t *testing.T) {
-	tests := []struct {
-		testName      string
-		inputRole     Role
-		expectedValue string
-	}{
-		{
-			testName:      "role user",
-			inputRole:     RoleUser,
-			expectedValue: "user",
-		},
-		{
-			testName:      "role admin",
-			inputRole:     RoleAdmin,
-			expectedValue: "admin",
-		},
-		{
-			testName:      "role owner",
-			inputRole:     RoleOwner,
-			expectedValue: "owner",
-		},
-		{
-			testName:      "role guest",
-			inputRole:     RoleGuest,
-			expectedValue: "guest",
-		},
-	}
+		for _, testCase := range validRoles {
+			t.Run(testCase.testName, func(t *testing.T) {
+				assert.True(t, testCase.role.IsValidRole())
+			})
+		}
+	})
 
-	for _, tt := range tests {
-		t.Run(tt.testName, func(t *testing.T) {
-			value := tt.inputRole.Value()
-			assert.Equal(t, tt.expectedValue, value)
-		})
-	}
+	t.Run("correctly identifies invalid role cases", func(t *testing.T) {
+		invalidRoles := []struct {
+			testName string
+			role     Role
+		}{
+			{"invalid role", "invalid_role"},
+			{"empty role", ""},
+			{"superuser role", "superuser"},
+			{"manager role", "manager"},
+			{"numeric role", "123"},
+		}
+
+		for _, testCase := range invalidRoles {
+			t.Run(testCase.testName, func(t *testing.T) {
+				assert.False(t, testCase.role.IsValidRole())
+			})
+		}
+	})
 }

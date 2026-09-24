@@ -1,39 +1,45 @@
 package user
 
 import (
+	"errors"
 	"fmt"
 )
 
-type InvalidRoleError struct {
-	role Role
-}
-
-func (e *InvalidRoleError) Error() string {
-	return fmt.Sprintf("invalid role: %s", e.role)
-}
-
-type PermissionDeniedError struct {
-	name string
-}
-
-func (e *PermissionDeniedError) Error() string {
-	return fmt.Sprintf("permission denied: user %s dont have permission to execut this action", e.name)
-}
+var (
+	ErrEmptyName        = errors.New("user: name cannot be empty")
+	ErrEmptyEmail       = errors.New("user: email cannot be empty")
+	ErrInvalidRole      = errors.New("user: role is not valid")
+	ErrNilID            = errors.New("user: id cannot be nil")
+	ErrInvalidParseRole = errors.New("role: role cannot be parsed")
+	ErrInvalidName      = errors.New("user: name is not valid")
+	ErrInvalidEmail     = errors.New("user: email is not valid")
+)
 
 type InvalidNameError struct {
-	Name   string
 	Reason string
 }
 
 func (e *InvalidNameError) Error() string {
-	return fmt.Sprintf("invalid name: %s - %s", e.Name, e.Reason)
+	return fmt.Sprintf("invalid name: %s", e.Reason)
+}
+
+func (e *InvalidNameError) Is(target error) bool {
+	if target == ErrInvalidName {
+		return true
+	}
+
+	_, ok := target.(*InvalidNameError)
+	return ok
 }
 
 type InvalidEmailError struct {
-	Email  string
 	Reason string
 }
 
 func (e *InvalidEmailError) Error() string {
-	return fmt.Sprintf("invalid email: %s - %s", e.Email, e.Reason)
+	return fmt.Sprintf("invalid email: %s", e.Reason)
+}
+
+func (e *InvalidEmailError) Is(target error) bool {
+	return target == ErrInvalidEmail
 }

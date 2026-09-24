@@ -11,30 +11,68 @@ type User struct {
 	id    uuid.UUID
 }
 
-func NewUser(name Name, email Email) *User {
+func NewUser(name Name, email Email) (*User, error) {
+	if !name.IsValid() {
+		return nil, ErrEmptyName
+	}
+	if !email.IsValid() {
+		return nil, ErrEmptyEmail
+	}
+
 	u := User{
 		id:    uuid.New(),
 		name:  name,
 		email: email,
 		role:  RoleUser,
 	}
-	return &u
+	return &u, nil
+}
+
+func RestoreUser(id uuid.UUID, name Name, email Email, role Role) (*User, error) {
+	if id == uuid.Nil() {
+		return nil, ErrNilID
+	}
+	if !name.IsValid() {
+		return nil, ErrEmptyName
+	}
+	if !email.IsValid() {
+		return nil, ErrEmptyEmail
+	}
+	if !role.IsValidRole() {
+		return nil, ErrInvalidRole
+	}
+
+	u := User{
+		id:    id,
+		name:  name,
+		email: email,
+		role:  role,
+	}
+	return &u, nil
 }
 
 func (u *User) SetRole(newRole Role) error {
 	if !newRole.IsValidRole() {
-		return &InvalidRoleError{newRole}
+		return ErrInvalidRole
 	}
 	u.role = newRole
 	return nil
 }
 
-func (u *User) SetName(newName Name) {
+func (u *User) SetName(newName Name) error {
+	if !newName.IsValid() {
+		return ErrEmptyName
+	}
 	u.name = newName
+	return nil
 }
 
-func (u *User) SetEmail(newEmail Email) {
+func (u *User) SetEmail(newEmail Email) error {
+	if !newEmail.IsValid() {
+		return ErrEmptyEmail
+	}
 	u.email = newEmail
+	return nil
 }
 
 func (u *User) IsAdmin() bool {

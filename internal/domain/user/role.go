@@ -11,7 +11,13 @@ const (
 	RoleGuest Role = "guest"
 )
 
+const maxRoleLength = 20
+
 func ParseRole(roleStr string) (Role, error) {
+	if len(roleStr) > maxRoleLength {
+		return "", ErrInvalidParseRole
+	}
+
 	switch strings.ToLower(strings.TrimSpace(roleStr)) {
 	case "owner":
 		return RoleOwner, nil
@@ -22,7 +28,7 @@ func ParseRole(roleStr string) (Role, error) {
 	case "guest":
 		return RoleGuest, nil
 	default:
-		return "", &InvalidRoleError{Role(roleStr)}
+		return "", ErrInvalidParseRole
 	}
 }
 
@@ -35,6 +41,6 @@ func (r Role) IsValidRole() bool {
 	}
 }
 
-func (r Role) Value() string {
+func (r Role) String() string {
 	return string(r)
 }
