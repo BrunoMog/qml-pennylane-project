@@ -2,7 +2,6 @@ package userusecase
 
 import (
 	"pennylane_project_backend/internal/domain/user"
-
 	"uuid"
 )
 

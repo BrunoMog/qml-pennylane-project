@@ -26,7 +26,7 @@ func newTestFixture(t *testing.T) *testFixture {
 	userRepo := testkit.NewMockUserRepository()
 	vqcConfigRepo := testkit.NewMockVQCConfigRepository()
 	service := NewVQCConfigService(vqcConfigRepo, userRepo)
-	makeUser := testkit.DefaultUser()
+	makeUser := testkit.DefaultUser(t)
 	makeVQCConfig := testkit.DefaultVQCConfig()
 
 	return &testFixture{

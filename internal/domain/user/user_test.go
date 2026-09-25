@@ -17,6 +17,7 @@ func TestUserCreation(t *testing.T) {
 		email, err := NewEmail("john.doe@example.com")
 		require.NoError(t, err)
 		user, err := NewUser(name, email)
+
 		assert.NotNil(t, user)
 		assert.NoError(t, err)
 		assert.Equal(t, name, user.Name())
@@ -29,6 +30,7 @@ func TestUserCreation(t *testing.T) {
 		email, err := NewEmail("john.doe@example.com")
 		require.NoError(t, err)
 		user, err := NewUser(Name{}, email)
+
 		assert.Nil(t, user)
 		assert.Error(t, err)
 		assert.Equal(t, ErrEmptyName, err)
@@ -38,6 +40,7 @@ func TestUserCreation(t *testing.T) {
 		name, err := NewName("John Doe")
 		require.NoError(t, err)
 		user, err := NewUser(name, Email{})
+
 		assert.Nil(t, user)
 		assert.Error(t, err)
 		assert.Equal(t, ErrEmptyEmail, err)
@@ -53,11 +56,12 @@ func TestRestoreUser(t *testing.T) {
 		require.NoError(t, err)
 		role := RoleAdmin
 		user, err := RestoreUser(id, name, email, role)
+
 		assert.NotNil(t, user)
 		assert.NoError(t, err)
 		assert.Equal(t, name, user.Name())
 		assert.Equal(t, email, user.Email())
-		assert.Equal(t, RoleUser, user.Role())
+		assert.Equal(t, RoleAdmin, user.Role())
 		assert.Equal(t, id, user.ID())
 	})
 
@@ -68,6 +72,7 @@ func TestRestoreUser(t *testing.T) {
 		require.NoError(t, err)
 		role := RoleAdmin
 		user, err := RestoreUser(uuid.Nil(), name, email, role)
+
 		assert.Nil(t, user)
 		assert.Error(t, err)
 	})
@@ -78,6 +83,7 @@ func TestRestoreUser(t *testing.T) {
 		require.NoError(t, err)
 		role := RoleAdmin
 		user, err := RestoreUser(id, Name{}, email, role)
+
 		assert.Nil(t, user)
 		assert.Error(t, err)
 	})
@@ -88,6 +94,7 @@ func TestRestoreUser(t *testing.T) {
 		require.NoError(t, err)
 		role := RoleAdmin
 		user, err := RestoreUser(id, name, Email{}, role)
+
 		assert.Nil(t, user)
 		assert.Error(t, err)
 	})
@@ -99,6 +106,7 @@ func TestRestoreUser(t *testing.T) {
 		email, err := NewEmail("john.doe@example.com")
 		require.NoError(t, err)
 		user, err := RestoreUser(id, name, email, Role("invalid_role"))
+
 		assert.Nil(t, user)
 		assert.Error(t, err)
 	})
@@ -125,6 +133,7 @@ func TestSetRole(t *testing.T) {
 				require.NoError(t, err)
 				user, err := NewUser(name, email)
 				require.NoError(t, err)
+
 				err = user.SetRole(testCase.role)
 				require.NoError(t, err)
 				assert.Equal(t, testCase.role, user.Role())
@@ -138,6 +147,7 @@ func TestSetRole(t *testing.T) {
 		email, err := NewEmail("john.doe@example.com")
 		require.NoError(t, err)
 		user, err := NewUser(name, email)
+
 		require.NoError(t, err)
 		err = user.SetRole(Role("invalid_role"))
 		require.Error(t, err)

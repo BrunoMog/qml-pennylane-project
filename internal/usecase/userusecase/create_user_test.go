@@ -1,32 +1,51 @@
 package userusecase
 
 import (
+	"errors"
 	"pennylane_project_backend/internal/domain/user"
 	"testing"
+	"uuid"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateUser(t *testing.T) {
+
 	tests := []struct {
-		expectedError error
-		setup         func(fixture *testFixture) CreateUserInput
-		testName      string
+		setup    func(fixture *testFixture) (CreateUserInput, error)
+		testName string
 	}{
 		{
 			testName: "create user successfully",
-			setup: func(f *testFixture) CreateUserInput {
+			setup: func(f *testFixture) (CreateUserInput, error) {
 				return CreateUserInput{
 					Name:  "John Doe",
 					Email: "john.doe@example.com",
-				}
+				}, nil
 			},
-			expectedError: nil,
+		},
+		{
+			testName: "create user with invalid name",
+			setup: func(f *testFixture) (CreateUserInput, error) {
+				return CreateUserInput{
+					Name:  "",
+					Email: "john.doe@example.com",
+				}, user.ErrInvalidName
+			},
+		},
+		{
+			testName: "create user with invalid email",
+			setup: func(f *testFixture) (CreateUserInput, error) {
+				return CreateUserInput{
+					Name:  "John Doe",
+					Email: "invalid-email",
+				}, user.ErrInvalidEmail
+			},
 		},
 		{
 			testName: "create user with existing email",
-			setup: func(f *testFixture) CreateUserInput {
+			setup: func(f *testFixture) (CreateUserInput, error) {
 				userEmail, err := user.NewEmail("jane.doe@example.com")
 				require.NoError(t, err)
 				u := f.createUser(user.RoleUser)
@@ -34,26 +53,51 @@ func TestCreateUser(t *testing.T) {
 
 				return CreateUserInput{
 					Name:  "Jhon Doe",
-					Email: userEmail.Value(),
-				}
+					Email: userEmail.String(),
+				}, ErrEmailAlreadyExists
 			},
-			expectedError: &EmailAlreadyExistsError{},
+		},
+		{
+			testName: "error when checking email existence",
+			setup: func(f *testFixture) (CreateUserInput, error) {
+				dbErr := errors.New("database unavailable")
+				f.userRepo.ExistsByEmailErr = dbErr
+
+				return CreateUserInput{
+					Name:  "John Doe",
+					Email: "john.doe@example.com",
+				}, dbErr
+			},
+		},
+		{
+			testName: "error when saving user",
+			setup: func(f *testFixture) (CreateUserInput, error) {
+				dbErr := errors.New("database unavailable")
+				f.userRepo.SaveErr = dbErr
+
+				return CreateUserInput{
+					Name:  "John Doe",
+					Email: "john.doe@example.com",
+				}, dbErr
+			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			fixture := newTestFixture(t)
-			input := tt.setup(fixture)
-			user, err := fixture.service.CreateUser(input)
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.IsType(t, tt.expectedError, err)
+			input, expectedErr := tt.setup(fixture)
+			newUser, receivedErr := fixture.service.CreateUser(input)
+
+			if expectedErr != nil {
+				assert.ErrorIs(t, receivedErr, expectedErr)
 			} else {
-				assert.NoError(t, err)
-				assert.NotNil(t, user)
-				assert.Equal(t, input.Name, user.Name)
-				assert.Equal(t, input.Email, user.Email)
-				assert.Equal(t, user.Role, user.Role)
+				assert.NoError(t, receivedErr)
+				assert.NotNil(t, newUser)
+				assert.Equal(t, input.Name, newUser.Name)
+				assert.Equal(t, input.Email, newUser.Email)
+				assert.Equal(t, newUser.Role, newUser.Role)
+				assert.NotEqual(t, uuid.Nil(), newUser.ID)
 			}
 		})
 	}

@@ -26,7 +26,7 @@ func newTestFixture(t *testing.T) *testFixture {
 	userRepo := testkit.NewMockUserRepository()
 	trainConfigRepo := testkit.NewMockTrainConfigRepository()
 	service := NewTrainConfigService(trainConfigRepo, userRepo)
-	makeUser := testkit.DefaultUser()
+	makeUser := testkit.DefaultUser(t)
 	makeTrainConfig := testkit.DefaultTrainConfig()
 
 	return &testFixture{

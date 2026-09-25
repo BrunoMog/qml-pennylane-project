@@ -19,7 +19,7 @@ func newTestFixture(t *testing.T) *testFixture {
 	t.Helper()
 	userRepo := testkit.NewMockUserRepository()
 	service := NewUserService(userRepo)
-	makeUser := testkit.DefaultUser()
+	makeUser := testkit.DefaultUser(t)
 
 	return &testFixture{
 		t:        t,

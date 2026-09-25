@@ -1,6 +1,8 @@
 package userusecase
 
 import (
+	"errors"
+	"fmt"
 	"pennylane_project_backend/internal/domain/user"
 
 	"uuid"
@@ -14,21 +16,38 @@ type UpdateUserInput struct {
 }
 
 func (s *UserService) UpdateUser(input UpdateUserInput) error {
+	if input.CallerID == uuid.Nil() || input.TargetID == uuid.Nil() {
+		return ErrNilID
+	}
+
 	if input.Name == nil && input.Email == nil {
-		return &NoFieldsToUpdateError{}
+		return ErrNoFieldsToUpdate
 	}
 
 	caller, err := s.repository.FindByID(input.CallerID)
 	if err != nil {
-		return err
-	}
-	userToUpdate, err := s.repository.FindByID(input.TargetID)
-	if err != nil {
-		return err
+		if errors.Is(err, user.ErrUserNotFound) {
+			return err
+		}
+		return fmt.Errorf("userusecase: find caller by ID: %w", err)
 	}
 
-	if !canUpdateUser(caller, userToUpdate) {
-		return &UnauthorizedError{caller.Name()}
+	var userToUpdate *user.User
+	if input.CallerID != input.TargetID {
+		userToUpdate, err = s.repository.FindByID(input.TargetID)
+		if err != nil {
+			if errors.Is(err, user.ErrUserNotFound) {
+				return err
+			}
+			return fmt.Errorf("userusecase: find target by ID: %w", err)
+		}
+	} else {
+		userToUpdate = caller
+	}
+
+	reason, allowed := canUpdateUser(caller, userToUpdate)
+	if !allowed {
+		return &PermissionDeniedError{reason: reason, callerID: caller.ID(), action: fmt.Sprintf("update user %s", userToUpdate.ID())}
 	}
 
 	var needToSave bool
@@ -52,10 +71,10 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 		if userToUpdate.Email() != email {
 			exists, err := s.repository.ExistsByEmail(email)
 			if err != nil {
-				return err
+				return fmt.Errorf("userusecase: check if email exists: %w", err)
 			}
 			if exists {
-				return &EmailAlreadyExistsError{email}
+				return ErrEmailAlreadyExists
 			}
 			userToUpdate.SetEmail(email)
 			needToSave = true
@@ -63,21 +82,24 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 	}
 
 	if needToSave {
-		return s.repository.Save(userToUpdate)
+		err := s.repository.Save(userToUpdate)
+		if err != nil {
+			return fmt.Errorf("userusecase: save user: %w", err)
+		}
 	}
 
 	return nil
 }
 
-func canUpdateUser(caller, target *user.User) bool {
+func canUpdateUser(caller, target *user.User) (string, bool) {
 	if caller.ID() == target.ID() {
-		return true
+		return "", true
 	}
 
 	switch caller.Role() {
 	case user.RoleOwner:
-		return true
+		return "", true
 	default:
-		return false
+		return "only owners can update other users", false
 	}
 }

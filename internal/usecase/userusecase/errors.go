@@ -1,36 +1,37 @@
 package userusecase
 
 import (
+	"errors"
 	"fmt"
-	"pennylane_project_backend/internal/domain/user"
+	"uuid"
 )
 
-type EmailAlreadyExistsError struct {
-	Email user.Email
+var (
+	ErrEmailAlreadyExists = errors.New("email already exists")
+	ErrNoFieldsToUpdate   = errors.New("no fields to update")
+	ErrPermissionDenied   = errors.New("unauthorized")
+	ErrNilID              = errors.New("id cannot be nil")
+)
+
+type PermissionDeniedError struct {
+	reason   string
+	action   string
+	callerID uuid.UUID
 }
 
-func (e *EmailAlreadyExistsError) Error() string {
-	return fmt.Sprintf("email already exists: %s", e.Email.Value())
+func (e *PermissionDeniedError) Error() string {
+	return "permission denied: user is not permitted to perform this action"
 }
 
-type UnauthorizedError struct {
-	Name user.Name
+func (e *PermissionDeniedError) Reason() string {
+	return fmt.Sprintf("user %s tried to perform %s but was denied for the following reason: %s", e.callerID, e.action, e.reason)
 }
 
-func (e *UnauthorizedError) Error() string {
-	return fmt.Sprintf("unauthorized: user %s is not authorized to perform this action", e.Name)
-}
+func (e *PermissionDeniedError) Is(target error) bool {
+	if target == ErrPermissionDenied {
+		return true
+	}
 
-type UserNotFoundError struct {
-}
-
-func (e *UserNotFoundError) Error() string {
-	return "user not found"
-}
-
-type NoFieldsToUpdateError struct {
-}
-
-func (e *NoFieldsToUpdateError) Error() string {
-	return "no fields to update"
+	_, ok := target.(*PermissionDeniedError)
+	return ok
 }

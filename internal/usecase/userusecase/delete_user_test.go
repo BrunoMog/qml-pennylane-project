@@ -1,77 +1,141 @@
 package userusecase
 
 import (
+	"errors"
 	"pennylane_project_backend/internal/domain/user"
-	"pennylane_project_backend/internal/testkit"
 	"testing"
 
 	"uuid"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDeleteUser(t *testing.T) {
 	tests := []struct {
-		expectedError error
-		setup         func(fixture *testFixture) DeleteUserInput
-		testName      string
+		setup    func(fixture *testFixture) (DeleteUserInput, error)
+		testName string
 	}{
 		{
 			testName: "owner deletes admin",
-			setup: func(fixture *testFixture) DeleteUserInput {
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
-				}
+				}, nil
 			},
-			expectedError: nil,
+		},
+		{
+			testName: "user deletes self",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
+				newUser := fixture.createUser(user.RoleUser)
+				return DeleteUserInput{
+					CallerID: newUser.ID(),
+					TargetID: newUser.ID(),
+				}, nil
+			},
 		},
 		{
 			testName: "inexistent target user",
-			setup: func(fixture *testFixture) DeleteUserInput {
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
 				owner := fixture.createUser(user.RoleOwner)
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: uuid.New(),
-				}
+				}, user.ErrUserNotFound
 			},
-			expectedError: &testkit.ErrUserNotFound{},
 		},
 		{
 			testName: "inexistent caller user",
-			setup: func(fixture *testFixture) DeleteUserInput {
-				user := fixture.createUser(user.RoleUser)
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
+				newUser := fixture.createUser(user.RoleUser)
 				return DeleteUserInput{
 					CallerID: uuid.New(),
-					TargetID: user.ID(),
-				}
+					TargetID: newUser.ID(),
+				}, user.ErrUserNotFound
 			},
-			expectedError: &testkit.ErrUserNotFound{},
 		},
 		{
-			testName: "unauthorized case: admin tries to delete owner",
-			setup: func(fixture *testFixture) DeleteUserInput {
+			testName: "admin tries to delete owner",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				return DeleteUserInput{
 					CallerID: admin.ID(),
 					TargetID: owner.ID(),
-				}
+				}, ErrPermissionDenied
 			},
-			expectedError: &UnauthorizedError{},
 		},
 		{
-			testName: "owner deletes self",
-			setup: func(fixture *testFixture) DeleteUserInput {
+			testName: "owner try to delete self",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
 				owner := fixture.createUser(user.RoleOwner)
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: owner.ID(),
-				}
+				}, ErrPermissionDenied
 			},
-			expectedError: &UnauthorizedError{},
+		},
+		{
+			testName: "fail to retrieve caller user",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
+				owner := fixture.createUser(user.RoleOwner)
+				admin := fixture.createUser(user.RoleAdmin)
+				dbErr := errors.New("database unavailable")
+				fixture.userRepo.FindByIDErr = dbErr
+				return DeleteUserInput{
+					CallerID: owner.ID(),
+					TargetID: admin.ID(),
+				}, dbErr
+			},
+		},
+		{
+			testName: "fail to retrieve target user",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
+				owner := fixture.createUser(user.RoleOwner)
+				admin := fixture.createUser(user.RoleAdmin)
+				dbErr := errors.New("database unavailable")
+				fixture.userRepo.FindByIDErr = dbErr
+				return DeleteUserInput{
+					CallerID: owner.ID(),
+					TargetID: admin.ID(),
+				}, dbErr
+			},
+		},
+		{
+			testName: "fail to delete user",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
+				owner := fixture.createUser(user.RoleOwner)
+				admin := fixture.createUser(user.RoleAdmin)
+				dbErr := errors.New("database unavailable")
+				fixture.userRepo.DeleteByIDErr = dbErr
+				return DeleteUserInput{
+					CallerID: owner.ID(),
+					TargetID: admin.ID(),
+				}, dbErr
+			},
+		},
+		{
+			testName: "nil caller ID",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
+				owner := fixture.createUser(user.RoleOwner)
+				return DeleteUserInput{
+					CallerID: uuid.Nil(),
+					TargetID: owner.ID(),
+				}, ErrNilID
+			},
+		},
+		{
+			testName: "nil target ID",
+			setup: func(fixture *testFixture) (DeleteUserInput, error) {
+				owner := fixture.createUser(user.RoleOwner)
+				return DeleteUserInput{
+					CallerID: owner.ID(),
+					TargetID: uuid.Nil(),
+				}, ErrNilID
+			},
 		},
 	}
 
@@ -79,15 +143,15 @@ func TestDeleteUser(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			fixture := newTestFixture(t)
 
-			input := tt.setup(fixture)
+			input, expectedErr := tt.setup(fixture)
 
-			err := fixture.service.DeleteUser(input)
-			if tt.expectedError != nil {
-				assert.IsType(t, tt.expectedError, err)
+			receivedErr := fixture.service.DeleteUser(input)
+			if expectedErr != nil {
+				assert.ErrorIs(t, receivedErr, expectedErr)
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(t, receivedErr)
 				exists, err := fixture.userRepo.ExistsByID(input.TargetID)
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.False(t, exists)
 			}
 		})

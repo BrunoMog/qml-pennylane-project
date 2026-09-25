@@ -3,28 +3,35 @@ package testkit
 import (
 	"pennylane_project_backend/internal/domain/user"
 	"strconv"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func DefaultUser() func() *user.User {
+func DefaultUser(t testing.TB) func() *user.User {
+	t.Helper()
+
 	count := 0
+
 	return func() *user.User {
+		t.Helper()
 		count++
+
 		name, err := user.NewName("Test User " + counterToLetters(count))
-		if err != nil {
-			panic(err)
-		}
+		require.NoError(t, err)
+
 		email, err := user.NewEmail("testuser" + strconv.Itoa(count) + "@example.com")
-		if err != nil {
-			panic(err)
-		}
-		u := user.NewUser(name, email)
+		require.NoError(t, err)
+
+		u, err := user.NewUser(name, email)
+		require.NoError(t, err)
+
 		return u
 	}
 }
 
 func counterToLetters(count int) string {
 	// Convert a counter to a string of letters
-	// For example, 1 -> "a", 2 -> "b", ..., 26 -> "z", 27 -> "aa", etc.
 	if count <= 0 {
 		return ""
 	}

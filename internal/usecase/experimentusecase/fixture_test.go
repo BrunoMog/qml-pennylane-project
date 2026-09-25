@@ -35,7 +35,7 @@ func newTestFixture(t *testing.T) *testFixture {
 
 	service := NewExperimentService(experimentRepo, vqcConfigRepo, trainConfigRepo, userRepo)
 
-	makeUser := testkit.DefaultUser()
+	makeUser := testkit.DefaultUser(t)
 	makeTrainConfig := testkit.DefaultTrainConfig()
 	makeVQCConfig := testkit.DefaultVQCConfig()
 	makeExperiment := testkit.DefaultExperiment()

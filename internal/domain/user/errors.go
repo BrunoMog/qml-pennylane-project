@@ -6,13 +6,15 @@ import (
 )
 
 var (
-	ErrEmptyName        = errors.New("user: name cannot be empty")
-	ErrEmptyEmail       = errors.New("user: email cannot be empty")
-	ErrInvalidRole      = errors.New("user: role is not valid")
-	ErrNilID            = errors.New("user: id cannot be nil")
-	ErrInvalidParseRole = errors.New("role: role cannot be parsed")
-	ErrInvalidName      = errors.New("user: name is not valid")
-	ErrInvalidEmail     = errors.New("user: email is not valid")
+	ErrEmptyName        = errors.New("name cannot be empty")
+	ErrEmptyEmail       = errors.New("email cannot be empty")
+	ErrInvalidRole      = errors.New("role is not valid")
+	ErrNilID            = errors.New("id cannot be nil")
+	ErrInvalidParseRole = errors.New("role cannot be parsed")
+	ErrInvalidName      = errors.New("name is not valid")
+	ErrInvalidEmail     = errors.New("email is not valid")
+
+	ErrUserNotFound = errors.New("user not found")
 )
 
 type InvalidNameError struct {
@@ -28,8 +30,12 @@ func (e *InvalidNameError) Is(target error) bool {
 		return true
 	}
 
-	_, ok := target.(*InvalidNameError)
-	return ok
+	t, ok := target.(*InvalidNameError)
+	if !ok {
+		return false
+	}
+
+	return (e.Reason == t.Reason || t.Reason == "")
 }
 
 type InvalidEmailError struct {
@@ -41,5 +47,14 @@ func (e *InvalidEmailError) Error() string {
 }
 
 func (e *InvalidEmailError) Is(target error) bool {
-	return target == ErrInvalidEmail
+	if target == ErrInvalidEmail {
+		return true
+	}
+
+	t, ok := target.(*InvalidEmailError)
+	if !ok {
+		return false
+	}
+
+	return (e.Reason == t.Reason || t.Reason == "")
 }
