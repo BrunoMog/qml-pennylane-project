@@ -1,6 +1,8 @@
 package vqc
 
 import (
+	"errors"
+	"fmt"
 	"math"
 	"slices"
 )
@@ -13,23 +15,29 @@ type AmplitudeEmbedding struct {
 
 func NewAmplitudeEmbedding(qubits []Qubit, normalize bool, padWith float64) (AmplitudeEmbedding, error) {
 	if err := validateEmbeddingQubits(qubits); err != nil {
+		if errors.Is(err, ErrDuplicatedQubit) {
+			return AmplitudeEmbedding{}, fmt.Errorf("embedding has %w", err)
+		}
 		return AmplitudeEmbedding{}, err
 	}
 	if math.IsNaN(padWith) || math.IsInf(padWith, 0) {
-		return AmplitudeEmbedding{}, &InvalidPadWithError{padWith: padWith}
+		return AmplitudeEmbedding{}, ErrInvalidPadWith
 	}
 
-	return AmplitudeEmbedding{qubits: qubits, normalize: normalize, padWith: padWith}, nil
+	return AmplitudeEmbedding{qubits: slices.Clone(qubits), normalize: normalize, padWith: padWith}, nil
 }
 
-func (a AmplitudeEmbedding) IsValid() bool {
-	if err := validateEmbeddingQubits(a.qubits); err != nil {
-		return false
+func (a AmplitudeEmbedding) isValid() bool {
+	return len(a.qubits) > 0
+}
+
+func (a AmplitudeEmbedding) validateQubits(numQubits uint) error {
+	for _, qubit := range a.qubits {
+		if qubit.Index() >= numQubits {
+			return &InvalidQubitError{QubitIndex: qubit.Index()}
+		}
 	}
-	if math.IsNaN(a.padWith) || math.IsInf(a.padWith, 0) {
-		return false
-	}
-	return true
+	return nil
 }
 
 func (a AmplitudeEmbedding) Equals(other Embedding) bool {
@@ -50,13 +58,7 @@ func (a AmplitudeEmbedding) Equals(other Embedding) bool {
 		return false
 	}
 
-	for i, qubit := range a.qubits {
-		if qubit != otherAmplitude.qubits[i] {
-			return false
-		}
-	}
-
-	return true
+	return slices.Equal(a.qubits, otherAmplitude.qubits)
 }
 
 func (a AmplitudeEmbedding) Type() EmbeddingType {

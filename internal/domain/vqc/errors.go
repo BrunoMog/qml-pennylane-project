@@ -1,163 +1,65 @@
 package vqc
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
-type InvalidGateError struct {
-	gate_type GateType
-}
-
-func (e *InvalidGateError) Error() string {
-	return fmt.Sprintf("Invalid gate type: %s", e.gate_type)
-}
-
-type InvalidQubitError struct {
-	qubit uint
-}
-
-func (e *InvalidQubitError) Error() string {
-	return fmt.Sprintf("Invalid qubit index: %d", e.qubit)
-}
-
-type InvalidControlQubitError struct {
-	control_qubit []Qubit
-}
-
-func (e *InvalidControlQubitError) Error() string {
-	return fmt.Sprintf("Invalid control qubit indices: %v", e.control_qubit)
-}
+var (
+	ErrInvalidQubit               = errors.New("Invalid qubit index, must be less than the number of circuit qubits")
+	ErrDuplicatedQubit            = errors.New("duplicated qubit")
+	ErrInvalidPadWith             = errors.New("Invalid pad width: must be a finite number")
+	ErrZeroQubitEmbedding         = errors.New("Embedding must have at least one qubit")
+	ErrParseEmbeddingRotation     = errors.New("embedding rotation cannot be parsed, must be one of 'x', 'y', or 'z'")
+	ErrParseEmbeddingType         = errors.New("embedding type cannot be parsed, must be one of 'angle' or 'amplitude'")
+	ErrInvalidEmbeddingRotation   = errors.New("Invalid rotation: must be one of 'x', 'y', or 'z'")
+	ErrParseMeasurementRotation   = errors.New("measurement rotation cannot be parsed, must be one of 'x', 'y', or 'z'")
+	ErrParseMeasurementType       = errors.New("measurement type cannot be parsed, must be one of 'expectation', or 'probability'")
+	ErrZeroQubitMeasurement       = errors.New("Measurement must have at least one qubit")
+	ErrInvalidMeasurementType     = errors.New("Invalid measurement type must be one of 'expectation' or 'probability'")
+	ErrInvalidMeasurementRotation = errors.New("Invalid measurement rotation must be one of 'x', 'y', or 'z'")
+	ErrParseGateType              = errors.New("gate type cannot be parsed, must be a valid gate type")
+	ErrInvalidGateType            = errors.New("Invalid gate type")
+	ErrInvalidControlQubit        = errors.New("Incompatible control qubit")
+	ErrZeroQubitVQC               = errors.New("VQC must have at least one qubit")
+	ErrNilEmbedding               = errors.New("VQC embedding cannot be nil")
+	ErrInvalidEmbedding           = errors.New("VQC embedding is invalid")
+	ErrInvalidMeasurement         = errors.New("VQC measurement is invalid")
+	ErrInvalidQuantumGate         = errors.New("quantum gate cannot be zero-valued")
+)
 
 type DuplicateQubitError struct {
-	qubit Qubit
+	QubitIndex uint
 }
 
 func (e *DuplicateQubitError) Error() string {
-	return fmt.Sprintf("Duplicate qubit index: %d", e.qubit)
+	return fmt.Sprintf("duplicate qubit: %d", e.QubitIndex)
 }
 
-type InvalidEmbeddingError struct {
-	embedding_type EmbeddingType
+func (e *DuplicateQubitError) Is(target error) bool {
+	return target == ErrDuplicatedQubit
 }
 
-func (e *InvalidEmbeddingError) Error() string {
-	return fmt.Sprintf("Invalid embedding type: %s", e.embedding_type)
+type InvalidControlQubitError struct {
+	Reason string
 }
 
-type ZeroQubitEmbeddingError struct {
-	qubit []Qubit
+func (e *InvalidControlQubitError) Error() string {
+	return e.Reason
 }
 
-func (e *ZeroQubitEmbeddingError) Error() string {
-	return fmt.Sprintf("Embedding must have at least one qubit, got: %v", e.qubit)
+func (e *InvalidControlQubitError) Is(target error) bool {
+	return target == ErrInvalidControlQubit
 }
 
-type InvalidRotationError struct {
-	rotation EmbeddingRotation
+type InvalidQubitError struct {
+	QubitIndex uint
 }
 
-func (e *InvalidRotationError) Error() string {
-	return fmt.Sprintf("Invalid rotation type: %s", e.rotation)
+func (e *InvalidQubitError) Error() string {
+	return fmt.Sprintf("invalid qubit index: %d", e.QubitIndex)
 }
 
-type InvalidGetRotationError struct{}
-
-func (e *InvalidGetRotationError) Error() string {
-	return "GetRotation can only be called on AngleEmbedding"
-}
-
-type InvalidGetNormalizeError struct{}
-
-func (e *InvalidGetNormalizeError) Error() string {
-	return "GetNormalize can only be called on AmplitudeEmbedding"
-}
-
-type InvalidGetPadWithError struct{}
-
-func (e *InvalidGetPadWithError) Error() string {
-	return "GetPadWith can only be called on AmplitudeEmbedding"
-}
-
-type InvalidMeasurementError struct {
-	measurement_type MeasurementType
-}
-
-func (e *InvalidMeasurementError) Error() string {
-	return fmt.Sprintf("Invalid measurement type: %s", e.measurement_type)
-}
-
-type ZeroQubitMeasurementError struct {
-	qubit []Qubit
-}
-
-func (e *ZeroQubitMeasurementError) Error() string {
-	return fmt.Sprintf("Measurement must have at least one qubit, got: %v", e.qubit)
-}
-
-type ZeroQubitVQCError struct {
-	numQubits uint
-}
-
-func (e *ZeroQubitVQCError) Error() string {
-	return fmt.Sprintf("VQC must have at least one qubit, got: %d", e.numQubits)
-}
-
-type NilEmbeddingError struct{}
-
-func (e *NilEmbeddingError) Error() string {
-	return "VQC embedding cannot be nil"
-}
-
-type InvalidMeasurementRotationError struct {
-	measurement_rotation MeasurementRotation
-}
-
-func (e *InvalidMeasurementRotationError) Error() string {
-	return fmt.Sprintf("Invalid measurement rotation: %s", e.measurement_rotation)
-}
-
-type InvalidParseEmbeddingError struct {
-	embeddingTypeStr string
-}
-
-func (e *InvalidParseEmbeddingError) Error() string {
-	return fmt.Sprintf("Invalid embedding type string: %s", e.embeddingTypeStr)
-}
-
-type InvalidPadWithError struct {
-	padWith float64
-}
-
-func (e *InvalidPadWithError) Error() string {
-	return fmt.Sprintf("Invalid pad width: %f", e.padWith)
-}
-
-type InvalidParseEmbeddingRotationError struct {
-	rotationStr string
-}
-
-func (e *InvalidParseEmbeddingRotationError) Error() string {
-	return fmt.Sprintf("Invalid embedding rotation string: %s", e.rotationStr)
-}
-
-type InvalidParseMeasurementTypeError struct {
-	measurementType MeasurementType
-}
-
-func (e *InvalidParseMeasurementTypeError) Error() string {
-	return fmt.Sprintf("Invalid measurement type string: %s", e.measurementType)
-}
-
-type InvalidParseMeasurementRotationError struct {
-	rotationStr string
-}
-
-func (e *InvalidParseMeasurementRotationError) Error() string {
-	return fmt.Sprintf("Invalid measurement rotation string: %s", e.rotationStr)
-}
-
-type InvalidParseGateTypeError struct {
-	gateTypeStr string
-}
-
-func (e *InvalidParseGateTypeError) Error() string {
-	return fmt.Sprintf("Invalid gate type string: %s", e.gateTypeStr)
+func (e *InvalidQubitError) Is(target error) bool {
+	return target == ErrInvalidQubit
 }

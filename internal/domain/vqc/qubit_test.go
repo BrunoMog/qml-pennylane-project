@@ -7,50 +7,31 @@ import (
 )
 
 func TestDuplicateQubits(t *testing.T) {
-	testCase := []struct {
-		testName             string
-		qubits               []Qubit
-		expectedDuplicate    Qubit
-		expectedHasDuplicate bool
-	}{
-		{"Duplicate qubit", []Qubit{0, 1, 2, 1}, 1, true},
-		{"No duplicate qubits", []Qubit{0, 1, 2}, 0, false},
-	}
 
-	for _, tc := range testCase {
-		t.Run(tc.testName, func(t *testing.T) {
-			duplicatedQubit, duplicated := hasDuplicateQubits(tc.qubits)
-			if tc.expectedHasDuplicate {
-				assert.True(t, duplicated, "Expected duplicate qubit but found none")
-				assert.Equal(t, tc.expectedDuplicate, duplicatedQubit, "Expected duplicate qubit does not match actual duplicate qubit")
-			} else {
-				assert.False(t, duplicated, "Expected no duplicate qubits but found one")
-			}
-		})
-	}
+	t.Run("has duplicate qubits", func(t *testing.T) {
+		duplicatedQubit, duplicated := hasDuplicateQubits([]Qubit{0, 1, 2, 1})
+		assert.True(t, duplicated)
+		assert.Equal(t, Qubit(1), duplicatedQubit)
+	})
+
+	t.Run("no duplicate qubits", func(t *testing.T) {
+		duplicatedQubit, duplicated := hasDuplicateQubits([]Qubit{0, 1, 2})
+		assert.False(t, duplicated)
+		assert.Equal(t, Qubit(0), duplicatedQubit) // Default value when no duplicate is found
+	})
 }
 
 func TestNewQubit(t *testing.T) {
-	testCases := []struct {
-		expectErr error
-		testName  string
-		index     uint
-		numQubits uint
-	}{
-		{testName: "Valid qubit", index: 1, numQubits: 3, expectErr: nil},
-		{testName: "Invalid qubit (out of range)", index: 3, numQubits: 3, expectErr: &InvalidQubitError{}},
-	}
 
-	for _, tc := range testCases {
-		t.Run(tc.testName, func(t *testing.T) {
-			qubit, err := NewQubit(tc.index, tc.numQubits)
-			if tc.expectErr != nil {
-				assert.Error(t, err)
-				assert.IsType(t, tc.expectErr, err)
-			} else {
-				assert.NoError(t, err)
-				assert.Equal(t, Qubit(tc.index), qubit)
-			}
-		})
-	}
+	t.Run("Valid qubit", func(t *testing.T) {
+		qubit, err := NewQubit(1, 3)
+		assert.NoError(t, err)
+		assert.Equal(t, Qubit(1), qubit)
+	})
+
+	t.Run("Invalid qubit (out of range)", func(t *testing.T) {
+		_, err := NewQubit(3, 3)
+		assert.Error(t, err)
+		assert.IsType(t, ErrInvalidQubit, err)
+	})
 }

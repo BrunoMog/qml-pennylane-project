@@ -1,5 +1,7 @@
 package vqc
 
+import "fmt"
+
 type VQC struct {
 	embedding   Embedding
 	measurement Measurement
@@ -31,7 +33,10 @@ func NewVQC(input VQCBaseInput, options ...VQCOption) (VQC, error) {
 	}
 
 	for _, option := range options {
-		option.apply(vqc)
+		err := option.apply(vqc)
+		if err != nil {
+			return VQC{}, fmt.Errorf("failed to apply option: %w", err)
+		}
 	}
 
 	return *vqc, nil
@@ -39,32 +44,29 @@ func NewVQC(input VQCBaseInput, options ...VQCOption) (VQC, error) {
 
 func validateVQCInput(input VQCBaseInput) error {
 	if input.NumQubits == 0 {
-		return &ZeroQubitVQCError{numQubits: input.NumQubits}
+		return ErrZeroQubitVQC
 	}
 	if input.Embedding == nil {
-		return &NilEmbeddingError{}
+		return ErrNilEmbedding
 	}
-	if !input.Embedding.IsValid() {
-		return &InvalidEmbeddingError{}
+	if !input.Embedding.isValid() {
+		return ErrInvalidEmbedding
 	}
-	if !input.Measurement.IsValid() {
-		return &InvalidMeasurementError{}
+	if err := input.Embedding.validateQubits(input.NumQubits); err != nil {
+		return fmt.Errorf("embedding has %w", err)
 	}
+	if !input.Measurement.isValid() {
+		return ErrInvalidMeasurement
+	}
+	if err := input.Measurement.validateQubits(input.NumQubits); err != nil {
+		return fmt.Errorf("measurement has %w", err)
+	}
+
 	return nil
 }
 
 func (v VQC) IsValid() bool {
-	if v.numQubits == 0 {
-		return false
-	}
-	if v.embedding == nil || !v.embedding.IsValid() {
-		return false
-	}
-	if !v.measurement.IsValid() {
-		return false
-	}
-
-	return true
+	return v.numQubits > 0
 }
 
 func (v VQC) Equals(other VQC) bool {
@@ -122,6 +124,6 @@ func (v VQC) Measurement() Measurement {
 }
 
 func (v VQC) NumParameters() uint {
-	num_parameters := v.preLayer.NumParameterizedGates() + v.layer.NumParameterizedGates()*v.numLayers + v.postLayer.NumParameterizedGates()
-	return num_parameters
+	numParameters := v.preLayer.NumParameterizedGates() + v.layer.NumParameterizedGates()*v.numLayers + v.postLayer.NumParameterizedGates()
+	return numParameters
 }

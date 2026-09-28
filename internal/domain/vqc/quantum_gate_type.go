@@ -1,6 +1,9 @@
 package vqc
 
-import "strings"
+import (
+	"slices"
+	"strings"
+)
 
 type GateType string
 
@@ -15,15 +18,37 @@ const (
 	CNOTGate GateType = "cnot"
 )
 
-func (g GateType) Value() string {
+const maxGateTypeLength = 10
+
+func (g GateType) String() string {
 	return string(g)
 }
 
 var singleQubitGates = []GateType{HGate, XGate, YGate, ZGate, RXGate, RYGate, RZGate}
 var twoQubitGates = []GateType{CNOTGate}
 
+func (g GateType) isValid() bool {
+	switch g {
+	case HGate, XGate, YGate, ZGate, RXGate, RYGate, RZGate, CNOTGate:
+		return true
+	default:
+		return false
+	}
+}
+
+func (g GateType) isSingleQubitGate() bool {
+	return slices.Contains(singleQubitGates, g)
+}
+
+func (g GateType) isTwoQubitGate() bool {
+	return slices.Contains(twoQubitGates, g)
+}
+
 func ParseGateType(gateTypeStr string) (GateType, error) {
-	switch strings.ToLower(gateTypeStr) {
+	if len(gateTypeStr) > maxGateTypeLength {
+		return "", ErrParseGateType
+	}
+	switch strings.ToLower(strings.TrimSpace(gateTypeStr)) {
 	case "h":
 		return HGate, nil
 	case "x":
@@ -41,6 +66,6 @@ func ParseGateType(gateTypeStr string) (GateType, error) {
 	case "cnot":
 		return CNOTGate, nil
 	default:
-		return "", &InvalidParseGateTypeError{gateTypeStr}
+		return "", ErrParseGateType
 	}
 }

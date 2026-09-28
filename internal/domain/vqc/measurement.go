@@ -1,6 +1,8 @@
 package vqc
 
 import (
+	"errors"
+	"fmt"
 	"slices"
 )
 
@@ -11,14 +13,16 @@ type Measurement struct {
 }
 
 func NewMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) (Measurement, error) {
-	qubits = slices.Clone(qubits)
 	err := validateMeasurement(qubits, measurementType, measurementRotation)
 	if err != nil {
+		if errors.Is(err, ErrDuplicatedQubit) {
+			return Measurement{}, fmt.Errorf("measurement has %w", err)
+		}
 		return Measurement{}, err
 	}
 
 	return Measurement{
-		qubits:              qubits,
+		qubits:              slices.Clone(qubits),
 		measurementRotation: measurementRotation,
 		measurementType:     measurementType,
 	}, nil
@@ -26,42 +30,35 @@ func NewMeasurement(qubits []Qubit, measurementType MeasurementType, measurement
 
 func validateMeasurement(qubits []Qubit, measurementType MeasurementType, measurementRotation MeasurementRotation) error {
 	if len(qubits) == 0 {
-		return &ZeroQubitMeasurementError{qubits}
+		return ErrZeroQubitMeasurement
 	}
 
 	if duplicatedQubit, duplicated := hasDuplicateQubits(qubits); duplicated {
-		return &DuplicateQubitError{duplicatedQubit}
+		return &DuplicateQubitError{duplicatedQubit.Index()}
 	}
 
-	if !isValidMeasurementType(measurementType) {
-		return &InvalidMeasurementError{measurementType}
+	if !measurementType.isValid() {
+		return ErrInvalidMeasurementType
 	}
 
-	if !isValidMeasurementRotation(measurementRotation) {
-		return &InvalidMeasurementRotationError{measurementRotation}
+	if !measurementRotation.isValid() {
+		return ErrInvalidMeasurementRotation
 	}
 
 	return nil
 }
 
-func (m Measurement) IsValid() bool {
-	if len(m.qubits) == 0 {
-		return false
-	}
+func (m Measurement) isValid() bool {
+	return len(m.qubits) > 0 && m.measurementType != "" && m.measurementRotation != ""
+}
 
-	if _, duplicated := hasDuplicateQubits(m.qubits); duplicated {
-		return false
+func (m Measurement) validateQubits(numQubits uint) error {
+	for _, qubit := range m.qubits {
+		if qubit.Index() >= numQubits {
+			return &InvalidQubitError{QubitIndex: qubit.Index()}
+		}
 	}
-
-	if !isValidMeasurementType(m.measurementType) {
-		return false
-	}
-
-	if !isValidMeasurementRotation(m.measurementRotation) {
-		return false
-	}
-
-	return true
+	return nil
 }
 
 func (m Measurement) Equals(other Measurement) bool {
@@ -77,13 +74,7 @@ func (m Measurement) Equals(other Measurement) bool {
 		return false
 	}
 
-	for i, qubit := range m.qubits {
-		if qubit != other.qubits[i] {
-			return false
-		}
-	}
-
-	return true
+	return slices.Equal(m.qubits, other.qubits)
 }
 
 func (m Measurement) Qubits() []Qubit {

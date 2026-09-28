@@ -2,19 +2,11 @@ package vqc
 
 type Qubit uint
 
-func NewQubit(index uint, num_qubits uint) (Qubit, error) {
-	err := validateQubit(index, num_qubits)
-	if err != nil {
-		return 0, err
+func NewQubit(qubit uint, numQubits uint) (Qubit, error) {
+	if qubit >= numQubits {
+		return 0, ErrInvalidQubit
 	}
-	return Qubit(index), nil
-}
-
-func validateQubit(qubit uint, num_qubits uint) error {
-	if qubit >= num_qubits {
-		return &InvalidQubitError{qubit}
-	}
-	return nil
+	return Qubit(qubit), nil
 }
 
 func hasDuplicateQubits(qubits []Qubit) (Qubit, bool) {

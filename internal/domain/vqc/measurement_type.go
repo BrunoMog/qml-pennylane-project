@@ -9,26 +9,26 @@ const (
 	ProbabilityMeasurement MeasurementType = "probability"
 )
 
-func (m MeasurementType) Value() string {
+const maxMeasurementTypeLength = 20
+
+func (m MeasurementType) String() string {
 	return string(m)
 }
 
-func isValidMeasurementType(measurementType MeasurementType) bool {
-	switch measurementType {
-	case ExpectationMeasurement, ProbabilityMeasurement:
-		return true
-	default:
-		return false
-	}
+func (m MeasurementType) isValid() bool {
+	return m == ExpectationMeasurement || m == ProbabilityMeasurement
 }
 
 func ParseMeasurementType(measurementTypeStr string) (MeasurementType, error) {
+	if len(measurementTypeStr) > maxMeasurementTypeLength {
+		return "", ErrParseMeasurementType
+	}
 	switch strings.ToLower(strings.TrimSpace(measurementTypeStr)) {
 	case "expectation":
 		return ExpectationMeasurement, nil
 	case "probability":
 		return ProbabilityMeasurement, nil
 	default:
-		return "", &InvalidParseMeasurementTypeError{measurementType: MeasurementType(measurementTypeStr)}
+		return "", ErrParseMeasurementType
 	}
 }

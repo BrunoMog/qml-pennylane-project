@@ -4,61 +4,122 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestWithPreLayer(t *testing.T) {
-	layer := NewLayer([]QuantumGate{{gateType: HGate}})
 
-	inputVQC := VQCBaseInput{
-		Embedding:   validEmbedding(),
-		Measurement: validMeasurement(),
-		NumQubits:   2,
-		NumLayers:   1,
-	}
+	t.Run("valid pre-layer", func(t *testing.T) {
+		layer, err := NewLayer([]QuantumGate{{gateType: HGate}})
+		require.NoError(t, err)
 
-	vqc, err := NewVQC(inputVQC, WithPreLayer(layer))
-	assert.NoError(t, err)
-	assert.Equal(t, layer, vqc.PreLayer())
+		inputVQC := VQCBaseInput{
+			Embedding:   validEmbeddingOneQubit(t),
+			Measurement: validMeasurementOneQubit(t),
+			NumQubits:   1,
+			NumLayers:   1,
+		}
+
+		vqc, err := NewVQC(inputVQC, WithPreLayer(layer))
+		assert.NoError(t, err)
+		assert.Equal(t, layer, vqc.PreLayer())
+	})
+
+	t.Run("invalid pre-layer", func(t *testing.T) {
+		layer, err := NewLayer([]QuantumGate{{gateType: HGate, qubit: Qubit(1)}})
+		require.NoError(t, err)
+
+		inputVQC := VQCBaseInput{
+			Embedding:   validEmbeddingOneQubit(t),
+			Measurement: validMeasurementOneQubit(t),
+			NumQubits:   1,
+			NumLayers:   1,
+		}
+		vqc, err := NewVQC(inputVQC, WithPreLayer(layer))
+		assert.Error(t, err)
+		assert.Equal(t, VQC{}, vqc)
+	})
 }
 
 func TestWithLayer(t *testing.T) {
-	layer := NewLayer([]QuantumGate{{gateType: XGate}})
 
-	inputVQC := VQCBaseInput{
-		Embedding:   validEmbedding(),
-		Measurement: validMeasurement(),
-		NumQubits:   2,
-		NumLayers:   1,
-	}
+	t.Run("valid layer", func(t *testing.T) {
+		layer, err := NewLayer([]QuantumGate{{gateType: XGate}})
+		require.NoError(t, err)
 
-	vqc, err := NewVQC(inputVQC, WithLayer(layer))
-	assert.NoError(t, err)
-	assert.Equal(t, layer, vqc.Layer())
+		inputVQC := VQCBaseInput{
+			Embedding:   validEmbeddingOneQubit(t),
+			Measurement: validMeasurementOneQubit(t),
+			NumQubits:   2,
+			NumLayers:   1,
+		}
+
+		vqc, err := NewVQC(inputVQC, WithLayer(layer))
+		assert.NoError(t, err)
+		assert.Equal(t, layer, vqc.Layer())
+	})
+
+	t.Run("invalid layer", func(t *testing.T) {
+		layer, err := NewLayer([]QuantumGate{{gateType: XGate, qubit: Qubit(2)}})
+		require.NoError(t, err)
+
+		inputVQC := VQCBaseInput{
+			Embedding:   validEmbeddingOneQubit(t),
+			Measurement: validMeasurementOneQubit(t),
+			NumQubits:   2,
+			NumLayers:   1,
+		}
+		vqc, err := NewVQC(inputVQC, WithLayer(layer))
+		assert.Error(t, err)
+		assert.Equal(t, VQC{}, vqc)
+	})
 }
 
 func TestWithPostLayer(t *testing.T) {
-	layer := NewLayer([]QuantumGate{{gateType: CNOTGate}})
 
-	inputVQC := VQCBaseInput{
-		Embedding:   validEmbedding(),
-		Measurement: validMeasurement(),
-		NumQubits:   2,
-		NumLayers:   1,
-	}
+	t.Run("valid post-layer", func(t *testing.T) {
+		layer, err := NewLayer([]QuantumGate{{gateType: CNOTGate}})
+		require.NoError(t, err)
 
-	vqc, err := NewVQC(inputVQC, WithPostLayer(layer))
-	assert.NoError(t, err)
-	assert.Equal(t, layer, vqc.PostLayer())
+		inputVQC := VQCBaseInput{
+			Embedding:   validEmbeddingOneQubit(t),
+			Measurement: validMeasurementOneQubit(t),
+			NumQubits:   2,
+			NumLayers:   1,
+		}
+
+		vqc, err := NewVQC(inputVQC, WithPostLayer(layer))
+		assert.NoError(t, err)
+		assert.Equal(t, layer, vqc.PostLayer())
+	})
+
+	t.Run("invalid post-layer", func(t *testing.T) {
+		layer, err := NewLayer([]QuantumGate{{gateType: CNOTGate, qubit: Qubit(2)}})
+		require.NoError(t, err)
+
+		inputVQC := VQCBaseInput{
+			Embedding:   validEmbeddingOneQubit(t),
+			Measurement: validMeasurementOneQubit(t),
+			NumQubits:   2,
+			NumLayers:   1,
+		}
+		vqc, err := NewVQC(inputVQC, WithPostLayer(layer))
+		assert.Error(t, err)
+		assert.Equal(t, VQC{}, vqc)
+	})
 }
 
 func TestWithMultipleOptions(t *testing.T) {
-	preLayer := NewLayer([]QuantumGate{{gateType: HGate}})
-	layer := NewLayer([]QuantumGate{{gateType: XGate}})
-	postLayer := NewLayer([]QuantumGate{{gateType: CNOTGate}})
+	preLayer, err := NewLayer([]QuantumGate{{gateType: HGate}})
+	require.NoError(t, err)
+	layer, err := NewLayer([]QuantumGate{{gateType: XGate}})
+	require.NoError(t, err)
+	postLayer, err := NewLayer([]QuantumGate{{gateType: CNOTGate}})
+	require.NoError(t, err)
 
 	inputVQC := VQCBaseInput{
-		Embedding:   validEmbedding(),
-		Measurement: validMeasurement(),
+		Embedding:   validEmbeddingOneQubit(t),
+		Measurement: validMeasurementOneQubit(t),
 		NumQubits:   2,
 		NumLayers:   1,
 	}

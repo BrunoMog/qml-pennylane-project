@@ -1,39 +1,175 @@
 package vqc
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestParseGateType(t *testing.T) {
-	tests := []struct {
-		expectedError error
-		testName      string
-		input         string
-		expectedGate  GateType
-	}{
-		{testName: "Valid H gate", input: "h", expectedGate: HGate, expectedError: nil},
-		{testName: "Valid X gate", input: "x", expectedGate: XGate, expectedError: nil},
-		{testName: "Valid Y gate", input: "y", expectedGate: YGate, expectedError: nil},
-		{testName: "Valid Z gate", input: "z", expectedGate: ZGate, expectedError: nil},
-		{testName: "Valid RX gate", input: "rx", expectedGate: RXGate, expectedError: nil},
-		{testName: "Valid RY gate", input: "ry", expectedGate: RYGate, expectedError: nil},
-		{testName: "Valid RZ gate", input: "rz", expectedGate: RZGate, expectedError: nil},
-		{testName: "Valid CNOT gate", input: "cnot", expectedGate: CNOTGate, expectedError: nil},
-		{testName: "Invalid gate type", input: "invalid_gate", expectedGate: "", expectedError: &InvalidParseGateTypeError{}},
-	}
 
-	for _, tt := range tests {
-		t.Run(tt.testName, func(t *testing.T) {
-			gateType, err := ParseGateType(tt.input)
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.IsType(t, tt.expectedError, err)
-			} else {
+	t.Run("valid gate type cases", func(t *testing.T) {
+		inputs := []struct {
+			testName     string
+			input        string
+			expectedGate GateType
+		}{
+			{"valid H gate", "h", HGate},
+			{"valid X gate", "x", XGate},
+			{"valid Y gate", "y", YGate},
+			{"valid Z gate", "z", ZGate},
+			{"valid RX gate", "rx", RXGate},
+			{"valid RY gate", "ry", RYGate},
+			{"valid RZ gate", "rz", RZGate},
+			{"valid CNOT gate", "cnot", CNOTGate},
+			{"valid H gate with whitespace", " h ", HGate},
+			{"valid X gate with uppercase", "X", XGate},
+			{"valid RY gate with mixed case", "rY", RYGate},
+		}
+
+		for _, tc := range inputs {
+			t.Run(tc.testName, func(t *testing.T) {
+				result, err := ParseGateType(tc.input)
 				assert.NoError(t, err)
-				assert.Equal(t, tt.expectedGate, gateType)
-			}
-		})
-	}
+				assert.Equal(t, tc.expectedGate, result)
+			})
+		}
+	})
+
+	t.Run("invalid gate type cases", func(t *testing.T) {
+		inputs := []struct {
+			testName string
+			input    string
+		}{
+			{"invalid gate type", "invalid_gate"},
+			{"empty string", ""},
+			{"whitespace only", "   "},
+			{"numeric string", "123"},
+			{"special characters", "@#$%"},
+			{"mixed valid and invalid characters", "h!x"},
+			{"too long string", "this_is_a_very_long_gate_type_string"},
+		}
+
+		for _, tc := range inputs {
+			t.Run(tc.testName, func(t *testing.T) {
+				result, err := ParseGateType(tc.input)
+				assert.Error(t, err)
+				assert.Equal(t, GateType(""), result)
+			})
+		}
+	})
+
+	t.Run("extreme gate type cases", func(t *testing.T) {
+		inputs := []struct {
+			testName string
+			input    string
+		}{
+			{"100,000 characters", strings.Repeat("a", 100000)},
+			{"4,000,000 characters", strings.Repeat("a", 4000000)},
+			{"10,000,000 characters", strings.Repeat("a", 10000000)},
+		}
+
+		for _, tc := range inputs {
+			t.Run(tc.testName, func(t *testing.T) {
+				result, err := ParseGateType(tc.input)
+				assert.Error(t, err)
+				assert.Equal(t, GateType(""), result)
+			})
+		}
+	})
+}
+
+func TestIsValidGateType(t *testing.T) {
+	t.Run("valid gate type cases", func(t *testing.T) {
+		validGateTypes := []GateType{
+			HGate,
+			XGate,
+			YGate,
+			ZGate,
+			RXGate,
+			RYGate,
+			RZGate,
+			CNOTGate,
+		}
+
+		for _, gateType := range validGateTypes {
+			assert.True(t, gateType.isValid())
+		}
+	})
+
+	t.Run("invalid gate type cases", func(t *testing.T) {
+		invalidGateTypes := []GateType{
+			GateType("invalid"),
+			GateType(""),
+			GateType("   "),
+			GateType("123"),
+			GateType("@#$%"),
+			GateType("this_is_a_very_long_gate_type_string"),
+		}
+
+		for _, gateType := range invalidGateTypes {
+			assert.False(t, gateType.isValid())
+		}
+	})
+}
+
+func TestIsSingleQubitGate(t *testing.T) {
+	t.Run("single-qubit gate cases", func(t *testing.T) {
+		singleQubitGates := []GateType{
+			HGate,
+			XGate,
+			YGate,
+			ZGate,
+			RXGate,
+			RYGate,
+			RZGate,
+		}
+
+		for _, gateType := range singleQubitGates {
+			assert.True(t, gateType.isSingleQubitGate())
+		}
+	})
+
+	t.Run("non-single-qubit gate cases", func(t *testing.T) {
+		nonSingleQubitGates := []GateType{
+			CNOTGate,
+			GateType("invalid"),
+			GateType(""),
+		}
+
+		for _, gateType := range nonSingleQubitGates {
+			assert.False(t, gateType.isSingleQubitGate())
+		}
+	})
+}
+
+func TestIsTwoQubitGate(t *testing.T) {
+	t.Run("two-qubit gate cases", func(t *testing.T) {
+		twoQubitGates := []GateType{
+			CNOTGate,
+		}
+
+		for _, gateType := range twoQubitGates {
+			assert.True(t, gateType.isTwoQubitGate())
+		}
+	})
+
+	t.Run("non-two-qubit gate cases", func(t *testing.T) {
+		nonTwoQubitGates := []GateType{
+			HGate,
+			XGate,
+			YGate,
+			ZGate,
+			RXGate,
+			RYGate,
+			RZGate,
+			GateType("invalid"),
+			GateType(""),
+		}
+
+		for _, gateType := range nonTwoQubitGates {
+			assert.False(t, gateType.isTwoQubitGate())
+		}
+	})
 }

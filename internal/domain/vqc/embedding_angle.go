@@ -1,6 +1,10 @@
 package vqc
 
-import "slices"
+import (
+	"errors"
+	"fmt"
+	"slices"
+)
 
 type AngleEmbedding struct {
 	rotation EmbeddingRotation
@@ -8,24 +12,30 @@ type AngleEmbedding struct {
 }
 
 func NewAngleEmbedding(qubits []Qubit, rotation EmbeddingRotation) (AngleEmbedding, error) {
-	if !rotation.IsValid() {
-		return AngleEmbedding{}, &InvalidRotationError{rotation}
+	if !rotation.isValid() {
+		return AngleEmbedding{}, ErrInvalidEmbeddingRotation
 	}
 	if err := validateEmbeddingQubits(qubits); err != nil {
+		if errors.Is(err, ErrDuplicatedQubit) {
+			return AngleEmbedding{}, fmt.Errorf("embedding has %w", err)
+		}
 		return AngleEmbedding{}, err
 	}
 
-	return AngleEmbedding{qubits: qubits, rotation: rotation}, nil
+	return AngleEmbedding{qubits: slices.Clone(qubits), rotation: rotation}, nil
 }
 
-func (a AngleEmbedding) IsValid() bool {
-	if !a.rotation.IsValid() {
-		return false
+func (a AngleEmbedding) isValid() bool {
+	return len(a.qubits) > 0 && a.rotation != ""
+}
+
+func (a AngleEmbedding) validateQubits(numQubits uint) error {
+	for _, qubit := range a.qubits {
+		if qubit.Index() >= numQubits {
+			return &InvalidQubitError{QubitIndex: qubit.Index()}
+		}
 	}
-	if err := validateEmbeddingQubits(a.qubits); err != nil {
-		return false
-	}
-	return true
+	return nil
 }
 
 func (a AngleEmbedding) Equals(other Embedding) bool {
@@ -42,13 +52,7 @@ func (a AngleEmbedding) Equals(other Embedding) bool {
 		return false
 	}
 
-	for i, qubit := range a.qubits {
-		if qubit != otherAngle.qubits[i] {
-			return false
-		}
-	}
-
-	return true
+	return slices.Equal(a.qubits, otherAngle.qubits)
 }
 
 func (a AngleEmbedding) Type() EmbeddingType {

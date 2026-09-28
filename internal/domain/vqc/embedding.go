@@ -3,18 +3,19 @@ package vqc
 type Embedding interface {
 	Type() EmbeddingType
 	Qubits() []Qubit
-	IsValid() bool
 	Equals(other Embedding) bool
+	isValid() bool
+	validateQubits(numQubits uint) error
 
 	isEmbedding()
 }
 
 func validateEmbeddingQubits(qubits []Qubit) error {
 	if len(qubits) == 0 {
-		return &ZeroQubitEmbeddingError{qubit: qubits}
+		return ErrZeroQubitEmbedding
 	}
 	if qubit, ok := hasDuplicateQubits(qubits); ok {
-		return &DuplicateQubitError{qubit: qubit}
+		return &DuplicateQubitError{QubitIndex: qubit.Index()}
 	}
 	return nil
 }

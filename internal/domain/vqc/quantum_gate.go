@@ -1,6 +1,8 @@
 package vqc
 
 import (
+	"errors"
+	"fmt"
 	"slices"
 )
 
@@ -11,45 +13,56 @@ type QuantumGate struct {
 }
 
 func NewQuantumGate(gateType GateType, qubit Qubit, controlQubit []Qubit) (QuantumGate, error) {
-	controlQubit = slices.Clone(controlQubit)
 	err := validateGate(gateType, qubit, controlQubit)
 	if err != nil {
+		if errors.Is(err, ErrDuplicatedQubit) {
+			return QuantumGate{}, fmt.Errorf("quantum gate has %w", err)
+		}
 		return QuantumGate{}, err
 	}
 
 	return QuantumGate{
 		gateType:     gateType,
 		qubit:        qubit,
-		controlQubit: controlQubit,
+		controlQubit: slices.Clone(controlQubit),
 	}, nil
 }
 
 func validateGate(gateType GateType, qubit Qubit, controlQubit []Qubit) error {
-	if !isValidGate(gateType) {
-		return &InvalidGateError{gateType}
+	if !gateType.isValid() {
+		return ErrInvalidGateType
 	}
 
-	if slices.Contains(singleQubitGates, gateType) && len(controlQubit) > 0 {
-		return &InvalidControlQubitError{controlQubit}
-	} else if slices.Contains(twoQubitGates, gateType) && len(controlQubit) != 1 {
-		return &InvalidControlQubitError{controlQubit}
+	if gateType.isSingleQubitGate() && len(controlQubit) > 0 {
+		return &InvalidControlQubitError{Reason: fmt.Sprintf("single-qubit gate %s cannot have %d control qubits", gateType, len(controlQubit))}
+	} else if gateType.isTwoQubitGate() && len(controlQubit) != 1 {
+		return &InvalidControlQubitError{Reason: fmt.Sprintf("two-qubit gate %s must have exactly 1 control qubit", gateType)}
 	}
 
 	allQubits := append([]Qubit{qubit}, controlQubit...)
 	if duplicatedQubit, duplicated := hasDuplicateQubits(allQubits); duplicated {
-		return &DuplicateQubitError{duplicatedQubit}
+		return &DuplicateQubitError{duplicatedQubit.Index()}
 	}
 
 	return nil
 }
 
-func isValidGate(gateType GateType) bool {
-	switch gateType {
-	case HGate, XGate, YGate, ZGate, RXGate, RYGate, RZGate, CNOTGate:
-		return true
-	default:
-		return false
+func (q QuantumGate) isValid() bool {
+	return q.gateType != ""
+}
+
+func (q QuantumGate) validateQubits(numQubits uint) error {
+	if q.qubit.Index() >= numQubits {
+		return &InvalidQubitError{QubitIndex: q.qubit.Index()}
 	}
+
+	for _, control := range q.controlQubit {
+		if control.Index() >= numQubits {
+			return &InvalidQubitError{QubitIndex: control.Index()}
+		}
+	}
+
+	return nil
 }
 
 func (q QuantumGate) Equals(other QuantumGate) bool {
@@ -57,11 +70,7 @@ func (q QuantumGate) Equals(other QuantumGate) bool {
 		return false
 	}
 
-	if !slices.Equal(q.controlQubit, other.controlQubit) {
-		return false
-	}
-
-	return true
+	return slices.Equal(q.controlQubit, other.controlQubit)
 }
 
 func (q QuantumGate) HasParameters() bool {

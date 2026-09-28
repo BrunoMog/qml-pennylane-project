@@ -10,12 +10,14 @@ const (
 	ZMeasurementRotation MeasurementRotation = "z"
 )
 
-func (m MeasurementRotation) Value() string {
+const maxMeasurementRotationLength = 10
+
+func (m MeasurementRotation) String() string {
 	return string(m)
 }
 
-func isValidMeasurementRotation(measurementRotation MeasurementRotation) bool {
-	switch measurementRotation {
+func (m MeasurementRotation) isValid() bool {
+	switch m {
 	case XMeasurementRotation, YMeasurementRotation, ZMeasurementRotation:
 		return true
 	default:
@@ -24,7 +26,10 @@ func isValidMeasurementRotation(measurementRotation MeasurementRotation) bool {
 }
 
 func ParseMeasurementRotation(rotationStr string) (MeasurementRotation, error) {
-	switch strings.ToLower(rotationStr) {
+	if len(rotationStr) > maxMeasurementRotationLength {
+		return "", ErrParseMeasurementRotation
+	}
+	switch strings.ToLower(strings.TrimSpace(rotationStr)) {
 	case "x":
 		return XMeasurementRotation, nil
 	case "y":
@@ -32,6 +37,6 @@ func ParseMeasurementRotation(rotationStr string) (MeasurementRotation, error) {
 	case "z":
 		return ZMeasurementRotation, nil
 	default:
-		return "", &InvalidParseMeasurementRotationError{rotationStr}
+		return "", ErrParseMeasurementRotation
 	}
 }

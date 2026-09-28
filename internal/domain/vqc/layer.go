@@ -4,10 +4,24 @@ type Layer struct {
 	gates []QuantumGate
 }
 
-func NewLayer(gates []QuantumGate) Layer {
+func NewLayer(gates []QuantumGate) (Layer, error) {
+	err := validateGates(gates)
+	if err != nil {
+		return Layer{}, err
+	}
+
 	return Layer{
 		gates: cloneGates(gates),
+	}, nil
+}
+
+func validateGates(gates []QuantumGate) error {
+	for _, gate := range gates {
+		if !gate.isValid() {
+			return ErrInvalidQuantumGate
+		}
 	}
+	return nil
 }
 
 func cloneGates(gates []QuantumGate) []QuantumGate {
@@ -36,7 +50,19 @@ func (l Layer) HasParameterizedGates() bool {
 }
 
 func (l Layer) Clone() Layer {
-	return NewLayer(l.gates)
+	layer := Layer{
+		gates: cloneGates(l.gates),
+	}
+	return layer
+}
+
+func (l Layer) validateQubits(numQubits uint) error {
+	for _, gate := range l.gates {
+		if err := gate.validateQubits(numQubits); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (l Layer) Equals(other Layer) bool {

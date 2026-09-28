@@ -10,7 +10,9 @@ const (
 	ZRotation EmbeddingRotation = "z"
 )
 
-func (e EmbeddingRotation) IsValid() bool {
+const maxEmbeddingRotationLength = 10
+
+func (e EmbeddingRotation) isValid() bool {
 	switch e {
 	case XRotation, YRotation, ZRotation:
 		return true
@@ -19,12 +21,15 @@ func (e EmbeddingRotation) IsValid() bool {
 	}
 }
 
-func (e EmbeddingRotation) Value() string {
+func (e EmbeddingRotation) String() string {
 	return string(e)
 }
 
 func ParseEmbeddingRotation(rotationStr string) (EmbeddingRotation, error) {
-	switch strings.ToLower(rotationStr) {
+	if len(rotationStr) > maxEmbeddingRotationLength {
+		return "", ErrParseEmbeddingRotation
+	}
+	switch strings.ToLower(strings.TrimSpace(rotationStr)) {
 	case "x":
 		return XRotation, nil
 	case "y":
@@ -32,6 +37,6 @@ func ParseEmbeddingRotation(rotationStr string) (EmbeddingRotation, error) {
 	case "z":
 		return ZRotation, nil
 	default:
-		return "", &InvalidParseEmbeddingRotationError{rotationStr}
+		return "", ErrParseEmbeddingRotation
 	}
 }
