@@ -81,12 +81,12 @@ func TestEmailIsValid(t *testing.T) {
 	t.Run("correctly validates valid email", func(t *testing.T) {
 		email, err := NewEmail("test@example.com")
 		assert.NoError(t, err)
-		assert.True(t, email.IsValid())
+		assert.True(t, email.isValid())
 	})
 
 	t.Run("correctly identifies invalid email", func(t *testing.T) {
 		email, err := NewEmail("invalid-email")
 		assert.Error(t, err)
-		assert.False(t, email.IsValid())
+		assert.False(t, email.isValid())
 	})
 }

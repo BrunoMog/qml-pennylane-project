@@ -49,7 +49,7 @@ func validateEmail(email string) error {
 	return nil
 }
 
-func (e Email) IsValid() bool {
+func (e Email) isValid() bool {
 	return len(e.value) > 0
 }
 

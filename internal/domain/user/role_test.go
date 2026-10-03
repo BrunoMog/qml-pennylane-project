@@ -90,7 +90,7 @@ func TestIsValidRole(t *testing.T) {
 
 		for _, testCase := range validRoles {
 			t.Run(testCase.testName, func(t *testing.T) {
-				assert.True(t, testCase.role.IsValidRole())
+				assert.True(t, testCase.role.isValidRole())
 			})
 		}
 	})
@@ -109,7 +109,7 @@ func TestIsValidRole(t *testing.T) {
 
 		for _, testCase := range invalidRoles {
 			t.Run(testCase.testName, func(t *testing.T) {
-				assert.False(t, testCase.role.IsValidRole())
+				assert.False(t, testCase.role.isValidRole())
 			})
 		}
 	})

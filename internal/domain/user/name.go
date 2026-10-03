@@ -56,7 +56,7 @@ func validateNameRune(r rune) bool {
 	return false
 }
 
-func (n Name) IsValid() bool {
+func (n Name) isValid() bool {
 	return len(n.value) > 0
 }
 

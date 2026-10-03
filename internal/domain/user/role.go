@@ -32,7 +32,7 @@ func ParseRole(roleStr string) (Role, error) {
 	}
 }
 
-func (r Role) IsValidRole() bool {
+func (r Role) isValidRole() bool {
 	switch r {
 	case RoleOwner, RoleAdmin, RoleUser, RoleGuest:
 		return true

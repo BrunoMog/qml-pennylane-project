@@ -91,12 +91,12 @@ func TestNameIsValid(t *testing.T) {
 	t.Run("correctly validates valid name", func(t *testing.T) {
 		name, err := NewName("John Doe")
 		assert.NoError(t, err)
-		assert.True(t, name.IsValid())
+		assert.True(t, name.isValid())
 	})
 
 	t.Run("correctly identifies invalid name", func(t *testing.T) {
 		name, err := NewName("")
 		assert.Error(t, err)
-		assert.False(t, name.IsValid())
+		assert.False(t, name.isValid())
 	})
 }

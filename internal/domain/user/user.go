@@ -12,10 +12,10 @@ type User struct {
 }
 
 func NewUser(name Name, email Email) (*User, error) {
-	if !name.IsValid() {
+	if !name.isValid() {
 		return nil, ErrEmptyName
 	}
-	if !email.IsValid() {
+	if !email.isValid() {
 		return nil, ErrEmptyEmail
 	}
 
@@ -30,15 +30,15 @@ func NewUser(name Name, email Email) (*User, error) {
 
 func RestoreUser(id uuid.UUID, name Name, email Email, role Role) (*User, error) {
 	if id == uuid.Nil() {
-		return nil, ErrNilID
+		return nil, ErrNilUserID
 	}
-	if !name.IsValid() {
+	if !name.isValid() {
 		return nil, ErrEmptyName
 	}
-	if !email.IsValid() {
+	if !email.isValid() {
 		return nil, ErrEmptyEmail
 	}
-	if !role.IsValidRole() {
+	if !role.isValidRole() {
 		return nil, ErrInvalidRole
 	}
 
@@ -52,7 +52,7 @@ func RestoreUser(id uuid.UUID, name Name, email Email, role Role) (*User, error)
 }
 
 func (u *User) SetRole(newRole Role) error {
-	if !newRole.IsValidRole() {
+	if !newRole.isValidRole() {
 		return ErrInvalidRole
 	}
 	u.role = newRole
@@ -60,7 +60,7 @@ func (u *User) SetRole(newRole Role) error {
 }
 
 func (u *User) SetName(newName Name) error {
-	if !newName.IsValid() {
+	if !newName.isValid() {
 		return ErrEmptyName
 	}
 	u.name = newName
@@ -68,7 +68,7 @@ func (u *User) SetName(newName Name) error {
 }
 
 func (u *User) SetEmail(newEmail Email) error {
-	if !newEmail.IsValid() {
+	if !newEmail.isValid() {
 		return ErrEmptyEmail
 	}
 	u.email = newEmail
