@@ -1,8 +1,11 @@
 package vqcconfigusecase
 
 import (
+	"errors"
+	"fmt"
+	"pennylane_project_backend/internal/domain/user"
 	"pennylane_project_backend/internal/domain/vqcconfig"
-
+	"pennylane_project_backend/internal/usecase/apperrors"
 	"uuid"
 )
 
@@ -16,16 +19,32 @@ type UpdateVQCConfigInput struct {
 
 func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 	if input.Name == nil && input.Description == nil && input.VQCDTO == nil {
-		return &NoFieldsToUpdateError{}
+		return ErrNoFieldsToUpdate
+	}
+
+	if input.CallerID == uuid.Nil() {
+		return user.ErrNilUserID
+	}
+
+	if input.VQCConfigID == uuid.Nil() {
+		return vqcconfig.ErrNilVQCConfigID
 	}
 
 	config, err := s.vqcConfigRepository.FindByID(input.VQCConfigID)
 	if err != nil {
-		return err
+		if errors.Is(err, vqcconfig.ErrVQCConfigNotFound) {
+			return err
+		}
+
+		return fmt.Errorf("vqcconfigusecase: find vqc config by ID: %w", err)
 	}
 
 	if !canUpdateVQCConfig(input.CallerID, config) {
-		return &UnauthorizedError{}
+		return apperrors.NewPermissionDeniedError(
+			"user does not own the VQC config",
+			"update VQC config",
+			input.CallerID,
+		)
 	}
 
 	var needToSave bool
@@ -36,17 +55,20 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 			return err
 		}
 
-		if config.Name().Value() != name.Value() {
+		if config.Name().String() != name.String() {
 			if !name.Equals(config.Name()) {
 				exists, err := s.vqcConfigRepository.ExistsByName(input.CallerID, name)
 				if err != nil {
-					return err
+					return fmt.Errorf("vqcconfigusecase: check vqc config name existence: %w", err)
 				}
 				if exists {
-					return &VQCConfigNameAlreadyExistsError{}
+					return ErrVQCConfigNameAlreadyExists
 				}
 			}
-			config.SetName(name)
+			err := config.SetName(name)
+			if err != nil {
+				return err
+			}
 			needToSave = true
 		}
 	}
@@ -79,7 +101,7 @@ func (s *VQCConfigService) UpdateVQCConfig(input UpdateVQCConfigInput) error {
 	if needToSave {
 		err = s.vqcConfigRepository.Save(config)
 		if err != nil {
-			return err
+			return fmt.Errorf("vqcconfigusecase: save vqc config: %w", err)
 		}
 	}
 

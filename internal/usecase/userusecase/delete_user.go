@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 
 	"uuid"
 )
@@ -15,7 +16,7 @@ type DeleteUserInput struct {
 
 func (s *UserService) DeleteUser(input DeleteUserInput) error {
 	if input.CallerID == uuid.Nil() || input.TargetID == uuid.Nil() {
-		return ErrNilID
+		return user.ErrNilUserID
 	}
 
 	caller, err := s.repository.FindByID(input.CallerID)
@@ -42,7 +43,7 @@ func (s *UserService) DeleteUser(input DeleteUserInput) error {
 
 	reason, allowed := canDeleteUser(caller, target)
 	if !allowed {
-		return &PermissionDeniedError{reason: reason, callerID: caller.ID(), action: fmt.Sprintf("delete user %s", target.ID())}
+		return apperrors.NewPermissionDeniedError(reason, fmt.Sprintf("delete user %s", target.ID()), caller.ID())
 	}
 
 	err = s.repository.DeleteByID(input.TargetID)

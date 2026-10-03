@@ -3,6 +3,7 @@ package userusecase
 import (
 	"errors"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 	"testing"
 
 	"uuid"
@@ -48,14 +49,25 @@ func TestChangeOwner(t *testing.T) {
 			},
 		},
 		{
-			testName: "admin tries to change owner role",
+			testName: "admin tries to change ownership",
 			setup: func(fixture *testFixture) (ChangeOwnerInput, error) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				return ChangeOwnerInput{
 					CallerID: admin.ID(),
 					TargetID: owner.ID(),
-				}, ErrPermissionDenied
+				}, apperrors.ErrPermissionDenied
+			},
+		},
+		{
+			testName: "owner tries to swap ownership with a guest",
+			setup: func(fixture *testFixture) (ChangeOwnerInput, error) {
+				owner := fixture.createUser(user.RoleOwner)
+				guest := fixture.createUser(user.RoleGuest)
+				return ChangeOwnerInput{
+					CallerID: owner.ID(),
+					TargetID: guest.ID(),
+				}, apperrors.ErrPermissionDenied
 			},
 		},
 		{
@@ -64,7 +76,7 @@ func TestChangeOwner(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
 				return ChangeOwnerInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
@@ -77,7 +89,7 @@ func TestChangeOwner(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
 				return ChangeOwnerInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
@@ -90,7 +102,7 @@ func TestChangeOwner(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.ChangeOwnerErr = dbErr
+				fixture.userRepo.ErrChangeOwner = dbErr
 				return ChangeOwnerInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
@@ -114,7 +126,7 @@ func TestChangeOwner(t *testing.T) {
 				return ChangeOwnerInput{
 					CallerID: uuid.Nil(),
 					TargetID: owner.ID(),
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 		{
@@ -124,7 +136,7 @@ func TestChangeOwner(t *testing.T) {
 				return ChangeOwnerInput{
 					CallerID: owner.ID(),
 					TargetID: uuid.Nil(),
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 	}

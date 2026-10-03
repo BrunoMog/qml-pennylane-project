@@ -3,6 +3,7 @@ package userusecase
 import (
 	"errors"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 	"testing"
 
 	"uuid"
@@ -65,7 +66,7 @@ func TestDeleteUser(t *testing.T) {
 				return DeleteUserInput{
 					CallerID: admin.ID(),
 					TargetID: owner.ID(),
-				}, ErrPermissionDenied
+				}, apperrors.ErrPermissionDenied
 			},
 		},
 		{
@@ -75,7 +76,7 @@ func TestDeleteUser(t *testing.T) {
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: owner.ID(),
-				}, ErrPermissionDenied
+				}, apperrors.ErrPermissionDenied
 			},
 		},
 		{
@@ -84,7 +85,7 @@ func TestDeleteUser(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
@@ -97,7 +98,7 @@ func TestDeleteUser(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
@@ -110,7 +111,7 @@ func TestDeleteUser(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				admin := fixture.createUser(user.RoleAdmin)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.DeleteByIDErr = dbErr
+				fixture.userRepo.ErrDeleteByID = dbErr
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: admin.ID(),
@@ -124,7 +125,7 @@ func TestDeleteUser(t *testing.T) {
 				return DeleteUserInput{
 					CallerID: uuid.Nil(),
 					TargetID: owner.ID(),
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 		{
@@ -134,7 +135,7 @@ func TestDeleteUser(t *testing.T) {
 				return DeleteUserInput{
 					CallerID: owner.ID(),
 					TargetID: uuid.Nil(),
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 	}

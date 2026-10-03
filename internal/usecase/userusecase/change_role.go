@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 	"uuid"
 )
 
@@ -15,7 +16,7 @@ type ChangeUserRoleInput struct {
 
 func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 	if input.CallerID == uuid.Nil() || input.TargetID == uuid.Nil() {
-		return ErrNilID
+		return user.ErrNilUserID
 	}
 
 	role, err := user.ParseRole(input.Role)
@@ -45,7 +46,7 @@ func (s *UserService) ChangeUserRole(input ChangeUserRoleInput) error {
 	}
 
 	if reason, allowed := canAssignRole(caller.Role(), target.Role(), role); !allowed {
-		return &PermissionDeniedError{reason: reason, callerID: caller.ID(), action: fmt.Sprintf("assign role %s to user %s", role, target.ID())}
+		return apperrors.NewPermissionDeniedError(reason, fmt.Sprintf("assign role %s to user %s", role, target.ID()), caller.ID())
 	}
 
 	if target.Role() == role {

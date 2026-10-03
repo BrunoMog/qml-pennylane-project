@@ -37,7 +37,7 @@ func newTestFixture(t *testing.T) *testFixture {
 
 	makeUser := testkit.DefaultUser(t)
 	makeTrainConfig := testkit.DefaultTrainConfig()
-	makeVQCConfig := testkit.DefaultVQCConfig()
+	makeVQCConfig := testkit.DefaultVQCConfig(t)
 	makeExperiment := testkit.DefaultExperiment()
 
 	return &testFixture{

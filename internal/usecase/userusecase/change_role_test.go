@@ -3,6 +3,7 @@ package userusecase
 import (
 	"errors"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 	"testing"
 
 	"uuid"
@@ -83,7 +84,7 @@ func TestChangeUserRole(t *testing.T) {
 					CallerID: admin.ID(),
 					TargetID: owner.ID(),
 					Role:     "admin",
-				}, ErrPermissionDenied
+				}, apperrors.ErrPermissionDenied
 			},
 		},
 		{
@@ -94,7 +95,7 @@ func TestChangeUserRole(t *testing.T) {
 					CallerID: owner.ID(),
 					TargetID: owner.ID(),
 					Role:     "admin",
-				}, ErrPermissionDenied
+				}, apperrors.ErrPermissionDenied
 			},
 		},
 		{
@@ -103,7 +104,7 @@ func TestChangeUserRole(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				newUser := fixture.createUser(user.RoleUser)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
 				return ChangeUserRoleInput{
 					CallerID: owner.ID(),
 					TargetID: newUser.ID(),
@@ -117,7 +118,7 @@ func TestChangeUserRole(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				newUser := fixture.createUser(user.RoleUser)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
 				return ChangeUserRoleInput{
 					CallerID: owner.ID(),
 					TargetID: newUser.ID(),
@@ -131,7 +132,7 @@ func TestChangeUserRole(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				newUser := fixture.createUser(user.RoleUser)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.SaveErr = dbErr
+				fixture.userRepo.ErrSave = dbErr
 				return ChangeUserRoleInput{
 					CallerID: owner.ID(),
 					TargetID: newUser.ID(),
@@ -159,7 +160,7 @@ func TestChangeUserRole(t *testing.T) {
 					CallerID: uuid.Nil(),
 					TargetID: newUser.ID(),
 					Role:     "admin",
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 		{
@@ -170,7 +171,7 @@ func TestChangeUserRole(t *testing.T) {
 					CallerID: owner.ID(),
 					TargetID: uuid.Nil(),
 					Role:     "admin",
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 	}

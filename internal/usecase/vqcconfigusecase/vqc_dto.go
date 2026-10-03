@@ -106,7 +106,7 @@ func buildEmbedding(input EmbeddingDTO, numQubits uint) (vqc.Embedding, error) {
 	case vqc.EmbeddingTypeAmplitude:
 		return buildAmplitudeEmbedding(input, qubits)
 	default:
-		return nil, &UnreachableEmbeddingTypeError{embeddingType.Value()}
+		return nil, &UnreachableEmbeddingTypeError{embeddingType.String()}
 	}
 }
 
@@ -159,7 +159,7 @@ func buildLayer(input LayerDTO, numQubits uint) (vqc.Layer, error) {
 		}
 		gates[i] = gate
 	}
-	return vqc.NewLayer(gates), nil
+	return vqc.NewLayer(gates)
 }
 
 func buildQuantumGate(input QuantumGateDTO, numQubits uint) (vqc.QuantumGate, error) {
@@ -227,9 +227,9 @@ func buildAngleEmbeddingDTO(embedding vqc.Embedding, qubits []uint) EmbeddingDTO
 		return EmbeddingDTO{}
 	}
 	return EmbeddingDTO{
-		EmbeddingType: angleEmbedding.Type().Value(),
+		EmbeddingType: angleEmbedding.Type().String(),
 		Qubits:        qubits,
-		Rotation:      angleEmbedding.Rotation().Value(),
+		Rotation:      angleEmbedding.Rotation().String(),
 	}
 }
 
@@ -239,7 +239,7 @@ func buildAmplitudeEmbeddingDTO(embedding vqc.Embedding, qubits []uint) Embeddin
 		return EmbeddingDTO{}
 	}
 	return EmbeddingDTO{
-		EmbeddingType: amplitudeEmbedding.Type().Value(),
+		EmbeddingType: amplitudeEmbedding.Type().String(),
 		Qubits:        qubits,
 		Normalize:     amplitudeEmbedding.Normalize(),
 		PadWith:       amplitudeEmbedding.PadWith(),
@@ -252,8 +252,8 @@ func buildMeasurementDTO(measurement vqc.Measurement) MeasurementDTO {
 		qubits[i] = qubit.Index()
 	}
 	return MeasurementDTO{
-		MeasurementType:     measurement.MeasurementType().Value(),
-		MeasurementRotation: measurement.MeasurementRotation().Value(),
+		MeasurementType:     measurement.MeasurementType().String(),
+		MeasurementRotation: measurement.MeasurementRotation().String(),
 		Qubits:              qubits,
 	}
 }
@@ -274,7 +274,7 @@ func buildQuantumGateDTO(gate vqc.QuantumGate) QuantumGateDTO {
 		controlQubits[i] = qubit.Index()
 	}
 	return QuantumGateDTO{
-		GateType: gate.GateType().Value(),
+		GateType: gate.GateType().String(),
 		Qubit:    gate.Qubit().Index(),
 		Controls: controlQubits,
 	}

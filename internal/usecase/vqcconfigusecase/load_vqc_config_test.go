@@ -1,8 +1,10 @@
 package vqcconfigusecase
 
 import (
+	"errors"
 	"pennylane_project_backend/internal/domain/user"
-	"pennylane_project_backend/internal/testkit"
+	"pennylane_project_backend/internal/domain/vqcconfig"
+	"pennylane_project_backend/internal/usecase/apperrors"
 	"testing"
 
 	"uuid"
@@ -11,128 +13,209 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestLoadVQCConfig(t *testing.T) {
+func TestLoadVQCConfigByID(t *testing.T) {
 	tests := []struct {
-		expectedError error
-		setup         func(f *testFixture) LoadVQCConfigInput
-		testName      string
+		setup    func(f *testFixture) (LoadVQCConfigByIDInput, error)
+		testName string
 	}{
 		{
 			testName: "load VQCConfig by ID successfully",
-			setup: func(f *testFixture) LoadVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				vqcConfig := f.createVQCConfig(user.ID())
-				vqcConfigID := vqcConfig.VQCConfigID()
-				return LoadVQCConfigInput{
-					CallerID:      user.ID(),
-					VQCConfigID:   &vqcConfigID,
-					VQCConfigName: nil,
-				}
+			setup: func(f *testFixture) (LoadVQCConfigByIDInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				return LoadVQCConfigByIDInput{
+					CallerID:    newUser.ID(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}, nil
 			},
-			expectedError: nil,
 		},
 		{
-			testName: "load VQCConfig by name successfully",
-			setup: func(f *testFixture) LoadVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				vqcConfig := f.createVQCConfig(user.ID())
-				vqcConfigName := vqcConfig.Name().Value()
-				return LoadVQCConfigInput{
-					CallerID:      user.ID(),
-					VQCConfigID:   nil,
-					VQCConfigName: &vqcConfigName,
-				}
+			testName: "inexistent VQCConfig ID",
+			setup: func(f *testFixture) (LoadVQCConfigByIDInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				return LoadVQCConfigByIDInput{
+					CallerID:    newUser.ID(),
+					VQCConfigID: uuid.New(),
+				}, vqcconfig.ErrVQCConfigNotFound
 			},
-			expectedError: nil,
 		},
 		{
-			testName: "inexistent caller user",
-			setup: func(f *testFixture) LoadVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				vqcConfig := f.createVQCConfig(user.ID())
-				vqcConfigID := vqcConfig.VQCConfigID()
-				return LoadVQCConfigInput{
-					CallerID:      uuid.New(),
-					VQCConfigID:   &vqcConfigID,
-					VQCConfigName: nil,
-				}
-			},
-			expectedError: &UnauthorizedError{},
-		},
-		{
-			testName: "inexistent VQCConfig by ID",
-			setup: func(f *testFixture) LoadVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				vqcConfigID := uuid.New()
-				return LoadVQCConfigInput{
-					CallerID:      user.ID(),
-					VQCConfigID:   &vqcConfigID,
-					VQCConfigName: nil,
-				}
-			},
-			expectedError: &testkit.ErrVQCConfigNotFound{},
-		},
-		{
-			testName: "inexistent VQCConfig by name",
-			setup: func(f *testFixture) LoadVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				vqcConfigName := "nonexistent-config"
-				return LoadVQCConfigInput{
-					CallerID:      user.ID(),
-					VQCConfigID:   nil,
-					VQCConfigName: &vqcConfigName,
-				}
-			},
-			expectedError: &testkit.ErrVQCConfigNotFound{},
-		},
-		{
-			testName: "unauthorized user",
-			setup: func(f *testFixture) LoadVQCConfigInput {
+			testName: "user trying to load a VQCConfig they do not own",
+			setup: func(f *testFixture) (LoadVQCConfigByIDInput, error) {
 				owner := f.createUser(user.RoleUser)
 				vqcConfig := f.createVQCConfig(owner.ID())
 				unauthorizedUser := f.createUser(user.RoleUser)
-				vqcConfigID := vqcConfig.VQCConfigID()
-				return LoadVQCConfigInput{
-					CallerID:      unauthorizedUser.ID(),
-					VQCConfigID:   &vqcConfigID,
-					VQCConfigName: nil,
-				}
+				return LoadVQCConfigByIDInput{
+					CallerID:    unauthorizedUser.ID(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}, apperrors.ErrPermissionDenied
 			},
-			expectedError: &UnauthorizedError{},
 		},
 		{
-			testName: "both VQCConfigID and VQCConfigName are nil",
-			setup: func(f *testFixture) LoadVQCConfigInput {
-				user := f.createUser(user.RoleUser)
-				return LoadVQCConfigInput{
-					CallerID:      user.ID(),
-					VQCConfigID:   nil,
-					VQCConfigName: nil,
-				}
+			testName: "inexistent caller user",
+			setup: func(f *testFixture) (LoadVQCConfigByIDInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				return LoadVQCConfigByIDInput{
+					CallerID:    uuid.New(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}, apperrors.ErrPermissionDenied
 			},
-			expectedError: &InvalidInputError{},
+		},
+		{
+			testName: "nil caller ID",
+			setup: func(f *testFixture) (LoadVQCConfigByIDInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				return LoadVQCConfigByIDInput{
+					CallerID:    uuid.Nil(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}, user.ErrNilUserID
+			},
+		},
+		{
+			testName: "nil VQCConfig ID",
+			setup: func(f *testFixture) (LoadVQCConfigByIDInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				return LoadVQCConfigByIDInput{
+					CallerID:    newUser.ID(),
+					VQCConfigID: uuid.Nil(),
+				}, vqcconfig.ErrNilVQCConfigID
+			},
+		},
+		{
+			testName: "fail to find VQCConfig by ID due to repository error",
+			setup: func(f *testFixture) (LoadVQCConfigByIDInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				dbErr := errors.New("database unavailable")
+				f.vqcConfigRepo.ErrFindByID = dbErr
+				return LoadVQCConfigByIDInput{
+					CallerID:    newUser.ID(),
+					VQCConfigID: vqcConfig.VQCConfigID(),
+				}, dbErr
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.testName, func(t *testing.T) {
 			fixture := newTestFixture(t)
-			input := tt.setup(fixture)
-			output, err := fixture.service.LoadVQCConfig(input)
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.IsType(t, tt.expectedError, err)
+			input, expectedErr := tt.setup(fixture)
+			output, receivedErr := fixture.service.LoadVQCConfigByID(input)
+
+			if expectedErr != nil {
+				assert.ErrorIs(t, receivedErr, expectedErr)
 				assert.Nil(t, output)
 			} else {
-				assert.NoError(t, err)
+				assert.NoError(t, receivedErr)
 				assert.NotNil(t, output)
 				assert.Equal(t, input.CallerID, output.OwnerID)
-				if input.VQCConfigID != nil {
-					assert.Equal(t, input.VQCConfigID, &output.VQCConfigID)
-				}
-				if input.VQCConfigName != nil {
-					assert.Equal(t, *input.VQCConfigName, output.Name)
-				}
+				assert.Equal(t, input.VQCConfigID, output.VQCConfigID)
+			}
+		})
+	}
+}
+
+func TestLoadVQCConfigByName(t *testing.T) {
+	tests := []struct {
+		setup    func(f *testFixture) (LoadVQCConfigByNameInput, error)
+		testName string
+	}{
+		{
+			testName: "load VQCConfig by name successfully",
+			setup: func(f *testFixture) (LoadVQCConfigByNameInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				return LoadVQCConfigByNameInput{
+					CallerID:      newUser.ID(),
+					VQCConfigName: vqcConfig.Name().String(),
+				}, nil
+			},
+		},
+		{
+			testName: "inexistent VQCConfig name",
+			setup: func(f *testFixture) (LoadVQCConfigByNameInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				return LoadVQCConfigByNameInput{
+					CallerID:      newUser.ID(),
+					VQCConfigName: "NonExistentConfig",
+				}, vqcconfig.ErrVQCConfigNotFound
+			},
+		},
+		{
+			testName: "user trying to load a VQCConfig they do not own",
+			setup: func(f *testFixture) (LoadVQCConfigByNameInput, error) {
+				owner := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(owner.ID())
+				unauthorizedUser := f.createUser(user.RoleUser)
+				return LoadVQCConfigByNameInput{
+					CallerID:      unauthorizedUser.ID(),
+					VQCConfigName: vqcConfig.Name().String(),
+				}, vqcconfig.ErrVQCConfigNotFound
+			},
+		},
+		{
+			testName: "inexistent caller user",
+			setup: func(f *testFixture) (LoadVQCConfigByNameInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				return LoadVQCConfigByNameInput{
+					CallerID:      uuid.New(),
+					VQCConfigName: vqcConfig.Name().String(),
+				}, vqcconfig.ErrVQCConfigNotFound
+			},
+		},
+		{
+			testName: "nil caller ID",
+			setup: func(f *testFixture) (LoadVQCConfigByNameInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				return LoadVQCConfigByNameInput{
+					CallerID:      uuid.Nil(),
+					VQCConfigName: vqcConfig.Name().String(),
+				}, user.ErrNilUserID
+			},
+		},
+		{
+			testName: "invalid VQCConfig name",
+			setup: func(f *testFixture) (LoadVQCConfigByNameInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				return LoadVQCConfigByNameInput{
+					CallerID:      newUser.ID(),
+					VQCConfigName: "",
+				}, vqcconfig.ErrInvalidName
+			},
+		},
+		{
+			testName: "fail to find VQCConfig by name due to repository error",
+			setup: func(f *testFixture) (LoadVQCConfigByNameInput, error) {
+				newUser := f.createUser(user.RoleUser)
+				vqcConfig := f.createVQCConfig(newUser.ID())
+				dbErr := errors.New("database unavailable")
+				f.vqcConfigRepo.ErrFindByName = dbErr
+				return LoadVQCConfigByNameInput{
+					CallerID:      newUser.ID(),
+					VQCConfigName: vqcConfig.Name().String(),
+				}, dbErr
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+			fixture := newTestFixture(t)
+			input, expectedErr := tt.setup(fixture)
+			output, receivedErr := fixture.service.LoadVQCConfigByName(input)
+
+			if expectedErr != nil {
+				assert.ErrorIs(t, receivedErr, expectedErr)
+				assert.Nil(t, output)
+			} else {
+				assert.NoError(t, receivedErr)
+				assert.NotNil(t, output)
+				assert.Equal(t, input.CallerID, output.OwnerID)
+				assert.Equal(t, input.VQCConfigName, output.Name)
 			}
 		})
 	}

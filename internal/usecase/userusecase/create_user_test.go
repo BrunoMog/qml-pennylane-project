@@ -61,7 +61,7 @@ func TestCreateUser(t *testing.T) {
 			testName: "error when checking email existence",
 			setup: func(f *testFixture) (CreateUserInput, error) {
 				dbErr := errors.New("database unavailable")
-				f.userRepo.ExistsByEmailErr = dbErr
+				f.userRepo.ErrExistsByEmail = dbErr
 
 				return CreateUserInput{
 					Name:  "John Doe",
@@ -73,7 +73,7 @@ func TestCreateUser(t *testing.T) {
 			testName: "error when saving user",
 			setup: func(f *testFixture) (CreateUserInput, error) {
 				dbErr := errors.New("database unavailable")
-				f.userRepo.SaveErr = dbErr
+				f.userRepo.ErrSave = dbErr
 
 				return CreateUserInput{
 					Name:  "John Doe",

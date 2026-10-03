@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 
 	"uuid"
 )
@@ -15,7 +16,7 @@ type ChangeOwnerInput struct {
 
 func (s *UserService) ChangeOwner(input ChangeOwnerInput) error {
 	if input.CallerID == uuid.Nil() || input.TargetID == uuid.Nil() {
-		return ErrNilID
+		return user.ErrNilUserID
 	}
 
 	caller, err := s.repository.FindByID(input.CallerID)
@@ -40,7 +41,7 @@ func (s *UserService) ChangeOwner(input ChangeOwnerInput) error {
 	}
 
 	if reason, allowed := canChangeOwner(caller, target); !allowed {
-		return &PermissionDeniedError{reason: reason, callerID: caller.ID(), action: "change owner"}
+		return apperrors.NewPermissionDeniedError(reason, "change owner", caller.ID())
 	}
 
 	if caller.ID() == target.ID() {
@@ -58,6 +59,9 @@ func (s *UserService) ChangeOwner(input ChangeOwnerInput) error {
 func canChangeOwner(caller *user.User, target *user.User) (string, bool) {
 	if caller.Role() != user.RoleOwner {
 		return "Caller is not an owner", false
+	}
+	if target.Role() == user.RoleGuest {
+		return "Target is a guest", false
 	}
 	return "", true
 }

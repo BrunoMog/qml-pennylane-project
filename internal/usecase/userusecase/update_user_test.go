@@ -3,6 +3,7 @@ package userusecase
 import (
 	"errors"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 	"testing"
 
 	"uuid"
@@ -124,7 +125,7 @@ func TestUpdateUser(t *testing.T) {
 					CallerID: user1.ID(),
 					TargetID: user2.ID(),
 					Name:     &newName,
-				}, ErrPermissionDenied
+				}, apperrors.ErrPermissionDenied
 			},
 		},
 		{
@@ -147,7 +148,7 @@ func TestUpdateUser(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				newUser := fixture.createUser(user.RoleUser)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
 				newName := "Updated Name"
 				return UpdateUserInput{
 					CallerID: owner.ID(),
@@ -162,7 +163,22 @@ func TestUpdateUser(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				newUser := fixture.createUser(user.RoleUser)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.FindByIDErr = dbErr
+				fixture.userRepo.ErrFindByID = dbErr
+				newEmail := "updated@example.com"
+				return UpdateUserInput{
+					CallerID: owner.ID(),
+					TargetID: newUser.ID(),
+					Email:    &newEmail,
+				}, dbErr
+			},
+		},
+		{
+			testName: "fail to check email uniqueness",
+			setup: func(fixture *testFixture) (UpdateUserInput, error) {
+				owner := fixture.createUser(user.RoleOwner)
+				newUser := fixture.createUser(user.RoleUser)
+				dbErr := errors.New("database unavailable")
+				fixture.userRepo.ErrExistsByEmail = dbErr
 				newEmail := "updated@example.com"
 				return UpdateUserInput{
 					CallerID: owner.ID(),
@@ -177,7 +193,7 @@ func TestUpdateUser(t *testing.T) {
 				owner := fixture.createUser(user.RoleOwner)
 				newUser := fixture.createUser(user.RoleUser)
 				dbErr := errors.New("database unavailable")
-				fixture.userRepo.SaveErr = dbErr
+				fixture.userRepo.ErrSave = dbErr
 				newName := "Updated Name"
 				return UpdateUserInput{
 					CallerID: owner.ID(),
@@ -195,7 +211,7 @@ func TestUpdateUser(t *testing.T) {
 					CallerID: uuid.Nil(),
 					TargetID: newUser.ID(),
 					Name:     &newName,
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 		{
@@ -207,7 +223,7 @@ func TestUpdateUser(t *testing.T) {
 					CallerID: newUser.ID(),
 					TargetID: uuid.Nil(),
 					Email:    &newEmail,
-				}, ErrNilID
+				}, user.ErrNilUserID
 			},
 		},
 	}

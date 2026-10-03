@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"pennylane_project_backend/internal/domain/user"
+	"pennylane_project_backend/internal/usecase/apperrors"
 
 	"uuid"
 )
@@ -17,7 +18,7 @@ type UpdateUserInput struct {
 
 func (s *UserService) UpdateUser(input UpdateUserInput) error {
 	if input.CallerID == uuid.Nil() || input.TargetID == uuid.Nil() {
-		return ErrNilID
+		return user.ErrNilUserID
 	}
 
 	if input.Name == nil && input.Email == nil {
@@ -47,7 +48,7 @@ func (s *UserService) UpdateUser(input UpdateUserInput) error {
 
 	reason, allowed := canUpdateUser(caller, userToUpdate)
 	if !allowed {
-		return &PermissionDeniedError{reason: reason, callerID: caller.ID(), action: fmt.Sprintf("update user %s", userToUpdate.ID())}
+		return apperrors.NewPermissionDeniedError(reason, fmt.Sprintf("update user %s", userToUpdate.ID()), caller.ID())
 	}
 
 	var needToSave bool

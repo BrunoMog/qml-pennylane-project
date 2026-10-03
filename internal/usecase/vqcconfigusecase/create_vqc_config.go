@@ -1,6 +1,8 @@
 package vqcconfigusecase
 
 import (
+	"fmt"
+	"pennylane_project_backend/internal/domain/user"
 	"pennylane_project_backend/internal/domain/vqcconfig"
 	"time"
 
@@ -22,6 +24,10 @@ type CreateVQCConfigOutput struct {
 }
 
 func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateVQCConfigOutput, error) {
+	if input.CallerID == uuid.Nil() {
+		return nil, user.ErrNilUserID
+	}
+
 	name, err := vqcconfig.NewName(input.Name)
 	if err != nil {
 		return nil, err
@@ -37,17 +43,17 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 
 	exists, err := s.userRepository.ExistsByID(input.CallerID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vqcconfigusecase: check user existence: %w", err)
 	}
 	if !exists {
-		return nil, &UserNotFoundError{}
+		return nil, user.ErrUserNotFound
 	}
 	exists, err = s.vqcConfigRepository.ExistsByName(input.CallerID, name)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vqcconfigusecase: check vqc config name existence: %w", err)
 	}
 	if exists {
-		return nil, &VQCConfigNameAlreadyExistsError{Name: input.Name}
+		return nil, ErrVQCConfigNameAlreadyExists
 	}
 
 	newConfig, err := vqcconfig.NewVQCConfig(input.CallerID, name, description, vqc)
@@ -57,15 +63,16 @@ func (s *VQCConfigService) CreateVQCConfig(input CreateVQCConfigInput) (*CreateV
 
 	err = s.vqcConfigRepository.Save(newConfig)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("vqcconfigusecase: save vqc config: %w", err)
 	}
 
 	output := &CreateVQCConfigOutput{
-		Name:        newConfig.Name().Value(),
-		Description: newConfig.Description().Value(),
+		Name:        newConfig.Name().String(),
+		Description: newConfig.Description().String(),
 		VQCConfigID: newConfig.VQCConfigID(),
 		CreatedAt:   newConfig.CreatedAt(),
 	}
+
 	return output, nil
 
 }

@@ -27,7 +27,7 @@ func newTestFixture(t *testing.T) *testFixture {
 	vqcConfigRepo := testkit.NewMockVQCConfigRepository()
 	service := NewVQCConfigService(vqcConfigRepo, userRepo)
 	makeUser := testkit.DefaultUser(t)
-	makeVQCConfig := testkit.DefaultVQCConfig()
+	makeVQCConfig := testkit.DefaultVQCConfig(t)
 
 	return &testFixture{
 		t:             t,
@@ -54,20 +54,16 @@ func (f *testFixture) createVQCConfig(ownerID uuid.UUID) *vqcconfig.VQCConfig {
 	return vqcConfig
 }
 
-func validVQC() vqc.VQC {
+func validVQC(t *testing.T) vqc.VQC {
+	t.Helper()
+
 	qubitZero, err := vqc.NewQubit(0, 1)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	qubits := []vqc.Qubit{qubitZero}
 	embedding, err := vqc.NewAngleEmbedding(qubits, vqc.XRotation)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	measurement, err := vqc.NewMeasurement(qubits, vqc.ExpectationMeasurement, vqc.XMeasurementRotation)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	input := vqc.VQCBaseInput{
 		NumQubits:   1,
 		NumLayers:   1,
@@ -75,15 +71,33 @@ func validVQC() vqc.VQC {
 		Measurement: measurement,
 	}
 	vqc, err := vqc.NewVQC(input)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	return vqc
 }
 
-func ValidVQCDTO() VQCDTO {
+func validVQCDTO() VQCDTO {
 	return VQCDTO{
 		NumQubits: 1,
+		NumLayers: 1,
+		Embedding: EmbeddingDTO{
+			EmbeddingType: "angle",
+			Qubits:        []uint{0},
+			Rotation:      "x",
+		},
+		Measurement: MeasurementDTO{
+			MeasurementType:     "expectation",
+			MeasurementRotation: "x",
+			Qubits:              []uint{0},
+		},
+		PreLayer:  LayerDTO{Gates: []QuantumGateDTO{}},
+		Layer:     LayerDTO{Gates: []QuantumGateDTO{}},
+		PostLayer: LayerDTO{Gates: []QuantumGateDTO{}},
+	}
+}
+
+func invalidVQCDTO() VQCDTO {
+	return VQCDTO{
+		NumQubits: 0,
 		NumLayers: 1,
 		Embedding: EmbeddingDTO{
 			EmbeddingType: "angle",
