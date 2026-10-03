@@ -9,13 +9,13 @@ import (
 type MockUserRepository struct {
 	users map[uuid.UUID]*user.User
 
-	ExistsByEmailErr error
-	ExistsByIDErr    error
-	SaveErr          error
-	FindByIDErr      error
-	FindByEmailErr   error
-	DeleteByIDErr    error
-	ChangeOwnerErr   error
+	ErrSave          error
+	ErrExistsByID    error
+	ErrFindByEmail   error
+	ErrFindByID      error
+	ErrExistsByEmail error
+	ErrDeleteByID    error
+	ErrChangeOwner   error
 }
 
 func NewMockUserRepository() *MockUserRepository {
@@ -25,8 +25,8 @@ func NewMockUserRepository() *MockUserRepository {
 }
 
 func (r *MockUserRepository) Save(u *user.User) error {
-	if r.SaveErr != nil {
-		return r.SaveErr
+	if r.ErrSave != nil {
+		return r.ErrSave
 	}
 
 	r.users[u.ID()] = u
@@ -34,8 +34,8 @@ func (r *MockUserRepository) Save(u *user.User) error {
 }
 
 func (r *MockUserRepository) FindByID(id uuid.UUID) (*user.User, error) {
-	if r.FindByIDErr != nil {
-		return nil, r.FindByIDErr
+	if r.ErrFindByID != nil {
+		return nil, r.ErrFindByID
 	}
 
 	if u, ok := r.users[id]; ok {
@@ -46,8 +46,8 @@ func (r *MockUserRepository) FindByID(id uuid.UUID) (*user.User, error) {
 }
 
 func (r *MockUserRepository) FindByEmail(email user.Email) (*user.User, error) {
-	if r.FindByEmailErr != nil {
-		return nil, r.FindByEmailErr
+	if r.ErrFindByEmail != nil {
+		return nil, r.ErrFindByEmail
 	}
 
 	for _, u := range r.users {
@@ -59,9 +59,20 @@ func (r *MockUserRepository) FindByEmail(email user.Email) (*user.User, error) {
 	return nil, user.ErrUserNotFound
 }
 
+func (r *MockUserRepository) ExistsByID(id uuid.UUID) (bool, error) {
+	if r.ErrExistsByID != nil {
+		return false, r.ErrExistsByID
+	}
+
+	if _, ok := r.users[id]; ok {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (r *MockUserRepository) ExistsByEmail(email user.Email) (bool, error) {
-	if r.ExistsByEmailErr != nil {
-		return false, r.ExistsByEmailErr
+	if r.ErrExistsByEmail != nil {
+		return false, r.ErrExistsByEmail
 	}
 
 	for _, u := range r.users {
@@ -72,20 +83,9 @@ func (r *MockUserRepository) ExistsByEmail(email user.Email) (bool, error) {
 	return false, nil
 }
 
-func (r *MockUserRepository) ExistsByID(id uuid.UUID) (bool, error) {
-	if r.ExistsByIDErr != nil {
-		return false, r.ExistsByIDErr
-	}
-
-	if _, ok := r.users[id]; ok {
-		return true, nil
-	}
-	return false, nil
-}
-
 func (r *MockUserRepository) DeleteByID(id uuid.UUID) error {
-	if r.DeleteByIDErr != nil {
-		return r.DeleteByIDErr
+	if r.ErrDeleteByID != nil {
+		return r.ErrDeleteByID
 	}
 
 	if _, ok := r.users[id]; ok {
@@ -96,8 +96,8 @@ func (r *MockUserRepository) DeleteByID(id uuid.UUID) error {
 }
 
 func (r *MockUserRepository) ChangeOwner(callerID uuid.UUID, targetID uuid.UUID) error {
-	if r.ChangeOwnerErr != nil {
-		return r.ChangeOwnerErr
+	if r.ErrChangeOwner != nil {
+		return r.ErrChangeOwner
 	}
 
 	caller, ok := r.users[callerID]
