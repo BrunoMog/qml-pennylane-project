@@ -8,6 +8,7 @@ type VQCConfigUseCase interface {
 	CreateVQCConfig(input vqcconfigusecase.CreateVQCConfigInput) (*vqcconfigusecase.CreateVQCConfigOutput, error)
 	DeleteVQCConfig(input vqcconfigusecase.DeleteVQCConfigInput) error
 	UpdateVQCConfig(input vqcconfigusecase.UpdateVQCConfigInput) error
-	LoadVQCConfig(input vqcconfigusecase.LoadVQCConfigInput) (*vqcconfigusecase.LoadVQCConfigOutput, error)
+	LoadVQCConfigByID(input vqcconfigusecase.LoadVQCConfigByIDInput) (*vqcconfigusecase.LoadVQCConfigOutput, error)
+	LoadVQCConfigByName(input vqcconfigusecase.LoadVQCConfigByNameInput) (*vqcconfigusecase.LoadVQCConfigOutput, error)
 	LoadAllVQCConfigs(input vqcconfigusecase.LoadAllVQCConfigsInput) (*vqcconfigusecase.LoadAllVQCConfigsOutput, error)
 }
