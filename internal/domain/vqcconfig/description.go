@@ -1,8 +1,13 @@
 package vqcconfig
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+	"unicode"
+	"unicode/utf8"
+)
 
-const MAX_DESCRIPTION_LENGTH = 500
+const maxDescriptionLength = 500
 
 type Description struct {
 	value string
@@ -17,12 +22,31 @@ func NewDescription(value string) (Description, error) {
 }
 
 func validateDescription(description string) error {
-	if len(description) > MAX_DESCRIPTION_LENGTH {
-		return &InvalidDescriptionError{description}
+	runeCount := utf8.RuneCountInString(description)
+	if runeCount > maxDescriptionLength {
+		return &InvalidDescriptionError{fmt.Sprintf("description must be at most %d characters", maxDescriptionLength)}
 	}
+
+	for _, r := range description {
+		if !validateDescriptionRune(r) {
+			return &InvalidDescriptionError{fmt.Sprintf("description contains invalid character: %c", r)}
+		}
+	}
+
 	return nil
 }
 
-func (d Description) Value() string {
+func validateDescriptionRune(r rune) bool {
+	if unicode.IsPrint(r) {
+		return true
+	}
+	if r == '\n' || r == '\r' || r == '\t' {
+		return true
+	}
+
+	return false
+}
+
+func (d Description) String() string {
 	return d.value
 }

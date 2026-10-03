@@ -1,31 +1,41 @@
 package vqcconfig
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var (
+	ErrInvalidName        = errors.New("invalid name for VQCConfig")
+	ErrInvalidDescription = errors.New("invalid description for VQCConfig")
+	ErrInvalidOwnerID     = errors.New("owner ID cannot be nil")
+	ErrZeroValueVQC       = errors.New("VQC zero value is invalid")
+	ErrEmptyName          = errors.New("name cannot be empty")
+	ErrNilVQCConfigID     = errors.New("VQC config ID cannot be nil")
+
+	ErrVQCConfigNotFound = errors.New("VQC config not found")
+)
 
 type InvalidNameError struct {
-	name string
+	Reason string
 }
 
 func (e *InvalidNameError) Error() string {
-	return fmt.Sprintf("Invalid name: %s", e.name)
+	return fmt.Sprintf("invalid name for VQCConfig: %s", e.Reason)
+}
+
+func (e *InvalidNameError) Is(target error) bool {
+	return target == ErrInvalidName
 }
 
 type InvalidDescriptionError struct {
-	description string
+	Reason string
 }
 
 func (e *InvalidDescriptionError) Error() string {
-	return fmt.Sprintf("Invalid description: %s", e.description)
+	return fmt.Sprintf("invalid description for VQCConfig: %s", e.Reason)
 }
 
-type InvalidOwnerIDError struct{}
-
-func (e *InvalidOwnerIDError) Error() string {
-	return "invalid owner ID"
-}
-
-type InvalidVQCError struct{}
-
-func (e *InvalidVQCError) Error() string {
-	return "invalid VQC"
+func (e *InvalidDescriptionError) Is(target error) bool {
+	return target == ErrInvalidDescription
 }
